@@ -1,0 +1,1392 @@
+/* =========================================
+   Design System Variables
+   ========================================= */
+
+ :root {
+    --primary: #3b82f6;
+    /* Blue */
+    --primary-dark: #2563eb;
+    --secondary: #6366f1;
+    /* Indigo */
+    --bg-main: #f0fdf4;
+    /* Very light mint background */
+    --bg-card: #ffffff;
+    --text-main: #0f172a;
+    --text-light: #64748b;
+    --success: #10b981;
+    --warning: #f59e0b;
+    --danger: #ef4444;
+    --border: #e2e8f0;
+    --sidebar-width: 260px;
+    --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+    --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+    --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1);
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Noto Sans Thai', sans-serif;
+    background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
+    color: var(--text-main);
+    display: flex;
+    min-height: 100vh;
+}
+
+
+/* =========================================
+   Sidebar Layout
+   ========================================= */
+
+.sidebar {
+    width: var(--sidebar-width);
+    background-color: var(--bg-card);
+    border-right: 1px solid var(--border);
+    display: flex;
+    flex-direction: column;
+    padding: 24px;
+    position: fixed;
+    height: 100vh;
+}
+
+.logo {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--primary);
+    margin-bottom: 40px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.nav-menu {
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.nav-menu a {
+    text-decoration: none;
+    color: var(--text-light);
+    font-weight: 500;
+    padding: 12px 16px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    transition: all 0.3s ease;
+}
+
+.nav-menu a:hover,
+.nav-menu a.active {
+    background-color: #eff6ff;
+    color: var(--primary);
+}
+
+.user-profile {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding-top: 24px;
+    border-top: 1px solid var(--border);
+}
+
+.avatar {
+    width: 40px;
+    height: 40px;
+    background: var(--primary);
+    color: white;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+}
+
+.user-info {
+    display: flex;
+    flex-direction: column;
+}
+
+.user-info .name {
+    font-weight: 600;
+    font-size: 0.9rem;
+}
+
+.user-info .role {
+    font-size: 0.8rem;
+    color: var(--text-light);
+}
+
+
+/* =========================================
+   Main Content Area
+   ========================================= */
+
+.main-content {
+    margin-left: var(--sidebar-width);
+    padding: 32px 48px;
+    width: calc(100% - var(--sidebar-width));
+}
+
+.top-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 32px;
+}
+
+.top-header h1 {
+    font-size: 1.8rem;
+}
+
+.subtitle {
+    color: var(--text-light);
+    margin-top: 4px;
+}
+
+
+/* Buttons */
+
+.btn-primary {
+    background: linear-gradient(135deg, var(--primary), var(--secondary));
+    color: white;
+    border: none;
+    padding: 12px 24px;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: transform 0.2s, box-shadow 0.2s;
+    font-family: inherit;
+    font-size: 1rem;
+}
+
+.btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(59, 130, 246, 0.4);
+}
+
+.btn-outline {
+    background: transparent;
+    border: 1px solid var(--border);
+    padding: 8px 16px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-family: inherit;
+    font-weight: 500;
+}
+
+
+/* =========================================
+   Upload Section (Interactive)
+   ========================================= */
+
+.upload-container {
+    display: none;
+}
+
+.upload-container.active {
+    display: block;
+    animation: fadeIn 0.5s;
+}
+
+.upload-box {
+    background: rgba(255, 255, 255, 0.7);
+    backdrop-filter: blur(10px);
+    border: 2px dashed #93c5fd;
+    border-radius: 16px;
+    padding: 60px 20px;
+    text-align: center;
+    max-width: 600px;
+    margin: 40px auto;
+    transition: background 0.3s, border-color 0.3s;
+}
+
+.upload-box:hover {
+    background: #ffffff;
+    border-color: var(--primary);
+}
+
+.upload-icon {
+    font-size: 4rem;
+    margin-bottom: 20px;
+}
+
+.upload-box h2 {
+    margin-bottom: 10px;
+}
+
+.upload-box p {
+    color: var(--text-light);
+    margin-bottom: 24px;
+}
+
+
+/* Loading State */
+
+.processing-state {
+    display: none;
+    margin-top: 20px;
+}
+
+.spinner {
+    width: 40px;
+    height: 40px;
+    border: 4px solid #e2e8f0;
+    border-top-color: var(--primary);
+    border-radius: 50%;
+    margin: 0 auto 16px;
+    animation: spin 1s linear infinite;
+}
+
+
+/* =========================================
+   Dashboard Components
+   ========================================= */
+
+.dashboard-grid {
+    display: none;
+    grid-template-columns: 1fr 2fr;
+    gap: 24px;
+}
+
+.dashboard-grid.active {
+    display: grid;
+    animation: slideUp 0.6s ease;
+}
+
+.card {
+    background: var(--bg-card);
+    border-radius: 16px;
+    padding: 24px;
+    box-shadow: var(--shadow-sm);
+    border: 1px solid rgba(255, 255, 255, 0.8);
+}
+
+.glass-card {
+    background: rgba(255, 255, 255, 0.85);
+    backdrop-filter: blur(12px);
+    border: 1px solid rgba(255, 255, 255, 0.5);
+    box-shadow: var(--shadow-md);
+}
+
+.full-width {
+    grid-column: 1 / -1;
+}
+
+
+/* Health Score Circle */
+
+.score-card {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+}
+
+.circular-progress {
+    width: 150px;
+    height: 150px;
+    border-radius: 50%;
+    background: conic-gradient(var(--success) 0deg, var(--border) 0deg);
+    /* Updated via JS */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 24px 0;
+    transition: background 1s ease-in-out;
+}
+
+.inner-circle {
+    width: 130px;
+    height: 130px;
+    border-radius: 50%;
+    background: var(--bg-card);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.score-number {
+    font-size: 3rem;
+    font-weight: 700;
+    color: var(--text-main);
+}
+
+.text-success {
+    color: var(--success);
+    font-weight: 600;
+    font-size: 1.2rem;
+}
+
+
+/* Quick Metrics Container */
+
+.metrics-container {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 16px;
+}
+
+.metric-card {
+    background: var(--bg-card);
+    border-radius: 12px;
+    padding: 20px;
+    border-left: 4px solid var(--border);
+    box-shadow: var(--shadow-sm);
+}
+
+.metric-card.warning {
+    border-left-color: var(--warning);
+}
+
+.metric-card.success {
+    border-left-color: var(--success);
+}
+
+.metric-header {
+    display: flex;
+    justify-content: space-between;
+    color: var(--text-light);
+    font-size: 0.9rem;
+    font-weight: 600;
+    margin-bottom: 12px;
+}
+
+.metric-value {
+    font-size: 2rem;
+    font-weight: 700;
+    margin-bottom: 8px;
+}
+
+.metric-value span {
+    font-size: 1rem;
+    color: var(--text-light);
+}
+
+.metric-status {
+    font-size: 0.85rem;
+    padding: 4px 8px;
+    border-radius: 4px;
+    display: inline-block;
+}
+
+.warning .metric-status {
+    background: #fef3c7;
+    color: #b45309;
+}
+
+.success .metric-status {
+    background: #d1fae5;
+    color: #047857;
+}
+
+
+/* Deep Analysis Card */
+
+.card-header-flex {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.ai-badge {
+    background: linear-gradient(135deg, #c084fc, #9333ea);
+    color: white;
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    font-weight: 600;
+}
+
+
+/* Custom Tabs */
+
+.custom-tabs {
+    display: flex;
+    gap: 10px;
+    border-bottom: 2px solid var(--border);
+    margin-bottom: 24px;
+    padding-bottom: 10px;
+}
+
+.tab-btn {
+    background: none;
+    border: none;
+    padding: 8px 16px;
+    font-family: inherit;
+    font-size: 1rem;
+    color: var(--text-light);
+    cursor: pointer;
+    border-radius: 8px;
+    transition: all 0.3s;
+}
+
+.tab-btn:hover {
+    background: #f1f5f9;
+}
+
+.tab-btn.active {
+    background: var(--primary);
+    color: white;
+    font-weight: 600;
+}
+
+.tab-content {
+    display: none;
+    animation: fadeIn 0.4s ease;
+}
+
+.tab-content.active {
+    display: block;
+}
+
+
+/* Data View & Range Bar */
+
+.lab-row {
+    display: grid;
+    grid-template-columns: 1fr 2fr;
+    gap: 24px;
+    align-items: center;
+    padding: 16px;
+    background: #f8fafc;
+    border-radius: 12px;
+}
+
+.lab-info h4 {
+    font-size: 1.1rem;
+    color: var(--primary-dark);
+}
+
+.lab-info p {
+    font-size: 0.9rem;
+    color: var(--text-light);
+    margin-top: 4px;
+}
+
+.value-display {
+    font-size: 1.5rem;
+    margin-bottom: 10px;
+}
+
+
+/* The Beautiful Range Bar */
+
+.range-bar-container {
+    width: 100%;
+    position: relative;
+}
+
+.range-labels {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.8rem;
+    color: var(--text-light);
+    margin-bottom: 4px;
+}
+
+.range-bar {
+    width: 100%;
+    height: 8px;
+    background: #e2e8f0;
+    border-radius: 4px;
+    position: relative;
+    overflow: hidden;
+    display: flex;
+}
+
+.zone {
+    height: 100%;
+}
+
+.safe-zone {
+    width: 75%;
+    background: var(--success);
+}
+
+.danger-zone {
+    width: 25%;
+    background: var(--danger);
+}
+
+.range-indicator {
+    position: absolute;
+    top: -4px;
+    width: 4px;
+    height: 16px;
+    background: #0f172a;
+    border-radius: 2px;
+    z-index: 10;
+    box-shadow: 0 0 4px rgba(0, 0, 0, 0.3);
+}
+
+
+/* Science Graphic (Mockup Cell) */
+
+.science-content {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 24px;
+    align-items: center;
+}
+
+.mock-cell {
+    width: 200px;
+    height: 200px;
+    border-radius: 50%;
+    background: #e0e7ff;
+    position: relative;
+    margin: 0 auto;
+    border: 4px dashed #818cf8;
+    animation: float 4s ease-in-out infinite;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.nucleus {
+    width: 60px;
+    height: 60px;
+    background: #c7d2fe;
+    border-radius: 50%;
+}
+
+.enzyme {
+    position: absolute;
+    background: white;
+    padding: 4px 8px;
+    border-radius: 12px;
+    font-size: 0.8rem;
+    font-weight: bold;
+    color: var(--secondary);
+    box-shadow: var(--shadow-sm);
+}
+
+.e1 {
+    top: 30px;
+    left: 40px;
+}
+
+.e2 {
+    bottom: 40px;
+    right: 30px;
+}
+
+
+/* Action List */
+
+.action-list {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.action-list li {
+    display: flex;
+    gap: 16px;
+    background: white;
+    padding: 16px;
+    border-radius: 12px;
+    border: 1px solid var(--border);
+}
+
+.action-icon {
+    font-size: 2rem;
+    background: #f0fdf4;
+    width: 60px;
+    height: 60px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 12px;
+}
+
+.action-text strong {
+    font-size: 1.1rem;
+    color: var(--text-main);
+    display: block;
+    margin-bottom: 4px;
+}
+
+.action-text p {
+    color: var(--text-light);
+    font-size: 0.95rem;
+}
+
+
+/* Keyframes */
+
+@keyframes spin {
+    100% {
+        transform: rotate(360deg);
+    }
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
+
+@keyframes slideUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes float {
+    0%,
+    100% {
+        transform: translateY(0);
+    }
+    50% {
+        transform: translateY(-10px);
+    }
+}
+
+@keyframes pulse {
+    0%, 100% {
+        transform: scale(1);
+        box-shadow: 0 4px 12px rgba(59, 130, 246, 0.2);
+    }
+    50% {
+        transform: scale(1.05);
+        box-shadow: 0 4px 20px rgba(59, 130, 246, 0.6);
+    }
+}
+
+.animate-pulse {
+    animation: pulse 2s infinite;
+}
+
+/* =========================================
+   Feature 1: AI OCR Scanner Animation
+   ========================================= */
+.scanner-container {
+    position: relative;
+    width: 200px;
+    height: 240px;
+    margin: 0 auto 20px;
+    background: #ffffff;
+    border: 2px solid #e2e8f0;
+    border-radius: 8px;
+    overflow: hidden;
+    padding: 20px;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+}
+
+.mock-document .doc-line {
+    height: 12px;
+    background: #e2e8f0;
+    margin-bottom: 16px;
+    border-radius: 4px;
+}
+
+.scanner-laser {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 3px;
+    background: var(--primary);
+    box-shadow: 0 0 15px 3px rgba(59, 130, 246, 0.5);
+    animation: scanLaser 1.5s linear infinite;
+}
+
+@keyframes scanLaser {
+    0% { top: 0; }
+    100% { top: 100%; }
+}
+
+.scanning-text {
+    color: var(--primary-dark);
+    font-weight: 600;
+    font-size: 1.1rem;
+    margin-top: 10px;
+    animation: fadeInOut 0.75s infinite alternate;
+}
+
+@keyframes fadeInOut {
+    from { opacity: 0.7; }
+    to { opacity: 1; }
+}
+
+/* =========================================
+   Feature 2: Blood Vessel & Zones
+   ========================================= */
+.warning-zone {
+    background: var(--warning);
+}
+
+.blood-vessel {
+    width: 100%;
+    max-width: 320px;
+    height: 140px;
+    background: #ffe4e6;
+    border-top: 12px solid #fda4af;
+    border-bottom: 12px solid #fda4af;
+    position: relative;
+    margin: 0 auto;
+    overflow: hidden;
+    border-radius: 8px;
+}
+
+.red-blood-cell {
+    width: 35px;
+    height: 35px;
+    background: #ef4444;
+    border-radius: 50%;
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    box-shadow: inset -4px -4px 8px rgba(0,0,0,0.3);
+    animation: flowRight 3s linear infinite;
+}
+
+.rbc-1 { left: -40px; animation-delay: 0s; top: 30%; }
+.rbc-2 { left: -40px; animation-delay: 1.2s; top: 70%; }
+.rbc-3 { left: -40px; animation-delay: 2.1s; top: 45%; }
+
+.ldl-plaque {
+    position: absolute;
+    background: #fcd34d; /* yellow/cholesterol */
+    width: 100px;
+    height: 30px;
+    border-radius: 16px;
+    box-shadow: inset 0 -4px 6px rgba(0,0,0,0.1);
+}
+
+.plaque-top { top: 0; left: 60px; border-top-left-radius: 0; border-top-right-radius: 0; }
+.plaque-bottom { bottom: 0; right: 80px; border-bottom-left-radius: 0; border-bottom-right-radius: 0; }
+
+.hdl-particle {
+    width: 30px;
+    height: 30px;
+    background: #10b981;
+    border-radius: 50%;
+    position: absolute;
+    top: 20px;
+    left: -30px;
+    animation: flowClean 4s ease-in-out infinite;
+    box-shadow: 0 0 10px #34d399, inset -3px -3px 5px rgba(0,0,0,0.2);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.7rem;
+    font-weight: bold;
+    color: white;
+}
+
+@keyframes flowRight {
+    0% { left: -50px; }
+    100% { left: 110%; }
+}
+
+@keyframes flowClean {
+    0% { left: -30px; top: 15px; }
+    40% { left: 100px; top: 15px; transform: scale(1.1); }
+    60% { left: 160px; top: 50px; transform: scale(1.1); }
+    100% { left: 110%; top: 50px; }
+}
+
+/* =========================================
+   Feature 3: Pure CSS Line Chart (History Trends)
+   ========================================= */
+.trend-controls {
+    display: flex;
+    gap: 10px;
+}
+.trend-select {
+    padding: 8px 16px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    font-family: inherit;
+    font-size: 1rem;
+    outline: none;
+    background: #f8fafc;
+    color: var(--text-main);
+    cursor: pointer;
+    font-weight: 500;
+}
+
+.css-chart-container {
+    display: flex;
+    height: 280px;
+    margin: 30px 0 50px 0;
+    gap: 16px;
+}
+
+.y-axis {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    color: var(--text-light);
+    font-size: 0.85rem;
+    padding-bottom: 30px;
+    font-weight: 600;
+}
+
+.chart-area {
+    flex-grow: 1;
+    position: relative;
+    border-left: 2px solid var(--border);
+    border-bottom: 2px solid var(--border);
+    background: repeating-linear-gradient(
+        0deg,
+        transparent,
+        transparent 48px,
+        rgba(226, 232, 240, 0.5) 48px,
+        rgba(226, 232, 240, 0.5) 50px
+    );
+}
+
+.x-axis {
+    position: absolute;
+    bottom: -30px;
+    left: 0;
+    width: 100%;
+    display: flex;
+    color: var(--text-light);
+    font-size: 0.85rem;
+    font-weight: 600;
+}
+
+.x-axis span {
+    position: absolute;
+    transform: translateX(-50%);
+}
+
+.chart-line-path {
+    position: absolute;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    background: var(--primary);
+    clip-path: polygon(
+        16.6% 14.5%, 50% 49.5%, 83.3% 64.5%, 
+        83.3% 65.5%, 50% 50.5%, 16.6% 15.5%
+    );
+    z-index: 1;
+}
+
+.chart-fill-path {
+    position: absolute;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    background: linear-gradient(to bottom, rgba(59, 130, 246, 0.3), rgba(59, 130, 246, 0.02));
+    clip-path: polygon(
+        16.6% 15%, 50% 50%, 83.3% 65%, 
+        83.3% 100%, 16.6% 100%
+    );
+    z-index: 0;
+}
+
+.data-point {
+    position: absolute;
+    width: 18px;
+    height: 18px;
+    background: white;
+    border: 4px solid var(--primary);
+    border-radius: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 2;
+    transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    cursor: pointer;
+}
+
+.data-point:hover {
+    transform: translate(-50%, -50%) scale(1.4);
+    box-shadow: 0 0 12px rgba(59, 130, 246, 0.6);
+}
+
+.point-value {
+    position: absolute;
+    top: -35px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: var(--text-main);
+    color: white;
+    padding: 4px 10px;
+    border-radius: 6px;
+    font-size: 0.8rem;
+    font-weight: bold;
+    opacity: 0;
+    transition: opacity 0.3s;
+    pointer-events: none;
+    white-space: nowrap;
+}
+
+.point-value::after {
+    content: '';
+    position: absolute;
+    bottom: -4px;
+    left: 50%;
+    transform: translateX(-50%);
+    border-width: 5px 5px 0;
+    border-style: solid;
+    border-color: var(--text-main) transparent transparent transparent;
+}
+
+.data-point:hover .point-value {
+    opacity: 1;
+}
+
+.ai-summary-box {
+    display: flex;
+    gap: 16px;
+    background: #eff6ff;
+    padding: 24px;
+    border-radius: 12px;
+    border-left: 4px solid var(--primary);
+    margin-top: 24px;
+    align-items: flex-start;
+}
+
+.ai-icon {
+    font-size: 2rem;
+    background: white;
+    min-width: 50px;
+    height: 50px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    box-shadow: var(--shadow-sm);
+}
+
+.ai-text strong {
+    color: var(--primary-dark);
+    display: block;
+    margin-bottom: 8px;
+    font-size: 1.05rem;
+}
+
+.ai-text p {
+    color: var(--text-main);
+    line-height: 1.6;
+}
+
+/* =========================================
+   Feature 4: AI Chatbot (CSS Checkbox Hack)
+   ========================================= */
+.chatbot-checkbox {
+    display: none;
+}
+
+.chatbot-fab {
+    position: fixed;
+    bottom: 30px;
+    right: 30px;
+    width: 60px;
+    height: 60px;
+    background: linear-gradient(135deg, var(--primary), var(--secondary));
+    color: white;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 2rem;
+    cursor: pointer;
+    box-shadow: 0 4px 15px rgba(59, 130, 246, 0.4);
+    transition: transform 0.3s, box-shadow 0.3s;
+    z-index: 1000;
+}
+
+.chatbot-fab:hover {
+    transform: scale(1.1);
+    box-shadow: 0 6px 20px rgba(59, 130, 246, 0.6);
+}
+
+.chatbot-window {
+    position: fixed;
+    bottom: 110px;
+    right: 30px;
+    width: 360px;
+    height: 480px;
+    background: white;
+    border-radius: 16px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    transform: translateY(20px) scale(0.95);
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    z-index: 999;
+    border: 1px solid var(--border);
+    transform-origin: bottom right;
+}
+
+/* The Magic of Checkbox Hack */
+.chatbot-checkbox:checked ~ .chatbot-window {
+    transform: translateY(0) scale(1);
+    opacity: 1;
+    visibility: visible;
+}
+
+.chatbot-checkbox:checked ~ .chatbot-fab .fab-icon {
+    transform: rotate(360deg);
+    transition: transform 0.5s ease;
+}
+
+/* Chat UI */
+.chat-header {
+    background: linear-gradient(135deg, var(--primary), var(--secondary));
+    color: white;
+    padding: 16px 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-weight: 600;
+}
+
+.chat-title {
+    display: flex;
+    align-items: center;
+}
+
+.close-chat {
+    cursor: pointer;
+    font-size: 1.2rem;
+    opacity: 0.8;
+    transition: opacity 0.2s;
+}
+
+.close-chat:hover {
+    opacity: 1;
+}
+
+.chat-body {
+    flex-grow: 1;
+    padding: 20px;
+    background: #f8fafc;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.message {
+    max-width: 85%;
+    padding: 12px 16px;
+    border-radius: 14px;
+    font-size: 0.95rem;
+    line-height: 1.5;
+}
+
+.user-message {
+    background: var(--primary);
+    color: white;
+    align-self: flex-end;
+    border-bottom-right-radius: 4px;
+}
+
+.ai-message {
+    background: white;
+    color: var(--text-main);
+    align-self: flex-start;
+    border-bottom-left-radius: 4px;
+    border: 1px solid var(--border);
+    box-shadow: var(--shadow-sm);
+}
+
+.ai-message strong {
+    color: var(--primary-dark);
+}
+
+.chat-footer {
+    padding: 16px;
+    background: white;
+    border-top: 1px solid var(--border);
+    display: flex;
+    gap: 12px;
+}
+
+.chat-input {
+    flex-grow: 1;
+    padding: 12px 20px;
+    border: 1px solid var(--border);
+    border-radius: 24px;
+    outline: none;
+    font-family: inherit;
+    font-size: 0.95rem;
+    transition: border-color 0.2s;
+}
+
+.chat-input:focus {
+    border-color: var(--primary);
+}
+
+.chat-send {
+    background: var(--primary);
+    color: white;
+    border: none;
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.2s, transform 0.2s;
+    font-size: 1.1rem;
+}
+
+.chat-send:hover {
+    background: var(--primary-dark);
+    transform: scale(1.05);
+}
+
+/* =========================================
+   Feature 5: Daily Action Plan
+   ========================================= */
+.daily-plan-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 24px;
+    margin-top: 10px;
+}
+
+.plan-column {
+    background: #f8fafc;
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 24px;
+    transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275), box-shadow 0.3s;
+    position: relative;
+    overflow: hidden;
+}
+
+.plan-column:hover {
+    transform: translateY(-8px);
+    box-shadow: 0 12px 20px -5px rgba(0,0,0,0.1);
+}
+
+/* Theme colors for time of day */
+.plan-column.morning {
+    background: linear-gradient(145deg, #fffbeb 0%, #fef3c7 100%);
+    border-color: #fde68a;
+}
+.plan-column.afternoon {
+    background: linear-gradient(145deg, #eff6ff 0%, #dbeafe 100%);
+    border-color: #bfdbfe;
+}
+.plan-column.evening {
+    background: linear-gradient(145deg, #f5f3ff 0%, #ede9fe 100%);
+    border-color: #ddd6fe;
+}
+
+.time-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 16px;
+    padding-bottom: 12px;
+    border-bottom: 1px dashed rgba(0,0,0,0.15);
+}
+
+.time-icon {
+    font-size: 1.8rem;
+}
+
+.time-header h4 {
+    color: var(--text-main);
+    font-size: 1.1rem;
+    font-weight: 700;
+}
+
+.plan-content strong {
+    display: block;
+    color: var(--text-main);
+    font-size: 1.1rem;
+    margin-bottom: 8px;
+}
+
+.plan-column.morning .plan-content strong { color: #b45309; }
+.plan-column.afternoon .plan-content strong { color: #1e40af; }
+.plan-column.evening .plan-content strong { color: #5b21b6; }
+
+.plan-content p {
+    color: var(--text-main);
+    font-size: 0.95rem;
+    line-height: 1.6;
+    opacity: 0.9;
+}
+
+.plan-content em {
+    font-style: normal;
+    background: rgba(255, 255, 255, 0.7);
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-weight: 600;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+}
+
+/* =========================================
+   Pure CSS Tabs State Management (Radio Hack)
+   ========================================= */
+.tab-radio {
+    display: none;
+}
+
+/* Base style for labels */
+.tab-btn {
+    cursor: pointer;
+}
+
+/* Active Tab Highlight */
+#liver-data:checked ~ .custom-tabs .label-data,
+#liver-science:checked ~ .custom-tabs .label-science,
+#liver-action:checked ~ .custom-tabs .label-action,
+#lipid-data:checked ~ .custom-tabs .label-data,
+#lipid-science:checked ~ .custom-tabs .label-science,
+#lipid-action:checked ~ .custom-tabs .label-action,
+#wbc-data:checked ~ .custom-tabs .label-data,
+#wbc-science:checked ~ .custom-tabs .label-science,
+#wbc-action:checked ~ .custom-tabs .label-action {
+    background-color: var(--primary);
+    color: white;
+    border-color: var(--primary);
+    box-shadow: 0 4px 10px rgba(59, 130, 246, 0.3);
+}
+
+/* Initial hide of all tab contents */
+.analysis-card .tab-content {
+    display: none;
+    animation: fadeInTab 0.3s ease-in-out forwards;
+}
+
+@keyframes fadeInTab {
+    from { opacity: 0; transform: translateY(5px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* Active Tab Content Display */
+#liver-data:checked ~ .content-data,
+#liver-science:checked ~ .content-science,
+#liver-action:checked ~ .content-action,
+#lipid-data:checked ~ .content-data,
+#lipid-science:checked ~ .content-science,
+#lipid-action:checked ~ .content-action,
+#wbc-data:checked ~ .content-data,
+#wbc-science:checked ~ .content-science,
+#wbc-action:checked ~ .content-action {
+    display: block;
+}
+
+/* Update metrics container for 5 items */
+.metrics-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+    gap: 16px;
+}
+
+/* =========================================
+   Immune Army CSS Visualization
+   ========================================= */
+.immune-army-container {
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    height: 180px;
+    background: linear-gradient(to bottom, #f8fafc, #e2e8f0);
+    border-radius: 12px;
+    padding: 20px;
+    position: relative;
+    overflow: hidden;
+    border: 1px solid var(--border);
+}
+
+.wbc {
+    width: 65px;
+    height: 65px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.9);
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1), inset 0 0 15px rgba(255,255,255,1);
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.wbc:hover {
+    transform: scale(1.15) translateY(-5px);
+}
+
+/* Neutrophil (Multi-lobe) */
+.neutrophil { border: 2px solid #bae6fd; }
+.neutrophil .multi-lobe {
+    width: 35px; height: 35px;
+    background: #0284c7;
+    clip-path: polygon(20% 0%, 80% 0%, 100% 100%, 0% 100%);
+    border-radius: 40% 60% 70% 30% / 40% 50% 60% 50%;
+}
+
+/* Lymphocyte (Large Round) */
+.lymphocyte { border: 2px solid #c7d2fe; }
+.lymphocyte .large-round {
+    width: 45px; height: 45px;
+    background: #4f46e5;
+    border-radius: 50%;
+}
+
+/* Eosinophil (Bi-lobe + Granules) */
+.eosinophil { border: 2px solid #fecaca; background: #fee2e2; }
+.eosinophil .bi-lobe {
+    width: 40px; height: 18px;
+    background: #e11d48;
+    border-radius: 12px;
+    transform: rotate(45deg);
+}
+.eosinophil .granules {
+    position: absolute;
+    width: 100%; height: 100%;
+    background-image: radial-gradient(#be123c 20%, transparent 25%);
+    background-size: 8px 8px;
+    border-radius: 50%;
+    opacity: 0.4;
+}
+
+.pulse-anim {
+    animation: pulseAlert 2s infinite;
+}
+
+@keyframes pulseAlert {
+    0% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.4), inset 0 0 10px rgba(255,255,255,1); }
+    70% { box-shadow: 0 0 0 15px rgba(239, 68, 68, 0), inset 0 0 10px rgba(255,255,255,1); }
+    100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0), inset 0 0 10px rgba(255,255,255,1); }
+}
+
+.wbc-label {
+    position: absolute;
+    bottom: -28px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: var(--text-main);
+    white-space: nowrap;
+    background: rgba(255,255,255,0.8);
+    padding: 2px 6px;
+    border-radius: 4px;
+}
+
+.alert-text {
+    color: #ef4444;
+}

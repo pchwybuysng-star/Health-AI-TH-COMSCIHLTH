@@ -1,0 +1,612 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LabLink - The Intelligent Medical Translator</title>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Thai:wght@300;400;500;600;700&family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="dark-theme.css">
+    <!-- View transition styles -->
+    <style>
+        .view-section {
+            transition: opacity 0.3s ease, transform 0.3s ease;
+            opacity: 0;
+            transform: translateY(10px);
+        }
+        .view-section.active {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    </style>
+</head>
+<body>
+    <div class="app-container">
+        <!-- Sidebar Navigation -->
+        <aside class="sidebar">
+            <div class="logo">
+                <span class="logo-icon">🧬</span> LabLink
+            </div>
+            <nav class="nav-menu">
+                <a href="#" class="nav-item active" id="nav-upload" data-target="view-upload">
+                    <span class="icon">📄</span> อัปโหลดผลตรวจ
+                </a>
+                <a href="#" class="nav-item" id="nav-dashboard" data-target="view-dashboard">
+                    <span class="icon">📊</span> แดชบอร์ดสุขภาพ
+                </a>
+                <a href="#" class="nav-item" id="nav-trends" data-target="view-trends">
+                    <span class="icon">📈</span> ประวัติผลตรวจ
+                </a>
+                <a href="#" class="nav-item"><span class="icon">🧠</span> ปรึกษา AI แพทย์</a>
+                <a href="#" class="nav-item" id="theme-toggle"><span class="icon">🌙</span> โหมดกลางคืน</a>
+                <a href="#" class="nav-item"><span class="icon">⚙️</span> ตั้งค่า</a>
+            </nav>
+            <div class="user-profile">
+                <div class="avatar">U</div>
+                <div class="user-info">
+                    <span class="name">ผู้ใช้งานทดสอบ</span>
+                    <span class="role">Premium Plan</span>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Main Content Area -->
+        <main class="main-content">
+            <header class="top-header">
+                <div class="header-text">
+                    <h1>ยินดีต้อนรับสู่ LabLink <span>AI</span></h1>
+                    <p style="color: var(--text-light); margin-top: 4px;">เปลี่ยนตัวเลขผลแล็บที่ซับซ้อน ให้เป็นภาพที่คุณเข้าใจได้ทันที</p>
+                </div>
+                <div class="header-action">
+                    <span class="badge-pro" style="background: linear-gradient(135deg, var(--primary), var(--secondary)); color: white; padding: 8px 16px; border-radius: 20px; font-weight: 600; font-size: 0.9rem; box-shadow: 0 4px 10px rgba(59,130,246,0.3);">✨ Medical Grade AI</span>
+                </div>
+            </header>
+
+            <!-- View 1: Upload -->
+            <section class="view-section" id="view-upload" style="display: none;">
+                <div class="upload-box">
+                    <div class="upload-icon">📑</div>
+                    <h2>อัปโหลดผลตรวจสุขภาพของคุณ</h2>
+                    <p>รองรับไฟล์ PDF จากโรงพยาบาล, JPG, หรือ PNG<br>AI ของเราจะอ่านและแปลผลให้คุณภายใน 3 วินาที</p>
+
+                    <button class="btn-primary animate-pulse" id="btn-upload">
+                        คลิกเพื่อจำลองการอัปโหลดไฟล์
+                    </button>
+                    
+                    <div id="loadingState" class="processing-state">
+                        <div class="scanner-container">
+                            <div class="mock-document">
+                                <div class="doc-line" style="width: 80%"></div>
+                                <div class="doc-line" style="width: 60%"></div>
+                                <div class="doc-line" style="width: 90%"></div>
+                                <div class="doc-line" style="width: 70%"></div>
+                                <div class="doc-line" style="width: 50%"></div>
+                                <div class="scanner-laser"></div>
+                            </div>
+                        </div>
+                        <p class="scanning-text" id="scanningText">AI กำลังสกัดข้อมูล...</p>
+                    </div>
+                    
+                    <p class="secure-text" style="margin-top: 24px; color: var(--text-light); font-size: 0.9rem;">🔒 ข้อมูลของคุณถูกเข้ารหัสและเป็นความลับตามมาตรฐาน HIPAA</p>
+                </div>
+            </section>
+
+            <!-- View 2: Dashboard -->
+            <section class="view-section" id="view-dashboard" style="display: none;">
+                <div class="dashboard-grid">
+                    <div class="card glass-card score-card">
+                        <h3>คะแนนสุขภาพองค์รวม</h3>
+                        <div class="circular-progress" data-progress="85">
+                            <div class="inner-circle">
+                                <span class="score-number">0</span>
+                            </div>
+                        </div>
+                        <div class="score-info">
+                            <h4 class="text-success">สุขภาพอยู่ในเกณฑ์ "ดีมาก"</h4>
+                            <p style="color: var(--text-light); font-size: 0.9rem; margin-top: 8px;">มีจุดที่ต้องระวังเล็กน้อยในเรื่องไขมันรวมและภูมิแพ้ แต่โดยรวมแข็งแรงดีเยี่ยม</p>
+                        </div>
+                    </div>
+
+                    <!-- Updated Quick Metrics (5 items) -->
+                    <div class="metrics-container" style="grid-column: 2 / -1;">
+                        <div class="metric-card warning">
+                            <div class="metric-header"><span>ความดันโลหิต</span> <span class="icon">🫀</span></div>
+                            <div class="metric-value">125/82 <span style="font-size: 0.8rem;">mmHg</span></div>
+                            <div class="metric-status">ค่อนข้างสูง</div>
+                        </div>
+                        <div class="metric-card warning">
+                            <div class="metric-header"><span>คอเลสเตอรอลรวม</span> <span class="icon">🛡️</span></div>
+                            <div class="metric-value">210 <span style="font-size: 0.8rem;">mg/dL</span></div>
+                            <div class="metric-status">สูงเล็กน้อย</div>
+                        </div>
+                        <div class="metric-card success">
+                            <div class="metric-header"><span>HDL (ไขมันดี)</span> <span class="icon">🥑</span></div>
+                            <div class="metric-value">55 <span style="font-size: 0.8rem;">mg/dL</span></div>
+                            <div class="metric-status">ปกติ</div>
+                        </div>
+                        <div class="metric-card warning">
+                            <div class="metric-header"><span>LDL (ไขมันเลว)</span> <span class="icon">🍔</span></div>
+                            <div class="metric-value">130 <span style="font-size: 0.8rem;">mg/dL</span></div>
+                            <div class="metric-status">ปริ่มเกณฑ์</div>
+                        </div>
+                        <div class="metric-card success">
+                            <div class="metric-header"><span>ระดับน้ำตาล (FBS)</span> <span class="icon">🍎</span></div>
+                            <div class="metric-value">88 <span style="font-size: 0.8rem;">mg/dL</span></div>
+                            <div class="metric-status">ปกติ</div>
+                        </div>
+                    </div>
+
+                    <!-- Liver Panel with CSS Radio Tabs -->
+                    <div class="card analysis-card full-width">
+                        <!-- Pure CSS State Management (Radio Button Hack) -->
+                        <input type="radio" name="liver-tab" id="liver-data" class="tab-radio" checked>
+                        <input type="radio" name="liver-tab" id="liver-science" class="tab-radio">
+                        <input type="radio" name="liver-tab" id="liver-action" class="tab-radio">
+
+                        <div class="card-header-flex">
+                            <h3>วิเคราะห์เจาะลึก: การทำงานของตับ (Liver Panel)</h3>
+                            <span class="ai-badge">AI Visualized</span>
+                        </div>
+                        <div class="custom-tabs">
+                            <label for="liver-data" class="tab-btn label-data">📊 ค่าตัวเลขของคุณ</label>
+                            <label for="liver-science" class="tab-btn label-science">🔬 กลไกในร่างกาย</label>
+                            <label for="liver-action" class="tab-btn label-action">🎯 แผนดูแลสุขภาพ</label>
+                        </div>
+
+                        <div class="tab-content content-data">
+                            <div class="lab-row">
+                                <div class="lab-info">
+                                    <h4>AST (SGOT)</h4>
+                                    <p>เอนไซม์จากตับและกล้ามเนื้อ</p>
+                                </div>
+                                <div class="lab-chart">
+                                    <div class="value-display">22 <span style="font-size: 1rem; color: var(--text-light);">U/L</span></div>
+                                    <div class="range-bar-container">
+                                        <div class="range-bar">
+                                            <div class="zone safe-zone"></div>
+                                            <div class="zone danger-zone"></div>
+                                            <div class="range-indicator" style="left: 55%;" data-value="22"></div>
+                                        </div>
+                                        <div class="range-labels"><span>0 (ต่ำ)</span><span>40 (สูง)</span></div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="lab-row" style="margin-top: 16px;">
+                                <div class="lab-info">
+                                    <h4>ALT (SGPT)</h4>
+                                    <p>เอนไซม์เฉพาะในเซลล์ตับ</p>
+                                </div>
+                                <div class="lab-chart">
+                                    <div class="value-display">28 <span style="font-size: 1rem; color: var(--text-light);">U/L</span></div>
+                                    <div class="range-bar-container">
+                                        <div class="range-bar">
+                                            <div class="zone safe-zone"></div>
+                                            <div class="zone danger-zone"></div>
+                                            <div class="range-indicator" style="left: 68%;" data-value="28"></div>
+                                        </div>
+                                        <div class="range-labels"><span>0 (ต่ำ)</span><span>41 (สูง)</span></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="tab-content content-science">
+                            <div class="science-content">
+                                <div class="science-text">
+                                    <h4 style="margin-bottom: 12px; font-size: 1.1rem; color: var(--primary-dark);">ทำไมค่านี้ถึงสำคัญ?</h4>
+                                    <p style="margin-bottom: 16px; line-height: 1.6;">AST และ ALT คือ "ทหารช่าง" ที่คอยสร้างพลังงานอยู่ <strong>ภายในเซลล์ตับ (Hepatocytes)</strong></p>
+                                    <div style="background: #d1fae5; color: #065f46; padding: 16px; border-radius: 8px; border-left: 4px solid #10b981;">
+                                        <strong>✨ ข่าวดีของคุณ:</strong> เยื่อหุ้มเซลล์ตับของคุณแข็งแรงมาก ไม่มีรอยรั่ว! เอนไซม์จึงไม่ออกมาปะปนในกระแสเลือด
+                                    </div>
+                                </div>
+                                <div class="science-visual">
+                                    <div class="mock-cell">
+                                        <div class="nucleus"></div>
+                                        <div class="enzyme e1">AST</div>
+                                        <div class="enzyme e2">ALT</div>
+                                    </div>
+                                    <p style="text-align: center; margin-top: 16px; color: var(--text-light); font-size: 0.9rem;">จำลองภาพเซลล์ตับที่สมบูรณ์</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="tab-content content-action">
+                            <ul class="action-list">
+                                <li>
+                                    <div class="action-icon">🥦</div>
+                                    <div class="action-text">
+                                        <strong>เพิ่มกลูต้าไธโอนตามธรรมชาติ</strong>
+                                        <p>ตับของคุณทำงานได้ดีเยี่ยม! เสริมเกราะป้องกันด้วยการทาน บรอกโคลี หรือ กะหล่ำปลี 2 มื้อ/สัปดาห์</p>
+                                    </div>
+                                </li>
+                                <li>
+                                    <div class="action-icon">💧</div>
+                                    <div class="action-text">
+                                        <strong>สิ่งที่ควรระวัง (Prevention)</strong>
+                                        <p>ดื่มน้ำให้ได้อย่างน้อย 2.5 ลิตร เพื่อรักษาสภาพตับให้ดียาวนาน</p>
+                                    </div>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <!-- Lipid Panel with CSS Radio Tabs -->
+                    <div class="card analysis-card full-width">
+                        <input type="radio" name="lipid-tab" id="lipid-data" class="tab-radio" checked>
+                        <input type="radio" name="lipid-tab" id="lipid-science" class="tab-radio">
+                        <input type="radio" name="lipid-tab" id="lipid-action" class="tab-radio">
+
+                        <div class="card-header-flex">
+                            <h3>วิเคราะห์เจาะลึก: ระบบหลอดเลือดและไขมัน (Lipid Profile)</h3>
+                            <span class="ai-badge">AI Visualized</span>
+                        </div>
+                        <div class="custom-tabs">
+                            <label for="lipid-data" class="tab-btn label-data">📊 ค่าตัวเลขของคุณ</label>
+                            <label for="lipid-science" class="tab-btn label-science">🔬 หลอดเลือดจำลอง</label>
+                            <label for="lipid-action" class="tab-btn label-action">🎯 แผนดูแลสุขภาพ</label>
+                        </div>
+                        
+                        <div class="tab-content content-data">
+                            <div class="lab-row">
+                                <div class="lab-info">
+                                    <h4>Total Cholesterol</h4>
+                                    <p>คอเลสเตอรอลรวมในเลือด</p>
+                                </div>
+                                <div class="lab-chart">
+                                    <div class="value-display warning-text" style="color: var(--warning);">210 <span style="font-size: 1rem; color: var(--text-light);">mg/dL</span></div>
+                                    <div class="range-bar-container">
+                                        <div class="range-bar">
+                                            <div class="zone safe-zone" style="width: 50%"></div>
+                                            <div class="zone warning-zone" style="width: 25%;"></div>
+                                            <div class="zone danger-zone" style="width: 25%"></div>
+                                            <div class="range-indicator" style="left: 60%;" data-value="210"></div>
+                                        </div>
+                                        <div class="range-labels"><span>0</span><span>200 (เกณฑ์)</span><span>240+ (สูงมาก)</span></div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="lab-row" style="margin-top: 16px;">
+                                <div class="lab-info">
+                                    <h4>LDL (ไขมันเลว)</h4>
+                                    <p>ตัวการทำให้หลอดเลือดตีบ</p>
+                                </div>
+                                <div class="lab-chart">
+                                    <div class="value-display warning-text" style="color: var(--warning);">130 <span style="font-size: 1rem; color: var(--text-light);">mg/dL</span></div>
+                                    <div class="range-bar-container">
+                                        <div class="range-bar">
+                                            <div class="zone safe-zone" style="width: 50%"></div>
+                                            <div class="zone warning-zone" style="width: 25%;"></div>
+                                            <div class="zone danger-zone" style="width: 25%"></div>
+                                            <div class="range-indicator" style="left: 65%;" data-value="130"></div>
+                                        </div>
+                                        <div class="range-labels"><span>0</span><span>100 (เกณฑ์)</span><span>190+ (สูงมาก)</span></div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="lab-row" style="margin-top: 16px;">
+                                <div class="lab-info">
+                                    <h4>HDL (ไขมันดี)</h4>
+                                    <p>ฮีโร่กวาดขยะในหลอดเลือด</p>
+                                </div>
+                                <div class="lab-chart">
+                                    <div class="value-display" style="color: var(--success);">55 <span style="font-size: 1rem; color: var(--text-light);">mg/dL</span></div>
+                                    <div class="range-bar-container">
+                                        <div class="range-bar">
+                                            <div class="zone danger-zone" style="width: 40%"></div>
+                                            <div class="zone safe-zone" style="width: 60%"></div>
+                                            <div class="range-indicator" style="left: 55%;" data-value="55"></div>
+                                        </div>
+                                        <div class="range-labels"><span>0</span><span>40 (ต่ำ)</span><span>60+ (ดี)</span></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="tab-content content-science">
+                            <div class="science-content">
+                                <div class="science-text">
+                                    <h4 style="margin-bottom: 12px; font-size: 1.1rem; color: var(--primary-dark);">เกิดอะไรขึ้นในหลอดเลือดของคุณ?</h4>
+                                    <p style="margin-bottom: 16px; line-height: 1.6;"><strong>LDL (ก้อนสีเหลือง)</strong> พยายามจะเกาะผนังหลอดเลือด แต่ <strong>HDL (ก้อนสีเขียว)</strong> ของคุณมีปริมาณที่มากพอที่จะมาคอยกวาดขยะเหล่านี้กลับไปทำลายที่ตับ!</p>
+                                    <div style="background: #fef3c7; color: #b45309; padding: 16px; border-radius: 8px; border-left: 4px solid #f59e0b;">
+                                        <strong>⚠️ สิ่งที่ควรระวัง:</strong> ไขมันเลว (LDL) อยู่ที่ 130 mg/dL เริ่มปริ่มเกณฑ์มาตรฐาน หากปล่อยไว้ให้สูงกว่านี้ คราบตะกรันสีเหลืองจะพอกหนาขึ้นจนเลือดไหลเวียนยาก
+                                    </div>
+                                </div>
+                                <div class="science-visual">
+                                    <div class="blood-vessel">
+                                        <div class="ldl-plaque plaque-top" style="width: 30%;"></div>
+                                        <div class="ldl-plaque plaque-bottom" style="width: 25%;"></div>
+                                        <div class="red-blood-cell rbc-1"></div>
+                                        <div class="red-blood-cell rbc-2"></div>
+                                        <div class="red-blood-cell rbc-3"></div>
+                                        <div class="hdl-particle">HDL</div>
+                                    </div>
+                                    <p style="text-align: center; margin-top: 16px; color: var(--text-light); font-size: 0.9rem;">จำลองหลอดเลือดและคราบตะกรันไขมัน (Plaque)</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="tab-content content-action">
+                            <ul class="action-list">
+                                <li>
+                                    <div class="action-icon">🐟</div>
+                                    <div class="action-text">
+                                        <strong>โภชนาการ: เพิ่มโอเมก้า 3 ลดทรานส์</strong>
+                                        <p>หลีกเลี่ยงไขมันทรานส์ (ของทอด, เบเกอรี่) และทานปลาทะเลลึก เช่น แซลมอน เพื่อเพิ่ม HDL อย่างมีนัยสำคัญ</p>
+                                    </div>
+                                </li>
+                                <li>
+                                    <div class="action-icon">🏃</div>
+                                    <div class="action-text">
+                                        <strong>การออกกำลังกายแบบคาร์ดิโอ</strong>
+                                        <p>วิ่ง ปั่นจักรยาน หรือว่ายน้ำ ต่อเนื่อง 30-45 นาที 3-4 วัน/สัปดาห์ ช่วยเผาผลาญ LDL ในกระแสเลือดได้โดยตรง</p>
+                                    </div>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <!-- New: WBC Panel with CSS Radio Tabs -->
+                    <div class="card analysis-card full-width">
+                        <input type="radio" name="wbc-tab" id="wbc-data" class="tab-radio" checked>
+                        <input type="radio" name="wbc-tab" id="wbc-science" class="tab-radio">
+                        <input type="radio" name="wbc-tab" id="wbc-action" class="tab-radio">
+
+                        <div class="card-header-flex">
+                            <h3>วิเคราะห์เจาะลึก: ระบบภูมิคุ้มกันและเม็ดเลือดขาว (CBC Diff)</h3>
+                            <span class="ai-badge">AI Visualized</span>
+                        </div>
+                        <div class="custom-tabs">
+                            <label for="wbc-data" class="tab-btn label-data">📊 ค่าตัวเลขของคุณ</label>
+                            <label for="wbc-science" class="tab-btn label-science">🔬 กองทัพภูมิคุ้มกัน</label>
+                            <label for="wbc-action" class="tab-btn label-action">🎯 แผนดูแลสุขภาพ</label>
+                        </div>
+
+                        <div class="tab-content content-data">
+                            <div class="lab-row">
+                                <div class="lab-info">
+                                    <h4>Neutrophil</h4>
+                                    <p>ทหารราบรบแบคทีเรีย</p>
+                                </div>
+                                <div class="lab-chart">
+                                    <div class="value-display">55 <span style="font-size: 1rem; color: var(--text-light);">%</span></div>
+                                    <div class="range-bar-container">
+                                        <div class="range-bar">
+                                            <div class="zone danger-zone" style="width: 40%"></div>
+                                            <div class="zone safe-zone" style="width: 35%"></div>
+                                            <div class="zone danger-zone" style="width: 25%"></div>
+                                            <div class="range-indicator" style="left: 55%;" data-value="55"></div>
+                                        </div>
+                                        <div class="range-labels"><span>0</span><span>40 - 75 (ปกติ)</span><span>100</span></div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="lab-row" style="margin-top: 16px;">
+                                <div class="lab-info">
+                                    <h4>Lymphocyte</h4>
+                                    <p>หน่วยข่าวกรองสู้ไวรัส</p>
+                                </div>
+                                <div class="lab-chart">
+                                    <div class="value-display">32 <span style="font-size: 1rem; color: var(--text-light);">%</span></div>
+                                    <div class="range-bar-container">
+                                        <div class="range-bar">
+                                            <div class="zone danger-zone" style="width: 20%"></div>
+                                            <div class="zone safe-zone" style="width: 30%"></div>
+                                            <div class="zone danger-zone" style="width: 50%"></div>
+                                            <div class="range-indicator" style="left: 32%;" data-value="32"></div>
+                                        </div>
+                                        <div class="range-labels"><span>0</span><span>20 - 50 (ปกติ)</span><span>100</span></div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="lab-row" style="margin-top: 16px;">
+                                <div class="lab-info">
+                                    <h4>Eosinophil</h4>
+                                    <p>หน่วยสู้ปรสิตและภูมิแพ้</p>
+                                </div>
+                                <div class="lab-chart">
+                                    <div class="value-display warning-text" style="color: var(--warning);">4 <span style="font-size: 1rem; color: var(--text-light);">%</span></div>
+                                    <div class="range-bar-container">
+                                        <div class="range-bar">
+                                            <div class="zone safe-zone" style="width: 20%"></div>
+                                            <div class="zone danger-zone" style="width: 80%"></div>
+                                            <div class="range-indicator" style="left: 20%;" data-value="4"></div>
+                                        </div>
+                                        <div class="range-labels"><span>0</span><span>1 - 3 (ปกติ)</span><span>100</span></div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="lab-row" style="margin-top: 16px;">
+                                <div class="lab-info">
+                                    <h4>Monocyte & Basophil</h4>
+                                    <p>เก็บกวาด & หลั่งฮิสตามีน</p>
+                                </div>
+                                <div class="lab-chart">
+                                    <div class="value-display">9 <span style="font-size: 1rem; color: var(--text-light);">% (รวม)</span></div>
+                                    <div class="range-bar-container">
+                                        <div class="range-bar">
+                                            <div class="zone safe-zone" style="width: 30%"></div>
+                                            <div class="zone danger-zone" style="width: 70%"></div>
+                                            <div class="range-indicator" style="left: 25%;" data-value="9"></div>
+                                        </div>
+                                        <div class="range-labels"><span>0</span><span>ต่ำกว่า 12 (ปกติ)</span><span>100</span></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="tab-content content-science">
+                            <div class="science-content">
+                                <div class="science-text">
+                                    <h4 style="margin-bottom: 12px; font-size: 1.1rem; color: var(--primary-dark);">Eosinophil ของคุณกำลังบอกอะไร?</h4>
+                                    <p style="margin-bottom: 16px; line-height: 1.6;">กองทัพเม็ดเลือดขาวของคุณส่วนใหญ่ทำงานปกติ แต่พบว่า <strong>Eosinophil สูงขึ้นเล็กน้อย (4%)</strong> ซึ่งเป็นหน่วยรบที่มักจะถูกส่งออกมาเมื่อร่างกายเจอ <em>ปรสิต หรือ สารก่อภูมิแพ้</em></p>
+                                    <div style="background: #fee2e2; color: #991b1b; padding: 16px; border-radius: 8px; border-left: 4px solid #ef4444;">
+                                        <strong>💡 ข้อสังเกตจาก AI:</strong> หากช่วงนี้คุณมีอาการคัดจมูก ไอแห้ง หรือผื่นคัน นี่คือหลักฐานว่าร่างกายกำลังต่อสู้กับ "ภาวะภูมิแพ้ฝุ่น" หรือสารก่อภูมิแพ้อย่างแข็งขัน!
+                                    </div>
+                                </div>
+                                <div class="science-visual">
+                                    <div class="immune-army-container">
+                                        <div class="wbc neutrophil">
+                                            <div class="wbc-nucleus multi-lobe"></div>
+                                            <span class="wbc-label">Neutrophil</span>
+                                        </div>
+                                        <div class="wbc lymphocyte">
+                                            <div class="wbc-nucleus large-round"></div>
+                                            <span class="wbc-label">Lymphocyte</span>
+                                        </div>
+                                        <div class="wbc eosinophil pulse-anim">
+                                            <div class="wbc-nucleus bi-lobe"></div>
+                                            <div class="granules"></div>
+                                            <span class="wbc-label alert-text">Eosinophil (Active!)</span>
+                                        </div>
+                                    </div>
+                                    <p style="text-align: center; margin-top: 16px; color: var(--text-light); font-size: 0.9rem;">จำลองกองทัพเซลล์เม็ดเลือดขาว (Immune Army)</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="tab-content content-action">
+                            <ul class="action-list">
+                                <li>
+                                    <div class="action-icon">💤</div>
+                                    <div class="action-text">
+                                        <strong>ปรับเวลานอน (Circadian Rhythm)</strong>
+                                        <p>นอนหลับให้ได้ 7-8 ชั่วโมงต่อวัน และพยายามนอนก่อนเที่ยงคืน เพื่อให้ร่างกายผลิตฮอร์โมนลดการอักเสบได้อย่างเต็มประสิทธิภาพ</p>
+                                    </div>
+                                </li>
+                                <li>
+                                    <div class="action-icon">☀️</div>
+                                    <div class="action-text">
+                                        <strong>เสริม Vitamin D3 และ Zinc</strong>
+                                        <p>แร่ธาตุและวิตามินเหล่านี้คือ "เสบียง" สำคัญที่ช่วยปรับสมดุลภูมิคุ้มกัน พิจารณารับแสงแดดอ่อนๆ ยามเช้า 15 นาทีเป็นประจำ</p>
+                                    </div>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <!-- Daily Action Plan -->
+                    <div class="card action-plan-card full-width">
+                        <div class="card-header-flex">
+                            <h3>🎯 เข็มทิศสุขภาพประจำวันของคุณ (Daily Action Plan)</h3>
+                            <span class="ai-badge" style="background: linear-gradient(135deg, #f59e0b, #d97706);">AI Personalized</span>
+                        </div>
+                        <div class="daily-plan-grid">
+                            <div class="plan-column morning">
+                                <div class="time-header">
+                                    <span class="time-icon">🌅</span>
+                                    <h4>ช่วงเช้า (Morning)</h4>
+                                </div>
+                                <div class="plan-content">
+                                    <strong>ข้าวโอ๊ต + ธัญพืช</strong>
+                                    <p>เลือกคาร์บเชิงซ้อนแทนข้าวขาว เพื่อช่วยลดไขมันเลว <em>(LDL 130 mg/dL)</em> ที่เริ่มสูงกว่าเกณฑ์เล็กน้อย</p>
+                                </div>
+                            </div>
+                            <div class="plan-column afternoon">
+                                <div class="time-header">
+                                    <span class="time-icon">☀️</span>
+                                    <h4>ช่วงบ่าย (Afternoon)</h4>
+                                </div>
+                                <div class="plan-content">
+                                    <strong>ดื่มน้ำ & ขยับร่างกาย</strong>
+                                    <p>พักสายตาทุก 1 ชั่วโมง และจิบน้ำเปล่าให้ครบ 1 ลิตรในบ่ายนี้ เพื่อให้ระบบไหลเวียนเลือดทำงานได้ดีขึ้น</p>
+                                </div>
+                            </div>
+                            <div class="plan-column evening">
+                                <div class="time-header">
+                                    <span class="time-icon">🌙</span>
+                                    <h4>ช่วงเย็น (Evening)</h4>
+                                </div>
+                                <div class="plan-content">
+                                    <strong>สลัดปลาแซลมอนเบาๆ</strong>
+                                    <p>มื้อเย็นควรเบาท้อง ช่วยเพิ่มไขมันดี (HDL) จากเนื้อปลา และลดภาระการทำงานของระบบเผาผลาญก่อนนอน</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- View 3: Trends -->
+            <section class="view-section" id="view-trends" style="display: none;">
+                <div class="card full-width">
+                    <div class="card-header-flex">
+                        <h3>📈 ประวัติผลตรวจ (History Trends)</h3>
+                        <div class="trend-controls">
+                            <select class="trend-select">
+                                <option>น้ำตาลในเลือด (FBS)</option>
+                                <option>คอเลสเตอรอลรวม</option>
+                                <option>ไตรกลีเซอไรด์</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div class="css-chart-container">
+                        <div class="y-axis">
+                            <span>120</span>
+                            <span>100</span>
+                            <span>80</span>
+                            <span>60</span>
+                        </div>
+                        <div class="chart-area">
+                            <div class="chart-fill-path"></div>
+                            <div class="chart-line-path"></div>
+                            
+                            <div class="data-point p1" style="left: 16.6%; top: 15%;">
+                                <div class="point-value">115</div>
+                            </div>
+                            <div class="data-point p2" style="left: 50%; top: 50%;">
+                                <div class="point-value">95</div>
+                            </div>
+                            <div class="data-point p3" style="left: 83.3%; top: 65%;">
+                                <div class="point-value">88</div>
+                            </div>
+                            
+                            <div class="x-axis">
+                                <span style="left: 16.6%;">ม.ค. 2023</span>
+                                <span style="left: 50%;">มิ.ย. 2023</span>
+                                <span style="left: 83.3%;">ธ.ค. 2023</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="ai-summary-box">
+                        <div class="ai-icon">🤖</div>
+                        <div class="ai-text">
+                            <strong>AI วิเคราะห์แนวโน้ม:</strong>
+                            <p>ค่าน้ำตาลของคุณมีแนวโน้ม <strong>ลดลงอย่างต่อเนื่องถึง 23%</strong> จากการตรวจเมื่อต้นปี (จาก 115 เหลือ 88 mg/dL) ทำดีมากครับ! การควบคุมอาหารและออกกำลังกายของคุณได้ผลลัพธ์ที่ยอดเยี่ยม</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <!-- Chatbot Popup -->
+    <input type="checkbox" id="chatbot-toggle" class="chatbot-checkbox">
+    <label for="chatbot-toggle" class="chatbot-fab">
+        <span class="fab-icon">🤖</span>
+    </label>
+
+    <div class="chatbot-window">
+        <div class="chat-header">
+            <div class="chat-title">
+                <span class="icon" style="margin-right: 8px;">✨</span> LabLink AI
+            </div>
+            <label for="chatbot-toggle" class="close-chat">✖</label>
+        </div>
+        <div class="chat-body">
+            <div class="message ai-message">
+                <p>สวัสดีครับ! ผม LabLink AI คุณสามารถสอบถามเกี่ยวกับผลแล็บ หรือวิธีดูแลสุขภาพเพิ่มเติมได้เลยครับ 😊</p>
+            </div>
+        </div>
+        <div class="chat-footer">
+            <input type="text" placeholder="พิมพ์คำถามของคุณ..." class="chat-input">
+            <button class="chat-send">➤</button>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/vanilla-tilt/1.8.0/vanilla-tilt.min.js"></script>
+    <script src="Script.js"></script>
+</body>
+</html>
