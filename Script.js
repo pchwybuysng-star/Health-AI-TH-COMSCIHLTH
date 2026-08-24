@@ -1,11 +1,14 @@
 // Script.js - Refactored for Stability & Interactive Enhancements
 
+let isAuthenticated = false;
+
 document.addEventListener('DOMContentLoaded', () => {
     initNavigation();
     initUploadSimulation();
     initChatbot();
     initThemeToggle();
     init3DTilt();
+    initExportPDF();
     
     // Set initial view
     const uploadNav = document.getElementById('nav-upload');
@@ -19,6 +22,12 @@ function initNavigation() {
         item.addEventListener('click', (e) => {
             e.preventDefault();
             const targetId = item.getAttribute('data-target');
+            
+            // Authentication Check
+            if (!isAuthenticated && targetId !== 'view-upload') {
+                alert("🔒 กรุณาอัปโหลดผลตรวจและยืนยันตัวตน เพื่อเข้าถึงข้อมูลสุขภาพ");
+                return;
+            }
             
             navItems.forEach(nav => nav.classList.remove('active'));
             item.classList.add('active');
@@ -47,14 +56,26 @@ function initNavigation() {
 // 2. Upload Simulation
 function initUploadSimulation() {
     const uploadBtn = document.getElementById('btn-upload');
+    const btnBackDashboard = document.getElementById('btn-back-dashboard');
+    const btnUploadNew = document.getElementById('btn-upload-new');
+    
+    // ID Verify elements
+    const verifyState = document.getElementById('upload-verify-state');
+    const btnVerifyId = document.getElementById('btn-verify-id');
+    const idInput = document.getElementById('id-card-input');
+    const verifyError = document.getElementById('verify-error-msg');
+    
     if (!uploadBtn) return;
 
     uploadBtn.addEventListener('click', () => {
         const loadingState = document.getElementById('loadingState');
         const scanningText = document.getElementById('scanningText');
+        const uploadInitial = document.getElementById('upload-initial-state');
+        const uploadSuccess = document.getElementById('upload-success-state');
         
-        uploadBtn.style.display = 'none';
+        if(uploadInitial) uploadInitial.style.display = 'none';
         if (loadingState) loadingState.style.display = 'block';
+        if (verifyState) verifyState.style.display = 'none';
 
         const texts = [
             "AI กำลังสกัดข้อมูล...",
@@ -73,19 +94,70 @@ function initUploadSimulation() {
 
         setTimeout(() => {
             clearInterval(textInterval);
+            if (scanningText) scanningText.textContent = texts[0];
             
-            const dashboardNav = document.getElementById('nav-dashboard');
-            if (dashboardNav) dashboardNav.click();
-
-            setTimeout(() => {
-                uploadBtn.style.display = 'inline-block';
-                if (loadingState) loadingState.style.display = 'none';
-                if (scanningText) scanningText.textContent = texts[0];
-            }, 500);
-
-            animateHealthScore();
+            // Show Verify State instead of jumping to dashboard
+            if (loadingState) loadingState.style.display = 'none';
+            if (verifyState) {
+                verifyState.style.display = 'block';
+                if(idInput) {
+                    idInput.value = '';
+                    if(verifyError) verifyError.style.display = 'none';
+                    idInput.focus();
+                }
+            }
         }, 3000);
     });
+
+    if (btnVerifyId && idInput) {
+        btnVerifyId.addEventListener('click', () => {
+            if (idInput.value === '0000000000000') {
+                if(verifyError) verifyError.style.display = 'none';
+                if(verifyState) verifyState.style.display = 'none';
+                
+                // Unlock UI
+                isAuthenticated = true;
+                const lockedNavs = document.querySelectorAll('.locked-nav');
+                lockedNavs.forEach(nav => nav.classList.remove('locked-nav'));
+                const chatbotFab = document.getElementById('chatbot-fab');
+                if (chatbotFab) chatbotFab.style.display = 'flex';
+                
+                const uploadSuccess = document.getElementById('upload-success-state');
+                if (uploadSuccess) uploadSuccess.style.display = 'block';
+                
+                // Navigate to Dashboard
+                const dashboardNav = document.getElementById('nav-dashboard');
+                if (dashboardNav) dashboardNav.click();
+
+                animateHealthScore();
+            } else {
+                if(verifyError) verifyError.style.display = 'block';
+            }
+        });
+        
+        // Allow pressing Enter to verify
+        idInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                btnVerifyId.click();
+            }
+        });
+    }
+
+    if (btnBackDashboard) {
+        btnBackDashboard.addEventListener('click', () => {
+            const dashboardNav = document.getElementById('nav-dashboard');
+            if (dashboardNav) dashboardNav.click();
+        });
+    }
+
+    if (btnUploadNew) {
+        btnUploadNew.addEventListener('click', () => {
+            const uploadInitial = document.getElementById('upload-initial-state');
+            const uploadSuccess = document.getElementById('upload-success-state');
+            if(uploadSuccess) uploadSuccess.style.display = 'none';
+            if(uploadInitial) uploadInitial.style.display = 'block';
+        });
+    }
 }
 
 // 3. Health Score Animation
@@ -193,11 +265,56 @@ function initThemeToggle() {
 // 6. 3D Tilt Effect Initialization
 function init3DTilt() {
     if (typeof VanillaTilt !== 'undefined') {
-        VanillaTilt.init(document.querySelectorAll(".score-card, .metric-card, .plan-column, .action-plan-card"), {
+        VanillaTilt.init(document.querySelectorAll(".score-card, .metric-card, .plan-column, .action-plan-card, .meal-card"), {
             max: 3,
             speed: 400,
             glare: true,
             "max-glare": 0.1,
         });
     }
+}
+
+// 7. Export PDF Logic
+function initExportPDF() {
+    const btnExport = document.getElementById('btn-export-pdf');
+    if (!btnExport) return;
+
+    btnExport.addEventListener('click', () => {
+        // Switch to dashboard view temporarily to capture it
+        const dashboardNav = document.getElementById('nav-dashboard');
+        if (dashboardNav) dashboardNav.click();
+
+        const originalText = btnExport.innerText;
+        btnExport.innerText = "กำลังสร้าง PDF...";
+        btnExport.disabled = true;
+
+        // Allow UI to render the dashboard before capturing
+        setTimeout(() => {
+            const element = document.getElementById('view-dashboard');
+            
+            const opt = {
+                margin:       [10, 10, 10, 10],
+                filename:     'LabLink-Health-Report.pdf',
+                image:        { type: 'jpeg', quality: 0.98 },
+                html2canvas:  { scale: 2, useCORS: true, logging: false },
+                jsPDF:        { unit: 'mm', format: 'a3', orientation: 'portrait' }
+            };
+
+            // Call html2pdf
+            if (typeof html2pdf !== 'undefined') {
+                html2pdf().set(opt).from(element).save().then(() => {
+                    // Reset button text
+                    const settingsNav = document.getElementById('nav-settings');
+                    if (settingsNav) settingsNav.click();
+                    
+                    btnExport.innerText = originalText;
+                    btnExport.disabled = false;
+                });
+            } else {
+                alert("ระบบไม่พบไลบรารีสำหรับสร้าง PDF กรุณาลองใหม่อีกครั้ง");
+                btnExport.innerText = originalText;
+                btnExport.disabled = false;
+            }
+        }, 500);
+    });
 }

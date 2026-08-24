@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="th">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -14,12 +15,14 @@
             opacity: 0;
             transform: translateY(10px);
         }
+        
         .view-section.active {
             opacity: 1;
             transform: translateY(0);
         }
     </style>
 </head>
+
 <body>
     <div class="app-container">
         <!-- Sidebar Navigation -->
@@ -31,15 +34,16 @@
                 <a href="#" class="nav-item active" id="nav-upload" data-target="view-upload">
                     <span class="icon">📄</span> อัปโหลดผลตรวจ
                 </a>
-                <a href="#" class="nav-item" id="nav-dashboard" data-target="view-dashboard">
+                <a href="#" class="nav-item locked-nav" id="nav-dashboard" data-target="view-dashboard">
                     <span class="icon">📊</span> แดชบอร์ดสุขภาพ
                 </a>
-                <a href="#" class="nav-item" id="nav-trends" data-target="view-trends">
+                <a href="#" class="nav-item locked-nav" id="nav-trends" data-target="view-trends">
                     <span class="icon">📈</span> ประวัติผลตรวจ
                 </a>
-                <a href="#" class="nav-item"><span class="icon">🧠</span> ปรึกษา AI แพทย์</a>
+                <a href="#" class="nav-item locked-nav"><span class="icon">🧠</span> ปรึกษา AI แพทย์</a>
+                <a href="#" class="nav-item locked-nav" id="nav-nutrition" data-target="view-nutrition"><span class="icon">🥗</span> โภชนาการบำบัด</a>
                 <a href="#" class="nav-item" id="theme-toggle"><span class="icon">🌙</span> โหมดกลางคืน</a>
-                <a href="#" class="nav-item"><span class="icon">⚙️</span> ตั้งค่า</a>
+                <a href="#" class="nav-item locked-nav" id="nav-settings" data-target="view-settings"><span class="icon">⚙️</span> ตั้งค่า</a>
             </nav>
             <div class="user-profile">
                 <div class="avatar">U</div>
@@ -65,15 +69,17 @@
             <!-- View 1: Upload -->
             <section class="view-section" id="view-upload" style="display: none;">
                 <div class="upload-box">
-                    <div class="upload-icon">📑</div>
-                    <h2>อัปโหลดผลตรวจสุขภาพของคุณ</h2>
-                    <p>รองรับไฟล์ PDF จากโรงพยาบาล, JPG, หรือ PNG<br>AI ของเราจะอ่านและแปลผลให้คุณภายใน 3 วินาที</p>
+                    <div id="upload-initial-state">
+                        <div class="upload-icon">📑</div>
+                        <h2>อัปโหลดผลตรวจสุขภาพของคุณ</h2>
+                        <p>รองรับไฟล์ PDF จากโรงพยาบาล, JPG, หรือ PNG<br>AI ของเราจะอ่านและแปลผลให้คุณภายใน 3 วินาที</p>
 
-                    <button class="btn-primary animate-pulse" id="btn-upload">
-                        คลิกเพื่อจำลองการอัปโหลดไฟล์
-                    </button>
-                    
-                    <div id="loadingState" class="processing-state">
+                        <button class="btn-primary animate-pulse" id="btn-upload">
+                            คลิกเพื่อจำลองการอัปโหลดไฟล์
+                        </button>
+                    </div>
+
+                    <div id="loadingState" class="processing-state" style="display: none;">
                         <div class="scanner-container">
                             <div class="mock-document">
                                 <div class="doc-line" style="width: 80%"></div>
@@ -86,7 +92,34 @@
                         </div>
                         <p class="scanning-text" id="scanningText">AI กำลังสกัดข้อมูล...</p>
                     </div>
-                    
+
+                    <div id="upload-verify-state" style="display: none; text-align: center; padding: 20px;">
+                        <div class="upload-icon" style="font-size: 3.5rem;">🔐</div>
+                        <h2>ยืนยันตัวตนเพื่อเข้าถึงข้อมูลสุขภาพ</h2>
+                        <p style="margin-bottom: 24px; color: var(--text-light);">กรุณากรอกเลขประจำตัวประชาชน 13 หลักเพื่อความปลอดภัยของข้อมูล</p>
+
+                        <div style="margin-bottom: 20px;">
+                            <input type="text" id="id-card-input" placeholder="0000000000000" maxlength="13" style="width: 100%; max-width: 300px; padding: 12px 16px; border: 2px solid var(--border); border-radius: 8px; font-size: 1.1rem; text-align: center; font-family: monospace; letter-spacing: 2px; outline: none;">
+                            <p id="verify-error-msg" style="color: var(--warning); margin-top: 8px; font-size: 0.9rem; display: none;">❌ รหัสไม่ถูกต้อง กรุณาลองใหม่</p>
+                        </div>
+
+                        <button class="btn-primary" id="btn-verify-id">
+                            ตรวจสอบและยืนยัน
+                        </button>
+                    </div>
+
+                    <div id="upload-success-state" style="display: none; text-align: center; padding: 20px;">
+                        <div class="upload-icon" style="color: var(--success); font-size: 4rem;">✅</div>
+                        <h2 style="color: var(--success);">สกัดข้อมูลสำเร็จ!</h2>
+                        <p style="margin-bottom: 24px;">LabLink AI ได้ทำการแปลผลแล็บของคุณและสร้างแดชบอร์ดสุขภาพเรียบร้อยแล้ว</p>
+                        <button class="btn-primary" id="btn-back-dashboard" style="background: var(--text-main); margin-right: 12px;">
+                            ⬅ กลับสู่แดชบอร์ด
+                        </button>
+                        <button class="btn-outline" id="btn-upload-new">
+                            อัปโหลดไฟล์ใหม่
+                        </button>
+                    </div>
+
                     <p class="secure-text" style="margin-top: 24px; color: var(--text-light); font-size: 0.9rem;">🔒 ข้อมูลของคุณถูกเข้ารหัสและเป็นความลับตามมาตรฐาน HIPAA</p>
                 </div>
             </section>
@@ -215,7 +248,7 @@
                                 <li>
                                     <div class="action-icon">🥦</div>
                                     <div class="action-text">
-                                        <strong>เพิ่มกลูต้าไธโอนตามธรรมชาติ</strong>
+                                        <strong>เพิ่มGSHตามธรรมชาติ</strong>
                                         <p>ตับของคุณทำงานได้ดีเยี่ยม! เสริมเกราะป้องกันด้วยการทาน บรอกโคลี หรือ กะหล่ำปลี 2 มื้อ/สัปดาห์</p>
                                     </div>
                                 </li>
@@ -245,7 +278,7 @@
                             <label for="lipid-science" class="tab-btn label-science">🔬 หลอดเลือดจำลอง</label>
                             <label for="lipid-action" class="tab-btn label-action">🎯 แผนดูแลสุขภาพ</label>
                         </div>
-                        
+
                         <div class="tab-content content-data">
                             <div class="lab-row">
                                 <div class="lab-info">
@@ -484,6 +517,321 @@
                         </div>
                     </div>
 
+                    <!-- RBC & Platelets Panel -->
+                    <div class="card analysis-card full-width">
+                        <input type="radio" name="rbc-tab" id="rbc-data" class="tab-radio" checked>
+                        <input type="radio" name="rbc-tab" id="rbc-science" class="tab-radio">
+                        <input type="radio" name="rbc-tab" id="rbc-action" class="tab-radio">
+
+                        <div class="card-header-flex">
+                            <h3>วิเคราะห์เจาะลึก: เม็ดเลือดแดงและเกล็ดเลือด (RBC & Platelet)</h3>
+                            <span class="ai-badge" style="background: #e11d48;">AI Blood Flow</span>
+                        </div>
+
+                        <div class="custom-tabs">
+                            <label for="rbc-data" class="tab-btn label-data">📊 ค่าตัวเลขของคุณ</label>
+                            <label for="rbc-science" class="tab-btn label-science">🔬 จำลองหลอดเลือด</label>
+                            <label for="rbc-action" class="tab-btn label-action">🎯 บำรุงเลือด</label>
+                        </div>
+
+                        <!-- DATA VIEW -->
+                        <div class="tab-content content-data" style="max-height: 420px; overflow-y: auto; padding-right: 8px;">
+
+                            <h4 style="color: #e11d48; margin-bottom: 12px; font-size: 1.1rem; border-bottom: 2px solid var(--border); padding-bottom: 4px;">🩸 เม็ดเลือดแดง (Red Blood Cells)</h4>
+
+                            <div class="lab-row">
+                                <div class="lab-info">
+                                    <h4>RBC Count</h4>
+                                    <p>จำนวนเม็ดเลือดแดง</p>
+                                </div>
+                                <div class="lab-chart">
+                                    <div class="value-display">4.8 <span style="font-size: 0.9rem; color: var(--text-light);">x10^6/uL</span></div>
+                                    <div class="range-bar-container">
+                                        <div class="range-bar">
+                                            <div class="zone danger-zone" style="width: 20%"></div>
+                                            <div class="zone safe-zone" style="width: 60%"></div>
+                                            <div class="zone warning-zone" style="width: 20%"></div>
+                                            <div class="range-indicator" style="left: 55%;" data-value="4.8"></div>
+                                        </div>
+                                        <div class="range-labels"><span>4.2 (จาง)</span><span>ปกติ</span><span>5.4 (ข้น)</span></div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="lab-row" style="margin-top: 12px;">
+                                <div class="lab-info">
+                                    <h4>Hemoglobin (Hb)</h4>
+                                    <p>โปรตีนลำเลียงออกซิเจน</p>
+                                </div>
+                                <div class="lab-chart">
+                                    <div class="value-display">13.5 <span style="font-size: 0.9rem; color: var(--text-light);">g/dL</span></div>
+                                    <div class="range-bar-container">
+                                        <div class="range-bar">
+                                            <div class="zone danger-zone" style="width: 25%"></div>
+                                            <div class="zone safe-zone" style="width: 75%"></div>
+                                            <div class="range-indicator" style="left: 45%;" data-value="13.5"></div>
+                                        </div>
+                                        <div class="range-labels"><span>12 (ซีด)</span><span>แข็งแรง</span><span>16</span></div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="lab-row" style="margin-top: 12px;">
+                                <div class="lab-info">
+                                    <h4>Hematocrit (Hct)</h4>
+                                    <p>ความเข้มข้นของเลือด</p>
+                                </div>
+                                <div class="lab-chart">
+                                    <div class="value-display">40 <span style="font-size: 0.9rem; color: var(--text-light);">%</span></div>
+                                    <div class="range-bar-container">
+                                        <div class="range-bar">
+                                            <div class="zone danger-zone" style="width: 20%"></div>
+                                            <div class="zone safe-zone" style="width: 60%"></div>
+                                            <div class="zone danger-zone" style="width: 20%"></div>
+                                            <div class="range-indicator" style="left: 50%;" data-value="40"></div>
+                                        </div>
+                                        <div class="range-labels"><span>36</span><span>สมดุลน้ำดี</span><span>48</span></div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- PLATELETS -->
+                            <h4 style="color: #6366f1; margin-top: 24px; margin-bottom: 12px; font-size: 1.1rem; border-bottom: 2px solid var(--border); padding-bottom: 4px;">🩹 เกล็ดเลือด (Platelets)</h4>
+
+                            <div class="lab-row">
+                                <div class="lab-info">
+                                    <h4>Platelet Count</h4>
+                                    <p>ตัวช่วยให้เลือดแข็งตัว</p>
+                                </div>
+                                <div class="lab-chart">
+                                    <div class="value-display">250 <span style="font-size: 0.9rem; color: var(--text-light);">x10^3/uL</span></div>
+                                    <div class="range-bar-container">
+                                        <div class="range-bar">
+                                            <div class="zone danger-zone" style="width: 15%"></div>
+                                            <div class="zone safe-zone" style="width: 70%"></div>
+                                            <div class="zone danger-zone" style="width: 15%"></div>
+                                            <div class="range-indicator" style="left: 60%;" data-value="250"></div>
+                                        </div>
+                                        <div class="range-labels"><span>150 (ต่ำ)</span><span>สมบูรณ์</span><span>400</span></div>
+                                    </div>
+                                </div>
+                            </div>
+
+                        </div>
+
+                        <!-- SCIENCE VIEW -->
+                        <div class="tab-content content-science">
+                            <div class="science-content">
+                                <div class="science-text">
+                                    <h4 style="margin-bottom: 12px; font-size: 1.1rem; color: var(--primary-dark);">การไหลเวียนและลำเลียงออกซิเจน</h4>
+                                    <p style="margin-bottom: 16px; line-height: 1.6;">ค่า <strong>Hb</strong> และ <strong>Hct</strong> ของคุณอยู่ในระดับที่ดีเยี่ยม! แสดงว่าเม็ดเลือดแดงของคุณมีปริมาณและคุณภาพที่เพียงพอในการอุ้มออกซิเจนไปหล่อเลี้ยงสมองและกล้ามเนื้อทั่วร่างกาย ทำให้คุณไม่รู้สึกอ่อนเพลียง่าย</p>
+                                </div>
+                                <div class="science-visual">
+                                    <!-- Blood Vessel Animation -->
+                                    <div class="blood-vessel">
+                                        <div class="blood-flow"></div>
+                                        <div class="rbc rbc1"></div>
+                                        <div class="rbc rbc2"></div>
+                                        <div class="rbc rbc3"></div>
+                                        <div class="rbc rbc4"></div>
+                                        <div class="platelet plt1"></div>
+                                        <div class="platelet plt2"></div>
+                                    </div>
+                                    <p style="text-align: center; margin-top: 16px; color: var(--text-light); font-size: 0.9rem;">จำลองการไหลเวียนของเม็ดเลือดแดง (แดง) และเกล็ดเลือด (ฟ้า) ในหลอดเลือด</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- ACTION VIEW -->
+                        <div class="tab-content content-action">
+                            <ul class="action-list">
+                                <li>
+                                    <div class="action-icon">🥩</div>
+                                    <div class="action-text">
+                                        <strong>รักษาระดับธาตุเหล็ก (Iron)</strong>
+                                        <p>ทานเนื้อแดงไขมันต่ำ เครื่องใน ตับ หรือผักโขม เพื่อเป็นวัตถุดิบในการสร้างฮีโมโกลบิน (Hb) อย่างต่อเนื่อง</p>
+                                    </div>
+                                </li>
+                                <li>
+                                    <div class="action-icon">🍋</div>
+                                    <div class="action-text">
+                                        <strong>คู่หูวิตามิน C (Vitamin C)</strong>
+                                        <p>ทานผลไม้รสเปรี้ยวคู่กับมื้ออาหาร จะช่วยเพิ่มการดูดซึมธาตุเหล็กจากพืช (Non-heme iron) ได้ดีขึ้นถึง 30%</p>
+                                    </div>
+                                </li>
+                                <li>
+                                    <div class="action-icon">💧</div>
+                                    <div class="action-text">
+                                        <strong>ควบคุมความหนืดของเลือด</strong>
+                                        <p>ดื่มน้ำให้เพียงพอ 2-2.5 ลิตรต่อวัน ป้องกันไม่ให้ค่า Hematocrit ข้นเกินไป ซึ่งอาจทำให้หัวใจทำงานหนัก</p>
+                                    </div>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <!-- Endocrine & Hormone Panel -->
+                    <div class="card analysis-card full-width">
+                        <input type="radio" name="hormone-tab" id="hormone-data" class="tab-radio" checked>
+                        <input type="radio" name="hormone-tab" id="hormone-science" class="tab-radio">
+                        <input type="radio" name="hormone-tab" id="hormone-action" class="tab-radio">
+
+                        <div class="card-header-flex">
+                            <h3>วิเคราะห์เจาะลึก: ระบบต่อมไร้ท่อและฮอร์โมน (Endocrine Panel)</h3>
+                            <span class="ai-badge" style="background: #8b5cf6;">AI Visualized</span>
+                        </div>
+
+                        <div class="custom-tabs">
+                            <label for="hormone-data" class="tab-btn label-data">📊 ค่าตัวเลขของคุณ</label>
+                            <label for="hormone-science" class="tab-btn label-science">🔬 จำลองต่อมหมวกไต</label>
+                            <label for="hormone-action" class="tab-btn label-action">🎯 แผนจัดการความเครียด</label>
+                        </div>
+
+                        <!-- DATA VIEW -->
+                        <div class="tab-content content-data" style="max-height: 420px; overflow-y: auto; padding-right: 8px;">
+
+                            <!-- THYROID -->
+                            <h4 style="color: var(--primary); margin-bottom: 12px; font-size: 1.1rem; border-bottom: 2px solid var(--border); padding-bottom: 4px;">🦋 ฮอร์โมนไทรอยด์ (Thyroid)</h4>
+
+                            <div class="lab-row">
+                                <div class="lab-info">
+                                    <h4>TSH</h4>
+                                    <p>ฮอร์โมนกระตุ้นไทรอยด์</p>
+                                </div>
+                                <div class="lab-chart">
+                                    <div class="value-display">2.1 <span style="font-size: 0.9rem; color: var(--text-light);">mIU/L</span></div>
+                                    <div class="range-bar-container">
+                                        <div class="range-bar">
+                                            <div class="zone danger-zone" style="width: 10%"></div>
+                                            <div class="zone safe-zone" style="width: 80%"></div>
+                                            <div class="zone danger-zone" style="width: 10%"></div>
+                                            <div class="range-indicator" style="left: 45%;" data-value="2.1"></div>
+                                        </div>
+                                        <div class="range-labels"><span>0.4 (Hypo)</span><span>สมดุล</span><span>4.0 (Hyper)</span></div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="lab-row" style="margin-top: 12px;">
+                                <div class="lab-info">
+                                    <h4>Free T3 & Free T4</h4>
+                                    <p>ระดับฮอร์โมนเผาผลาญ</p>
+                                </div>
+                                <div class="lab-chart">
+                                    <div class="value-display" style="color: var(--success);">ปกติ <span style="font-size: 0.9rem; color: var(--text-light);">Active</span></div>
+                                    <p style="font-size: 0.85rem; color: var(--text-light); text-align: right; margin-top: 4px;">ระบบเผาผลาญทำงานได้เต็มประสิทธิภาพ ไม่มีภาวะไทรอยด์แฝง</p>
+                                </div>
+                            </div>
+
+                            <!-- STRESS -->
+                            <h4 style="color: #ef4444; margin-top: 24px; margin-bottom: 12px; font-size: 1.1rem; border-bottom: 2px solid var(--border); padding-bottom: 4px;">⚡ ฮอร์โมนความเครียด (Adrenal)</h4>
+
+                            <div class="lab-row">
+                                <div class="lab-info">
+                                    <h4>Cortisol (AM)</h4>
+                                    <p>ฮอร์โมนตอบสนองความเครียด</p>
+                                </div>
+                                <div class="lab-chart">
+                                    <div class="value-display warning-text" style="color: var(--warning);">21.5 <span style="font-size: 0.9rem; color: var(--text-light);">mcg/dL</span></div>
+                                    <div class="range-bar-container">
+                                        <div class="range-bar">
+                                            <div class="zone danger-zone" style="width: 15%"></div>
+                                            <div class="zone safe-zone" style="width: 65%"></div>
+                                            <div class="zone warning-zone" style="width: 20%"></div>
+                                            <div class="range-indicator" style="left: 85%;" data-value="21.5"></div>
+                                        </div>
+                                        <div class="range-labels"><span>4.3</span><span>ปริ่มเกณฑ์สูง</span><span>22.4</span></div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="lab-row" style="margin-top: 12px;">
+                                <div class="lab-info">
+                                    <h4>ACTH</h4>
+                                    <p>คำสั่งจากสมองสู่ต่อมหมวกไต</p>
+                                </div>
+                                <div class="lab-chart">
+                                    <div class="value-display warning-text" style="color: var(--warning);">58 <span style="font-size: 0.9rem; color: var(--text-light);">pg/mL</span></div>
+                                    <div class="range-bar-container">
+                                        <div class="range-bar">
+                                            <div class="zone safe-zone" style="width: 75%"></div>
+                                            <div class="zone warning-zone" style="width: 25%"></div>
+                                            <div class="range-indicator" style="left: 80%;" data-value="58"></div>
+                                        </div>
+                                        <div class="range-labels"><span>9</span><span>เริ่มสูง</span><span>63</span></div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- REPRODUCTIVE -->
+                            <h4 style="color: #db2777; margin-top: 24px; margin-bottom: 12px; font-size: 1.1rem; border-bottom: 2px solid var(--border); padding-bottom: 4px;">🧬 ฮอร์โมนเพศและการเจริญพันธุ์</h4>
+
+                            <div class="lab-row">
+                                <div class="lab-info">
+                                    <h4>Testosterone & Estrogen</h4>
+                                    <p>ฮอร์โมนเพศหลัก</p>
+                                </div>
+                                <div class="lab-chart">
+                                    <div class="value-display" style="color: var(--success);">สมดุล <span style="font-size: 0.9rem; color: var(--text-light);">Balanced</span></div>
+                                </div>
+                            </div>
+
+                            <div class="lab-row" style="margin-top: 12px;">
+                                <div class="lab-info">
+                                    <h4>LH, FSH, Progesterone</h4>
+                                    <p>ระบบสืบพันธุ์และการตกไข่</p>
+                                </div>
+                                <div class="lab-chart">
+                                    <div class="value-display" style="color: var(--text-main);">อยู่ในเกณฑ์ปกติ</div>
+                                    <p style="font-size: 0.85rem; color: var(--text-light); text-align: right; margin-top: 4px;">ฮอร์โมนเพศทำงานสอดประสานกันดี ไม่มีภาวะแปรปรวน (PCOS)</p>
+                                </div>
+                            </div>
+
+                        </div>
+
+                        <!-- SCIENCE VIEW -->
+                        <div class="tab-content content-science">
+                            <div class="science-content">
+                                <div class="science-text">
+                                    <h4 style="margin-bottom: 12px; font-size: 1.1rem; color: var(--primary-dark);">ภาวะต่อมหมวกไตล้า (Adrenal Fatigue) หรือไม่?</h4>
+                                    <p style="margin-bottom: 16px; line-height: 1.6;">ค่า <strong>Cortisol</strong> และ <strong>ACTH</strong> ของคุณเริ่มสูงกว่าปกติ บ่งบอกว่าสมองกำลังสั่งการให้ต่อมหมวกไตหลั่งฮอร์โมนเพื่อรับมือกับ "ความเครียดสะสม" ตลอดเวลา</p>
+                                    <div style="background: #fef3c7; color: #b45309; padding: 16px; border-radius: 8px; border-left: 4px solid #f59e0b;">
+                                        <strong>⚠️ ผลกระทบแฝง:</strong> Cortisol ที่สูงอย่างต่อเนื่อง จะไปกดภูมิคุ้มกัน (สัมพันธ์กับเม็ดเลือดขาว) และไปกระตุ้นให้ตับผลิตน้ำตาลเพิ่ม
+                                    </div>
+                                </div>
+                                <div class="science-visual" style="display: flex; flex-direction: column; align-items: center;">
+                                    <div class="kidney-container">
+                                        <div class="kidney"></div>
+                                        <div class="adrenal-gland glowing-stress"></div>
+                                        <div class="stress-wave w1"></div>
+                                        <div class="stress-wave w2"></div>
+                                    </div>
+                                    <p style="text-align: center; margin-top: 16px; color: var(--text-light); font-size: 0.9rem;">จำลองต่อมหมวกไต (สีเหลือง) ที่กำลังทำงานหนัก</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- ACTION VIEW -->
+                        <div class="tab-content content-action">
+                            <ul class="action-list">
+                                <li>
+                                    <div class="action-icon">🧘‍♀️</div>
+                                    <div class="action-text">
+                                        <strong>ลดทอน Cortisol ทันที</strong>
+                                        <p>ฝึกหายใจแบบ 4-7-8 (เข้า 4 กลั้น 7 ออก 8) วันละ 10 นาที เพื่อสับสวิตช์ระบบประสาทจากโหมดสู้รบ (Sympathetic) เป็นโหมดพักผ่อน (Parasympathetic)</p>
+                                    </div>
+                                </li>
+                                <li>
+                                    <div class="action-icon">🍵</div>
+                                    <div class="action-text">
+                                        <strong>ปรับสมดุลด้วย Adaptogens</strong>
+                                        <p>พิจารณาชาสมุนไพรอย่าง คาโมมายล์ หรือโสมอินเดีย (Ashwagandha) ที่มีงานวิจัยรองรับว่าช่วยลดระดับ Cortisol ในเลือดได้จริง</p>
+                                    </div>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+
                     <!-- Daily Action Plan -->
                     <div class="card action-plan-card full-width">
                         <div class="card-header-flex">
@@ -539,7 +887,7 @@
                             </select>
                         </div>
                     </div>
-                    
+
                     <div class="css-chart-container">
                         <div class="y-axis">
                             <span>120</span>
@@ -550,7 +898,7 @@
                         <div class="chart-area">
                             <div class="chart-fill-path"></div>
                             <div class="chart-line-path"></div>
-                            
+
                             <div class="data-point p1" style="left: 16.6%; top: 15%;">
                                 <div class="point-value">115</div>
                             </div>
@@ -560,7 +908,7 @@
                             <div class="data-point p3" style="left: 83.3%; top: 65%;">
                                 <div class="point-value">88</div>
                             </div>
-                            
+
                             <div class="x-axis">
                                 <span style="left: 16.6%;">ม.ค. 2023</span>
                                 <span style="left: 50%;">มิ.ย. 2023</span>
@@ -568,7 +916,7 @@
                             </div>
                         </div>
                     </div>
-                    
+
                     <div class="ai-summary-box">
                         <div class="ai-icon">🤖</div>
                         <div class="ai-text">
@@ -578,12 +926,262 @@
                     </div>
                 </div>
             </section>
+            <!-- View 5: Nutrition -->
+            <section class="view-section" id="view-nutrition" style="display: none;">
+                <div class="nutrition-header" style="background: linear-gradient(135deg, #10b981, #059669); color: white; padding: 32px; border-radius: 16px; margin-bottom: 24px; box-shadow: 0 10px 25px rgba(16, 185, 129, 0.3);">
+                    <h2 style="font-size: 1.8rem; margin-bottom: 8px;">🥗 โภชนาการบำบัดเฉพาะบุคคล (AI Nutrition Therapy)</h2>
+                    <p style="font-size: 1.1rem; opacity: 0.9;">ปรับแต่งโภชนาการตามผลแล็บของคุณ: โฟกัสการลดไขมันเลว (LDL 130) และรักษาค่าตับ/น้ำตาลให้ดีเยี่ยม</p>
+                </div>
+
+                <div class="dashboard-grid" style="display: grid; grid-template-columns: 1fr 1.5fr; gap: 24px;">
+                    <!-- The Plate Method -->
+                    <div class="card glass-card">
+                        <div class="card-header-flex">
+                            <h3>🍽️ สัดส่วนจานอาหารของคุณ (MyPlate)</h3>
+                        </div>
+                        <div class="plate-container">
+                            <div class="plate-visual">
+                                <div class="plate-section veg">ผักสด/ต้ม (50%)</div>
+                                <div class="plate-section protein">โปรตีนดี (25%)</div>
+                                <div class="plate-section carb">คาร์บเชิงซ้อน (25%)</div>
+                            </div>
+                        </div>
+                        <p style="text-align: center; color: var(--text-main); margin-top: 20px; font-size: 0.95rem; line-height: 1.6;">
+                            เน้นผักใบเขียวครึ่งจาน เพื่อให้ไฟเบอร์ช่วยดักจับคอเลสเตอรอลในลำไส้ และลดการดูดซึมไขมันเลวเข้าสู่กระแสเลือด
+                        </p>
+                    </div>
+
+                    <!-- Macronutrients target -->
+                    <div class="card">
+                        <div class="card-header-flex">
+                            <h3>🎯 เป้าหมายสารอาหารต่อวัน (Macro Targets)</h3>
+                            <span class="ai-badge" style="background: #3b82f6;">AI Calculated</span>
+                        </div>
+                        <div class="macro-bars">
+                            <div class="macro-item">
+                                <div class="macro-label"><span>🔥 พลังงานรวม (Calories)</span> <span>1,800 kcal</span></div>
+                                <div class="macro-progress">
+                                    <div class="fill" style="width: 100%; background: #64748b;"></div>
+                                </div>
+                            </div>
+                            <div class="macro-item">
+                                <div class="macro-label"><span>🌾 คาร์โบไฮเดรต (Carbs)</span> <span>180g (40%)</span></div>
+                                <div class="macro-progress">
+                                    <div class="fill" style="width: 40%; background: #f59e0b;"></div>
+                                </div>
+                                <p class="macro-desc">เลือกคาร์บเชิงซ้อน เช่น ข้าวกล้อง, ควินัว, มันหวาน เพื่อคุมน้ำตาล FBS ให้อยู่ที่ 88 ต่อไป</p>
+                            </div>
+                            <div class="macro-item">
+                                <div class="macro-label"><span>🍗 โปรตีน (Protein)</span> <span>110g (25%)</span></div>
+                                <div class="macro-progress">
+                                    <div class="fill" style="width: 25%; background: #ef4444;"></div>
+                                </div>
+                                <p class="macro-desc">เน้นโปรตีนย่อยง่ายและไร้หนัง เช่น อกไก่, เต้าหู้, หรือปลาทะเลลึก</p>
+                            </div>
+                            <div class="macro-item">
+                                <div class="macro-label"><span>🥑 ไขมันดี (Fats)</span> <span>70g (35%)</span></div>
+                                <div class="macro-progress">
+                                    <div class="fill" style="width: 35%; background: #10b981;"></div>
+                                </div>
+                                <p class="macro-desc">เลือกไขมันดี (HDL Booster) เช่น น้ำมันมะกอกสกัดเย็น, อะโวคาโด, และถั่วอัลมอนด์</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 3-Day Meal Plan with CSS Tabs -->
+                    <div class="card analysis-card full-width">
+                        <input type="radio" name="meal-tab" id="meal-day1" class="tab-radio" checked>
+                        <input type="radio" name="meal-tab" id="meal-day2" class="tab-radio">
+                        <input type="radio" name="meal-tab" id="meal-day3" class="tab-radio">
+
+                        <div class="card-header-flex">
+                            <h3>📅 แผนอาหาร 3 วัน (AI Generated Meal Plan)</h3>
+                            <span class="ai-badge" style="background: var(--success); color: white;">Cholesterol Lowering</span>
+                        </div>
+
+                        <div class="custom-tabs">
+                            <label for="meal-day1" class="tab-btn label-day1">วันที่ 1 (ลดการอักเสบ)</label>
+                            <label for="meal-day2" class="tab-btn label-day2">วันที่ 2 (ล้างลำไส้)</label>
+                            <label for="meal-day3" class="tab-btn label-day3">วันที่ 3 (บูสต์ไขมันดี)</label>
+                        </div>
+
+                        <!-- Day 1 -->
+                        <div class="tab-content content-day1">
+                            <div class="meal-plan-grid">
+                                <div class="meal-card">
+                                    <div class="meal-time">มื้อเช้า (08:00)</div>
+                                    <h4 class="meal-name">ข้าวโอ๊ตข้ามคืน (Overnight Oats)</h4>
+                                    <p class="meal-desc">ข้าวโอ๊ต 1/2 ถ้วย, นมอัลมอนด์ไม่มีน้ำตาล, เมล็ดเจีย 1 ช้อนโต๊ะ, เบอร์รี่รวม</p>
+                                    <div class="meal-benefit">💡 ข้าวโอ๊ตมี Beta-glucan ช่วยดึง LDL ออกจากร่างกายได้ดีมาก</div>
+                                </div>
+                                <div class="meal-card">
+                                    <div class="meal-time">มื้อเที่ยง (12:30)</div>
+                                    <h4 class="meal-name">สลัดอกไก่น้ำมันมะกอก</h4>
+                                    <p class="meal-desc">ผักสลัดหลากสี (50% ของจาน), อกไก่ย่าง 150g, น้ำมันมะกอกสกัดเย็น 1 ช้อนโต๊ะ</p>
+                                    <div class="meal-benefit">💡 น้ำมันมะกอกอุดมไปด้วย MUFA ช่วยเพิ่มไขมันดี (HDL)</div>
+                                </div>
+                                <div class="meal-card">
+                                    <div class="meal-time">มื้อเย็น (18:30)</div>
+                                    <h4 class="meal-name">สเต็กปลาแซลมอนนึ่งมะนาว</h4>
+                                    <p class="meal-desc">แซลมอน 120g, บรอกโคลีลวก, ข้าวไรซ์เบอร์รี่ 1 ทัพพี</p>
+                                    <div class="meal-benefit">💡 แซลมอนมี Omega-3 ช่วยลดตะกรันไขมันและบำรุงหัวใจ</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Day 2 -->
+                        <div class="tab-content content-day2">
+                            <div class="meal-plan-grid">
+                                <div class="meal-card">
+                                    <div class="meal-time">มื้อเช้า (08:00)</div>
+                                    <h4 class="meal-name">ขนมปังโฮลวีตไข่ดาวน้ำ</h4>
+                                    <p class="meal-desc">ขนมปังโฮลวีต 2 แผ่น, ไข่ดาวน้ำ 2 ฟอง, อะโวคาโดครึ่งลูกปาดหน้า</p>
+                                    <div class="meal-benefit">💡 ไข่เป็นแหล่งโปรตีนชั้นเลิศ และอะโวคาโดเป็นซูเปอร์ฟู้ดสำหรับหลอดเลือด</div>
+                                </div>
+                                <div class="meal-card">
+                                    <div class="meal-time">มื้อเที่ยง (12:30)</div>
+                                    <h4 class="meal-name">แกงส้มปลาผักรวม (ไม่ใส่น้ำตาล)</h4>
+                                    <p class="meal-desc">แกงส้มเน้นผักกาดขาวและแครอท, เนื้อปลา, ข้าวกล้อง 2 ทัพพี</p>
+                                    <div class="meal-benefit">💡 ได้ไฟเบอร์สูงจากผักรวม ช่วยขับถ่ายและดักจับน้ำดีที่เกิดจากไขมัน</div>
+                                </div>
+                                <div class="meal-card">
+                                    <div class="meal-time">มื้อเย็น (18:30)</div>
+                                    <h4 class="meal-name">สลัดเต้าหู้ย่างสไตล์ญี่ปุ่น</h4>
+                                    <p class="meal-desc">เต้าหู้แข็งย่าง 150g, ผักโขมลวกงา, น้ำสลัดโชยุจางๆ</p>
+                                    <div class="meal-benefit">💡 เต้าหู้ช่วยคุมพลังงานมื้อเย็น และทำให้ตับไม่ต้องทำงานหนัก</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Day 3 -->
+                        <div class="tab-content content-day3">
+                            <div class="meal-plan-grid">
+                                <div class="meal-card">
+                                    <div class="meal-time">มื้อเช้า (08:00)</div>
+                                    <h4 class="meal-name">สมูทตี้ผักเคลและกล้วย</h4>
+                                    <p class="meal-desc">เคล 1 กำมือ, กล้วยหอม 1 ลูก, นมถั่วเหลืองจืด, โปรตีนพืช 1 ช้อน</p>
+                                    <div class="meal-benefit">💡 ผักเคลคือราชินีผักใบเขียว ช่วยปรับสมดุลภูมิคุ้มกัน (Eosinophil) ได้ดี</div>
+                                </div>
+                                <div class="meal-card">
+                                    <div class="meal-time">มื้อเที่ยง (12:30)</div>
+                                    <h4 class="meal-name">ข้าวต้มปลาข้าวกล้อง</h4>
+                                    <p class="meal-desc">ข้าวกล้องต้ม, ปลากะพง, ขึ้นฉ่ายเยอะๆ, โรยกระเทียมเจียว (น้ำมันน้อย)</p>
+                                    <div class="meal-benefit">💡 กระเทียมและขึ้นฉ่ายมีสรรพคุณช่วยคุมความดันโลหิตของคุณ (125/82)</div>
+                                </div>
+                                <div class="meal-card">
+                                    <div class="meal-time">มื้อเย็น (18:30)</div>
+                                    <h4 class="meal-name">ยำเห็ดรวม (รสไม่จัด)</h4>
+                                    <p class="meal-desc">เห็ดเข็มทอง, เห็ดออรินจิ, ไก่สับ, ลดเค็มลดโซเดียม</p>
+                                    <div class="meal-benefit">💡 เห็ดมีสาร Eritadenine ที่ได้รับการวิจัยว่าช่วยลด LDL ลงได้อย่างมีนัยสำคัญ</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Superfoods -->
+                    <div class="card full-width">
+                        <div class="card-header-flex">
+                            <h3>🌟 Superfoods แนะนำสำหรับคุณ</h3>
+                        </div>
+                        <div class="superfood-grid">
+                            <div class="superfood-item">
+                                <span class="sf-icon">🥑</span>
+                                <h4>อะโวคาโด</h4>
+                                <p style="font-size: 0.9rem; color: var(--text-light); margin-top: 8px;">อุดมด้วยไขมันดี เพิ่ม HDL ให้หลอดเลือดสะอาด</p>
+                            </div>
+                            <div class="superfood-item">
+                                <span class="sf-icon">🧄</span>
+                                <h4>กระเทียม</h4>
+                                <p style="font-size: 0.9rem; color: var(--text-light); margin-top: 8px;">มีสาร Allicin ช่วยควบคุมความดันโลหิต 125/82 ของคุณ</p>
+                            </div>
+                            <div class="superfood-item">
+                                <span class="sf-icon">🍵</span>
+                                <h4>ชาเขียว (ไม่หวาน)</h4>
+                                <p style="font-size: 0.9rem; color: var(--text-light); margin-top: 8px;">สาร EGCG สู้กับการเกิดตะกรันไขมัน (Plaque)</p>
+                            </div>
+                            <div class="superfood-item">
+                                <span class="sf-icon">🍄</span>
+                                <h4>เห็ดหอม / เห็ดรวม</h4>
+                                <p style="font-size: 0.9rem; color: var(--text-light); margin-top: 8px;">มีสาร Eritadenine ช่วยยับยั้งการสร้างคอเลสเตอรอล</p>
+                            </div>
+                            <div class="superfood-item">
+                                <span class="sf-icon">🫐</span>
+                                <h4>ผลไม้ตระกูลเบอร์รี่</h4>
+                                <p style="font-size: 0.9rem; color: var(--text-light); margin-top: 8px;">อุดมด้วย Antioxidant ช่วยฟื้นฟูเม็ดเลือดขาว (WBC)</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- View 4: Settings -->
+            <section class="view-section" id="view-settings" style="display: none;">
+                <div class="card full-width">
+                    <div class="card-header-flex">
+                        <h3>⚙️ ตั้งค่าระบบ (Settings)</h3>
+                    </div>
+
+                    <div class="settings-grid">
+                        <div class="setting-group">
+                            <h4>บัญชีผู้ใช้</h4>
+                            <div class="setting-item">
+                                <div>
+                                    <strong>ชื่อผู้ใช้</strong>
+                                    <p class="text-sm">ผู้ใช้งานทดสอบ (Premium)</p>
+                                </div>
+                                <button class="btn-outline">แก้ไข</button>
+                            </div>
+                            <div class="setting-item">
+                                <div>
+                                    <strong>อีเมล</strong>
+                                    <p class="text-sm">user@lablink.test</p>
+                                </div>
+                                <button class="btn-outline">แก้ไข</button>
+                            </div>
+                        </div>
+
+                        <div class="setting-group">
+                            <h4>การแจ้งเตือน</h4>
+                            <div class="setting-item">
+                                <div>
+                                    <strong>แจ้งเตือนตารางสุขภาพ</strong>
+                                    <p class="text-sm">รับการแจ้งเตือนดื่มน้ำ, ทานยา, เวลานอน</p>
+                                </div>
+                                <label class="switch">
+                                    <input type="checkbox" checked>
+                                    <span class="slider round"></span>
+                                </label>
+                            </div>
+                            <div class="setting-item">
+                                <div>
+                                    <strong>อัปเดตผลแล็บผ่านอีเมล</strong>
+                                </div>
+                                <label class="switch">
+                                    <input type="checkbox">
+                                    <span class="slider round"></span>
+                                </label>
+                            </div>
+                        </div>
+
+                        <div class="setting-group">
+                            <h4>จัดการข้อมูล</h4>
+                            <div class="setting-item">
+                                <div>
+                                    <strong>ส่งออกข้อมูลสุขภาพ (Export Data)</strong>
+                                    <p class="text-sm">ดาวน์โหลดผลแล็บทั้งหมดเป็น PDF</p>
+                                </div>
+                                <button class="btn-primary" id="btn-export-pdf" style="padding: 8px 16px;">ดาวน์โหลด</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
         </main>
     </div>
 
     <!-- Chatbot Popup -->
     <input type="checkbox" id="chatbot-toggle" class="chatbot-checkbox">
-    <label for="chatbot-toggle" class="chatbot-fab">
+    <label for="chatbot-toggle" class="chatbot-fab" id="chatbot-fab" style="display: none;">
         <span class="fab-icon">🤖</span>
     </label>
 
@@ -607,6 +1205,8 @@
 
     <!-- Scripts -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/vanilla-tilt/1.8.0/vanilla-tilt.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     <script src="Script.js"></script>
 </body>
+
 </html>

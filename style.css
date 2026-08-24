@@ -250,13 +250,9 @@ body {
    ========================================= */
 
 .dashboard-grid {
-    display: none;
+    display: grid;
     grid-template-columns: 1fr 2fr;
     gap: 24px;
-}
-
-.dashboard-grid.active {
-    display: grid;
     animation: slideUp 0.6s ease;
 }
 
@@ -266,6 +262,10 @@ body {
     padding: 24px;
     box-shadow: var(--shadow-sm);
     border: 1px solid rgba(255, 255, 255, 0.8);
+}
+
+.full-width {
+    grid-column: 1 / -1;
 }
 
 .glass-card {
@@ -1260,7 +1260,16 @@ body {
 #lipid-action:checked ~ .custom-tabs .label-action,
 #wbc-data:checked ~ .custom-tabs .label-data,
 #wbc-science:checked ~ .custom-tabs .label-science,
-#wbc-action:checked ~ .custom-tabs .label-action {
+#wbc-action:checked ~ .custom-tabs .label-action,
+#hormone-data:checked ~ .custom-tabs .label-data,
+#hormone-science:checked ~ .custom-tabs .label-science,
+#hormone-action:checked ~ .custom-tabs .label-action,
+#rbc-data:checked ~ .custom-tabs .label-data,
+#rbc-science:checked ~ .custom-tabs .label-science,
+#rbc-action:checked ~ .custom-tabs .label-action,
+#meal-day1:checked ~ .custom-tabs .label-day1,
+#meal-day2:checked ~ .custom-tabs .label-day2,
+#meal-day3:checked ~ .custom-tabs .label-day3 {
     background-color: var(--primary);
     color: white;
     border-color: var(--primary);
@@ -1287,7 +1296,16 @@ body {
 #lipid-action:checked ~ .content-action,
 #wbc-data:checked ~ .content-data,
 #wbc-science:checked ~ .content-science,
-#wbc-action:checked ~ .content-action {
+#wbc-action:checked ~ .content-action,
+#hormone-data:checked ~ .content-data,
+#hormone-science:checked ~ .content-science,
+#hormone-action:checked ~ .content-action,
+#rbc-data:checked ~ .content-data,
+#rbc-science:checked ~ .content-science,
+#rbc-action:checked ~ .content-action,
+#meal-day1:checked ~ .content-day1,
+#meal-day2:checked ~ .content-day2,
+#meal-day3:checked ~ .content-day3 {
     display: block;
 }
 
@@ -1390,3 +1408,449 @@ body {
 .alert-text {
     color: #ef4444;
 }
+
+/* =========================================
+   Authentication Lock State
+   ========================================= */
+.nav-item.locked-nav {
+    opacity: 0.5;
+    cursor: not-allowed;
+    position: relative;
+}
+.nav-item.locked-nav::after {
+    content: '🔒';
+    position: absolute;
+    right: 15px;
+    font-size: 0.8rem;
+}
+
+/* =========================================
+   Settings View
+   ========================================= */
+.settings-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+    margin-top: 16px;
+}
+
+.setting-group {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 20px;
+}
+
+.setting-group h4 {
+    margin-bottom: 16px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid var(--border);
+    color: var(--primary-dark);
+}
+
+.setting-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 0;
+}
+
+.setting-item:not(:last-child) {
+    border-bottom: 1px dashed var(--border);
+}
+
+.text-sm {
+    font-size: 0.85rem;
+    color: var(--text-light);
+    margin-top: 4px;
+}
+
+.btn-outline {
+    padding: 6px 16px;
+    border: 1px solid var(--primary);
+    background: transparent;
+    color: var(--primary);
+    border-radius: 20px;
+    cursor: pointer;
+    font-weight: 600;
+    transition: all 0.2s;
+}
+
+.btn-outline:hover {
+    background: var(--primary);
+    color: white;
+}
+
+/* Toggle Switch CSS */
+.switch {
+    position: relative;
+    display: inline-block;
+    width: 46px;
+    height: 24px;
+}
+
+.switch input { 
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+.slider {
+    position: absolute;
+    cursor: pointer;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: #ccc;
+    transition: .4s;
+}
+
+.slider:before {
+    position: absolute;
+    content: "";
+    height: 18px;
+    width: 18px;
+    left: 3px;
+    bottom: 3px;
+    background-color: white;
+    transition: .4s;
+}
+
+input:checked + .slider {
+    background-color: var(--primary);
+}
+
+input:focus + .slider {
+    box-shadow: 0 0 1px var(--primary);
+}
+
+input:checked + .slider:before {
+    transform: translateX(22px);
+}
+
+.slider.round {
+    border-radius: 24px;
+}
+
+.slider.round:before {
+    border-radius: 50%;
+}
+
+/* =========================================
+   Nutrition View CSS
+   ========================================= */
+.plate-container {
+    display: flex;
+    justify-content: center;
+    margin-top: 24px;
+}
+
+.plate-visual {
+    width: 220px;
+    height: 220px;
+    border-radius: 50%;
+    background: #e2e8f0;
+    position: relative;
+    overflow: hidden;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.1), inset 0 2px 10px rgba(255,255,255,0.8);
+    border: 8px solid white;
+}
+
+.plate-section {
+    position: absolute;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 0.85rem;
+    font-weight: 700;
+    text-align: center;
+    padding: 10px;
+}
+
+.plate-section.veg {
+    top: 0; left: 0; width: 50%; height: 100%;
+    background: #10b981;
+}
+
+.plate-section.protein {
+    top: 0; right: 0; width: 50%; height: 50%;
+    background: #f43f5e;
+}
+
+.plate-section.carb {
+    bottom: 0; right: 0; width: 50%; height: 50%;
+    background: #f59e0b;
+}
+
+.macro-bars {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    margin-top: 20px;
+}
+
+.macro-item .macro-label {
+    display: flex;
+    justify-content: space-between;
+    font-weight: 600;
+    font-size: 0.95rem;
+    margin-bottom: 8px;
+    color: var(--text-main);
+}
+
+.macro-progress {
+    height: 12px;
+    background: var(--bg-main);
+    border-radius: 10px;
+    overflow: hidden;
+    box-shadow: inset 0 1px 3px rgba(0,0,0,0.1);
+}
+
+.macro-progress .fill {
+    height: 100%;
+    border-radius: 10px;
+}
+
+.macro-desc {
+    font-size: 0.85rem;
+    color: var(--text-light);
+    margin-top: 6px;
+}
+
+.meal-plan-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: 20px;
+    margin-top: 16px;
+}
+
+.meal-card {
+    background: var(--bg-main);
+    padding: 24px;
+    border-radius: 12px;
+    border: 1px solid var(--border);
+    transition: transform 0.3s ease;
+}
+
+.meal-card:hover {
+    transform: translateY(-5px);
+    box-shadow: var(--shadow-sm);
+}
+
+.meal-time {
+    display: inline-block;
+    background: #dbeafe;
+    color: #1e40af;
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    font-weight: 700;
+    margin-bottom: 12px;
+}
+
+.meal-name {
+    font-size: 1.15rem;
+    color: var(--text-main);
+    margin-bottom: 8px;
+    font-weight: 700;
+}
+
+.meal-desc {
+    font-size: 0.9rem;
+    color: var(--text-light);
+    line-height: 1.5;
+    margin-bottom: 16px;
+}
+
+.meal-benefit {
+    background: rgba(16, 185, 129, 0.1);
+    padding: 12px;
+    border-radius: 8px;
+    font-size: 0.85rem;
+    color: #047857;
+    border-left: 4px solid #10b981;
+}
+
+.superfood-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 20px;
+    margin-top: 24px;
+}
+
+.superfood-item {
+    background: var(--bg-main);
+    padding: 24px 16px;
+    border-radius: 12px;
+    text-align: center;
+    border: 1px solid var(--border);
+    transition: transform 0.2s;
+}
+
+.superfood-item:hover {
+    transform: translateY(-3px);
+    box-shadow: var(--shadow-sm);
+}
+
+.sf-icon {
+    font-size: 3rem;
+    display: block;
+    margin-bottom: 16px;
+}
+
+/* =========================================
+   Endocrine & Adrenal CSS Visualization
+   ========================================= */
+.kidney-container {
+    position: relative;
+    width: 120px;
+    height: 160px;
+    margin: 20px auto 0;
+    display: flex;
+    justify-content: center;
+}
+
+.kidney {
+    position: absolute;
+    bottom: 10px;
+    width: 100px;
+    height: 130px;
+    background: #991b1b;
+    border-radius: 50% 50% 50% 50% / 60% 60% 40% 40%;
+    border-right: 15px solid #7f1d1d;
+    transform: rotate(15deg);
+    box-shadow: inset -10px -10px 20px rgba(0,0,0,0.3);
+}
+
+.adrenal-gland {
+    position: absolute;
+    top: 0;
+    right: 15px;
+    width: 60px;
+    height: 40px;
+    background: #fbbf24;
+    border-radius: 50% 50% 40% 60% / 60% 50% 50% 40%;
+    transform: rotate(10deg);
+    z-index: 2;
+    box-shadow: inset -5px -5px 10px #d97706;
+}
+
+.glowing-stress {
+    animation: stressGlow 1.5s infinite alternate;
+}
+
+@keyframes stressGlow {
+    0% { box-shadow: inset -5px -5px 10px #d97706, 0 0 10px rgba(245, 158, 11, 0.4); background: #fbbf24; }
+    100% { box-shadow: inset -5px -5px 10px #b45309, 0 0 25px rgba(239, 68, 68, 0.8); background: #f59e0b; }
+}
+
+.stress-wave {
+    position: absolute;
+    top: -10px;
+    right: 25px;
+    width: 40px;
+    height: 20px;
+    border: 2px solid #ef4444;
+    border-radius: 50%;
+    opacity: 0;
+    z-index: 1;
+}
+
+.stress-wave.w1 {
+    animation: emitWave 2s infinite;
+}
+
+.stress-wave.w2 {
+    animation: emitWave 2s infinite 1s;
+}
+
+@keyframes emitWave {
+    0% { transform: scale(1) translateY(0); opacity: 0.8; }
+    100% { transform: scale(3) translateY(-20px); opacity: 0; }
+}
+
+/* =========================================
+   Blood Vessel & RBC Animation
+   ========================================= */
+.blood-vessel {
+    position: relative;
+    width: 100%;
+    height: 120px;
+    background: linear-gradient(to bottom, #fee2e2, #fecaca, #fee2e2);
+    border-top: 4px solid #fca5a5;
+    border-bottom: 4px solid #fca5a5;
+    border-radius: 8px;
+    overflow: hidden;
+    margin-top: 16px;
+    box-shadow: inset 0 0 20px rgba(225, 29, 72, 0.2);
+}
+
+.blood-flow {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 200%;
+    height: 100%;
+    background: repeating-linear-gradient(90deg, transparent, transparent 50px, rgba(225, 29, 72, 0.05) 50px, rgba(225, 29, 72, 0.05) 100px);
+    animation: flow 10s linear infinite;
+}
+
+.rbc {
+    position: absolute;
+    width: 40px;
+    height: 40px;
+    background: radial-gradient(circle at 30% 30%, #ef4444, #991b1b);
+    border-radius: 50%;
+    box-shadow: inset 0 0 10px #7f1d1d, 2px 4px 6px rgba(0,0,0,0.2);
+}
+
+.rbc::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 20px;
+    height: 20px;
+    background: rgba(127, 29, 29, 0.4);
+    border-radius: 50%;
+    filter: blur(2px);
+}
+
+.platelet {
+    position: absolute;
+    width: 12px;
+    height: 12px;
+    background: #60a5fa;
+    border-radius: 40% 60% 70% 30%;
+    box-shadow: 1px 2px 4px rgba(0,0,0,0.2);
+}
+
+/* Animations */
+@keyframes flow {
+    0% { transform: translateX(0); }
+    100% { transform: translateX(-50%); }
+}
+
+@keyframes swimRBC {
+    0% { transform: translateX(-50px) translateY(0) rotate(0deg) scale(1); }
+    33% { transform: translateX(100px) translateY(-10px) rotate(45deg) scale(1.1); }
+    66% { transform: translateX(250px) translateY(10px) rotate(90deg) scale(0.9); }
+    100% { transform: translateX(400px) translateY(0) rotate(180deg) scale(1); }
+}
+
+@keyframes swimPlatelet {
+    0% { transform: translateX(-20px) translateY(0) rotate(0deg); }
+    50% { transform: translateX(180px) translateY(20px) rotate(180deg); }
+    100% { transform: translateX(400px) translateY(-10px) rotate(360deg); }
+}
+
+.rbc1 { top: 20px; animation: swimRBC 4s infinite linear; }
+.rbc2 { top: 60px; animation: swimRBC 5s infinite linear 1.2s; }
+.rbc3 { top: 30px; animation: swimRBC 4.5s infinite linear 2.5s; }
+.rbc4 { top: 70px; animation: swimRBC 3.8s infinite linear 0.7s; }
+
+.plt1 { top: 40px; animation: swimPlatelet 3s infinite linear 0.5s; }
+.plt2 { top: 80px; animation: swimPlatelet 3.5s infinite linear 1.8s; }
