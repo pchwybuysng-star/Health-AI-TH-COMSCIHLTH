@@ -999,7 +999,7 @@
                 </div>
 
                 <!-- Top Row Charts: Lipid (Line) & Sugar (Bar) -->
-                <div class="dashboard-grid" style="grid-template-columns: 2fr 1fr; gap: 24px; margin-bottom: 24px;" id="trend-charts-top">
+                <div class="dashboard-grid" style="gap: 24px; margin-bottom: 24px;" id="trend-charts-top">
                     <div class="card" style="padding: 24px; box-shadow: var(--shadow-md);">
                         <h3 style="display: flex; justify-content: space-between;">
                             <span>🩸 แนวโน้มไขมันในเลือด (Lipid Profile)</span>
@@ -1022,7 +1022,7 @@
                 </div>
 
                 <!-- Bottom Row Charts: Liver (Line Fill), CBC (Doughnut), Hormones (Radar) -->
-                <div class="dashboard-grid" style="grid-template-columns: 1fr 1fr 1fr; gap: 24px; margin-bottom: 24px;" id="trend-charts-bottom">
+                <div class="dashboard-grid" style="gap: 24px; margin-bottom: 24px;" id="trend-charts-bottom">
                     <div class="card" style="padding: 20px; box-shadow: var(--shadow-sm);">
                         <h3 style="font-size: 1.1rem; margin-bottom: 16px;">🥦 การทำงานของตับ</h3>
                         <div style="position: relative; height: 220px; width: 100%;">
@@ -1045,20 +1045,56 @@
                     </div>
                 </div>
                 
-                <!-- Bottom Grid: Overall AI Analysis -->
-                <div class="card" style="background: linear-gradient(to right bottom, #ffffff, #f8fafc); border: 1px solid var(--border); box-shadow: var(--shadow-sm);" id="trend-ai-summary">
-                    <h3 style="display: flex; align-items: center; gap: 8px;">
-                        <span style="font-size: 1.5rem;">🧠</span> Holistic AI Health Summary (วิเคราะห์ภาพรวม)
-                    </h3>
-                    <p style="color: var(--text-main); margin-top: 16px; line-height: 1.8; font-size: 1.05rem;">
-                        ภาพรวมสุขภาพของคุณในรอบ 6 เดือน <strong style="color: var(--success);">อยู่ในทิศทางที่ยอดเยี่ยมมาก!</strong> ค่าไขมันเลว (LDL) และค่าตับ (ALT) ลดลงอย่างต่อเนื่อง ซึ่งสอดคล้องกัน เป็นสัญญาณว่าการลดอาหารทอดและการออกกำลังกายของคุณประสบความสำเร็จ ระบบภูมิคุ้มกัน (เม็ดเลือดขาว) อยู่ในเกณฑ์สมดุล ไม่พบภาวะติดเชื้อหรือภูมิแพ้แอบแฝง สมดุลฮอร์โมนความเครียด (Cortisol) อยู่ในระดับปกติ
-                    </p>
-                    <div style="margin-top: 20px; padding: 16px; background: #eff6ff; border-radius: 8px; border-left: 4px solid var(--primary); display: flex; gap: 16px; align-items: flex-start;">
-                        <div style="font-size: 1.5rem;">🎯</div>
-                        <div>
-                            <strong style="color: var(--primary-dark); display: block; margin-bottom: 4px;">Next Action Plan (เป้าหมายต่อไป):</strong>
-                            <span style="font-size: 0.95rem; color: var(--text-main); line-height: 1.6;">ดันค่า HDL (ไขมันดี) ให้แตะ 60 mg/dL โดยเพิ่มการทานไขมันดี เช่น อะโวคาโด, ถั่วอัลมอนด์, หรือปลาแซลมอน สัปดาห์ละ 2-3 ครั้ง และรักษาระดับน้ำตาลให้คงที่แบบนี้ต่อไป</span>
+                <!-- Bottom Grid: AI Analysis & Data Table -->
+                <div class="dashboard-grid" style="gap: 24px;">
+                    <!-- AI Summary -->
+                    <div class="card" style="background: linear-gradient(to right bottom, #ffffff, #f8fafc); border: 1px solid var(--border); box-shadow: var(--shadow-sm);" id="trend-ai-summary">
+                        <h3 style="display: flex; align-items: center; gap: 8px;">
+                            <span style="font-size: 1.5rem;">🧠</span> Holistic AI Health Summary
+                        </h3>
+                        <p style="color: var(--text-main); margin-top: 16px; line-height: 1.8; font-size: 1.05rem;">
+                            ภาพรวมสุขภาพของคุณในรอบ 6 เดือน <strong style="color: var(--success);">อยู่ในทิศทางที่ยอดเยี่ยมมาก!</strong> ค่าไขมันเลว (LDL) และค่าตับ (ALT) ลดลงอย่างต่อเนื่อง ซึ่งสอดคล้องกัน เป็นสัญญาณว่าการลดอาหารทอดและการออกกำลังกายของคุณประสบความสำเร็จ
+                        </p>
+                        <div style="margin-top: 20px; padding: 16px; background: #eff6ff; border-radius: 8px; border-left: 4px solid var(--primary); display: flex; gap: 16px; align-items: flex-start;">
+                            <div style="font-size: 1.5rem;">🎯</div>
+                            <div>
+                                <strong style="color: var(--primary-dark); display: block; margin-bottom: 4px;">Next Action Plan:</strong>
+                                <span style="font-size: 0.95rem; color: var(--text-main); line-height: 1.6;">ดันค่า HDL (ไขมันดี) ให้แตะ 60 mg/dL โดยเพิ่มการทานไขมันดี เช่น อะโวคาโด, ถั่วอัลมอนด์, หรือปลาแซลมอน สัปดาห์ละ 2-3 ครั้ง</span>
+                            </div>
                         </div>
+                    </div>
+
+                    <!-- Historical Data Table -->
+                    <div class="card" style="padding: 0; overflow: hidden; box-shadow: var(--shadow-sm);">
+                        <div style="padding: 20px; border-bottom: 1px solid var(--border); background: #f8fafc;">
+                            <h3 style="margin: 0; font-size: 1.1rem; color: var(--text-main);">📊 ข้อมูลดิบย้อนหลัง (Raw Data)</h3>
+                        </div>
+                        <table style="width: 100%; border-collapse: collapse; text-align: left;">
+                            <thead>
+                                <tr style="background: #f1f5f9; color: var(--text-light); font-size: 0.9rem;">
+                                    <th style="padding: 12px 20px;">เดือน</th>
+                                    <th style="padding: 12px 20px;">LDL (ไขมันเลว)</th>
+                                    <th style="padding: 12px 20px;">FBS (น้ำตาล)</th>
+                                </tr>
+                            </thead>
+                            <tbody style="font-size: 0.95rem;">
+                                <tr style="border-bottom: 1px solid var(--border);">
+                                    <td style="padding: 12px 20px;">มิ.ย. (ปัจจุบัน)</td>
+                                    <td style="padding: 12px 20px; font-weight: bold;">130 <span style="color: var(--warning); font-size: 0.8rem;">🟡 ปริ่มเกณฑ์</span></td>
+                                    <td style="padding: 12px 20px; font-weight: bold;">88 <span style="color: var(--success); font-size: 0.8rem;">🟢 ปกติ</span></td>
+                                </tr>
+                                <tr style="border-bottom: 1px solid var(--border);">
+                                    <td style="padding: 12px 20px;">พ.ค.</td>
+                                    <td style="padding: 12px 20px; font-weight: bold;">135 <span style="color: var(--warning); font-size: 0.8rem;">🟡 ปริ่มเกณฑ์</span></td>
+                                    <td style="padding: 12px 20px; font-weight: bold;">89 <span style="color: var(--success); font-size: 0.8rem;">🟢 ปกติ</span></td>
+                                </tr>
+                                <tr>
+                                    <td style="padding: 12px 20px;">เม.ย.</td>
+                                    <td style="padding: 12px 20px; font-weight: bold;">140 <span style="color: var(--danger); font-size: 0.8rem;">🔴 สูง</span></td>
+                                    <td style="padding: 12px 20px; font-weight: bold;">90 <span style="color: var(--success); font-size: 0.8rem;">🟢 ปกติ</span></td>
+                                </tr>
+                            </tbody>
+                        </table>
                     </div>
                 </div>
             </section>
