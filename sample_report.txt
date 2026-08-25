@@ -1,0 +1,43 @@
+=========================================
+      MEDTECH LABLINK - HEALTH REPORT
+=========================================
+Patient Name: Demo User
+Date of Examination: 25 August 2026
+
+--- Vital Signs ---
+Blood Pressure (BP): 118/75 mmHg
+Heart Rate: 72 bpm
+
+--- Lipid Profile (การตรวจระดับไขมันในเลือด) ---
+Total Cholesterol: 195 mg/dL
+HDL Cholesterol: 58 mg/dL
+LDL Cholesterol: 110 mg/dL
+Triglycerides: 120 mg/dL
+
+--- Blood Sugar (การตรวจระดับน้ำตาล) ---
+Fasting Blood Sugar (FBS): 92 mg/dL
+HbA1c: 5.4 %
+
+--- Liver Function (การทำงานของตับ) ---
+ALT (SGPT): 22 U/L
+AST (SGOT): 20 U/L
+ALP: 65 U/L
+
+--- Complete Blood Count (ความสมบูรณ์ของเม็ดเลือด) ---
+WBC Count: 6.5 10^3/uL
+Neutrophil: 55 %
+Lymphocyte: 35 %
+Monocyte: 7 %
+Eosinophil: 3 %
+
+--- Hormones (สมดุลฮอร์โมน) ---
+Cortisol (Morning): 12.5 ug/dL
+TSH (Thyroid): 2.1 mIU/L
+Testosterone: 450 ng/dL
+Insulin (Fasting): 8.5 mIU/L
+DHEA-S: 210 ug/dL
+
+=========================================
+AI NOTES: All extracted values are within 
+healthy ranges. Great job maintaining your 
+diet and exercise routine!
