@@ -100,3 +100,41 @@ body.dark-mode .plan-content em {
     background: rgba(0, 0, 0, 0.3);
     color: #f8fafc;
 }
+
+/* Upgrade: Dark mode glass overrides */
+[data-theme="dark"],
+body.dark-mode {
+    --glass-bg: rgba(30, 41, 59, 0.8);
+    --glass-border: rgba(255, 255, 255, 0.1);
+}
+[data-theme="dark"] .insights-banner,
+body.dark-mode .insights-banner {
+    background: linear-gradient(135deg, #1e40af, #6d28d9);
+}
+[data-theme="dark"] .feature-pill,
+body.dark-mode .feature-pill {
+    background: rgba(59, 130, 246, 0.15);
+    border-color: rgba(59, 130, 246, 0.3);
+    color: #93c5fd;
+}
+[data-theme="dark"] .risk-gauge-mask,
+body.dark-mode .risk-gauge-mask {
+    background: var(--bg-card);
+}
+[data-theme="dark"] .organ-tooltip,
+body.dark-mode .organ-tooltip {
+    background: rgba(30, 41, 59, 0.95);
+}
+
+/* Gamification Dark Overrides */
+[data-theme="dark"] .quest-item {
+    background: rgba(30, 41, 59, 0.5);
+    border-color: rgba(255,255,255,0.1);
+}
+[data-theme="dark"] .quest-item.completed {
+    background: rgba(16, 185, 129, 0.1);
+}
+[data-theme="dark"] .toast {
+    color: #f8fafc;
+}
+

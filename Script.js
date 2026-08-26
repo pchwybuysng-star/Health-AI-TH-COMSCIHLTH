@@ -9,11 +9,39 @@ document.addEventListener('DOMContentLoaded', () => {
     initChatbot();
     initThemeToggle();
     init3DTilt();
-        initTrendsChart();
+    initTrendsChart();
+    initRealtimeClock();
+    initDragAndDrop();
+    initAnatomyTooltips();
+    initRiskScore();
 
-    // Set initial view
-    const uploadNav = document.getElementById('nav-upload');
-    if (uploadNav) uploadNav.click();
+    // Check if user was previously authenticated (persisted session)
+    const savedAuth = localStorage.getItem('lablink_auth');
+    if (savedAuth === 'true') {
+        const savedHealth = localStorage.getItem('lablink_health_data');
+        if (savedHealth) {
+            try {
+                window.extractedHealthData = JSON.parse(savedHealth);
+                applyHealthDataToUI(window.extractedHealthData);
+            } catch (e) {
+                console.error("Failed to parse saved health data:", e);
+            }
+        }
+        
+        setAuthenticatedState(true);
+        
+        // Restore last active view or default to Dashboard
+        const lastViewId = localStorage.getItem('lablink_last_view') || 'view-dashboard';
+        const targetNav = document.querySelector(`.nav-menu .nav-item[data-target="${lastViewId}"]`) || document.getElementById('nav-dashboard');
+        if (targetNav) {
+            targetNav.click();
+        }
+        animateHealthScore();
+    } else {
+        // Set initial view for pre-auth
+        const uploadNav = document.getElementById('nav-upload');
+        if (uploadNav) uploadNav.click();
+    }
 });
 
 // 1. Navigation System (Upgraded with GSAP)
@@ -32,6 +60,10 @@ function initNavigation() {
             if (!isAuthenticated && targetId !== 'view-upload') {
                 alert("🔒 กรุณาอัปโหลดผลตรวจและยืนยันตัวตน เพื่อเข้าถึงข้อมูลสุขภาพ");
                 return;
+            }
+
+            if (isAuthenticated && targetId !== 'view-upload') {
+                localStorage.setItem('lablink_last_view', targetId);
             }
 
             navItems.forEach(nav => nav.classList.remove('active'));
@@ -221,114 +253,22 @@ function initUploadSimulation() {
 
     if (btnVerifyId && idInput) {
         btnVerifyId.addEventListener('click', () => {
-            
             if (idInput.value === '0000000000000') {
                 if (verifyError) verifyError.style.display = 'none';
                 if (verifyState) verifyState.style.display = 'none';
 
-                
-                // --- Update UI with Extracted Data ---
+                // Save and apply health data
                 if (window.extractedHealthData) {
-                    const eh = window.extractedHealthData;
-                    const metricValues = document.querySelectorAll('.metric-value');
-                    
-                    if (eh.bp && metricValues.length > 0) {
-                        metricValues[0].innerHTML = `${eh.bp} <span style="font-size: 0.8rem;">mmHg</span> <br><span style="font-size: 0.7rem; color: var(--success);">(อัปเดตจากไฟล์)</span>`;
-                    }
-                    if (eh.chol && metricValues.length > 1) {
-                        metricValues[1].innerHTML = `${eh.chol} <span style="font-size: 0.8rem;">mg/dL</span> <br><span style="font-size: 0.7rem; color: var(--success);">(อัปเดตจากไฟล์)</span>`;
-                    }
-                    if (eh.hdl && metricValues.length > 2) {
-                        metricValues[2].innerHTML = `${eh.hdl} <span style="font-size: 0.8rem;">mg/dL</span> <br><span style="font-size: 0.7rem; color: var(--success);">(อัปเดตจากไฟล์)</span>`;
-                    }
-                    if (eh.ldl && metricValues.length > 3) {
-                        metricValues[3].innerHTML = `${eh.ldl} <span style="font-size: 0.8rem;">mg/dL</span> <br><span style="font-size: 0.7rem; color: var(--success);">(อัปเดตจากไฟล์)</span>`;
-                    }
-                    if (eh.fbs && metricValues.length > 4) {
-                        metricValues[4].innerHTML = `${eh.fbs} <span style="font-size: 0.8rem;">mg/dL</span> <br><span style="font-size: 0.7rem; color: var(--success);">(อัปเดตจากไฟล์)</span>`;
-                    }
-
-                    // --- 1. Calculate Health Age ---
-                    let baseAge = 35;
-                    let ageOffset = 0;
-                    if (eh.ldl) { if (eh.ldl > 130) ageOffset += 2; else if (eh.ldl < 100) ageOffset -= 2; }
-                    if (eh.fbs) { if (eh.fbs > 100) ageOffset += 3; else if (eh.fbs < 90) ageOffset -= 2; }
-                    if (eh.alt) { if (eh.alt > 40) ageOffset += 2; else if (eh.alt < 20) ageOffset -= 1; }
-                    
-                    let finalAge = baseAge + ageOffset;
-                    const healthAgeNum = document.getElementById('health-age-number');
-                    const healthAgeText = document.getElementById('health-age-text');
-                    
-                    if (healthAgeNum && healthAgeText) {
-                        healthAgeNum.textContent = finalAge;
-                        if (ageOffset < 0) {
-                            healthAgeText.textContent = `อ่อนเยาว์กว่าอายุจริง ${Math.abs(ageOffset)} ปี!`;
-                            healthAgeText.className = "text-success";
-                        } else if (ageOffset > 0) {
-                            healthAgeText.textContent = `แก่กว่าอายุจริง ${ageOffset} ปี! (ต้องดูแลตัวเองแล้ว)`;
-                            healthAgeText.className = "text-warning";
-                            healthAgeText.style.color = "#ef4444";
-                        } else {
-                            healthAgeText.textContent = `อายุสุขภาพเท่ากับอายุจริง`;
-                            healthAgeText.className = "";
-                        }
-                    }
-
-                    // --- 2. Update AI Anatomy Scanner ---
-                    const organHeart = document.getElementById('organ-heart');
-                    const organLiver = document.getElementById('organ-liver');
-                    const organPancreas = document.getElementById('organ-pancreas');
-                    
-                    const colorSafe = "#10b981";
-                    const colorWarn = "#f59e0b";
-                    const colorDanger = "#ef4444";
-
-                    setTimeout(() => {
-                        if (organHeart) {
-                            let heartStatus = colorSafe;
-                            if (eh.ldl > 160 || eh.chol > 240) heartStatus = colorDanger;
-                            else if (eh.ldl > 130 || eh.chol > 200) heartStatus = colorWarn;
-                            organHeart.style.fill = heartStatus;
-                            if (heartStatus === colorDanger) organHeart.style.filter = "drop-shadow(0 0 10px #ef4444)";
-                        }
-                        
-                        if (organLiver) {
-                            let liverStatus = colorSafe;
-                            if (eh.alt > 60 || eh.ast > 60) liverStatus = colorDanger;
-                            else if (eh.alt > 40 || eh.ast > 40) liverStatus = colorWarn;
-                            organLiver.style.fill = liverStatus;
-                            if (liverStatus === colorDanger) organLiver.style.filter = "drop-shadow(0 0 10px #ef4444)";
-                        }
-                        
-                        if (organPancreas) {
-                            let pancStatus = colorSafe;
-                            if (eh.fbs > 125) pancStatus = colorDanger;
-                            else if (eh.fbs > 100) pancStatus = colorWarn;
-                            organPancreas.style.fill = pancStatus;
-                            if (pancStatus === colorDanger) organPancreas.style.filter = "drop-shadow(0 0 10px #ef4444)";
-                        }
-                    }, 500); // animate after load
+                    localStorage.setItem('lablink_health_data', JSON.stringify(window.extractedHealthData));
+                    applyHealthDataToUI(window.extractedHealthData);
                 }
 
+                // Unlock UI & persist session
+                setAuthenticatedState(true);
 
-
-                // Unlock UI
-                isAuthenticated = true;
-                document.body.classList.remove('pre-auth'); // Reveal the app shell
-
-                const lockedNavs = document.querySelectorAll('.locked-nav');
-                lockedNavs.forEach(nav => nav.classList.remove('locked-nav'));
-                const chatbotFab = document.getElementById('chatbot-fab');
-                if (chatbotFab) chatbotFab.style.display = 'flex';
-
-                // UX Flow Change: Hide Upload Nav, Show "Back to Home" at bottom
-                const navUpload = document.getElementById('nav-upload');
-                const navHomeBottom = document.getElementById('nav-home-bottom');
-                if (navUpload) navUpload.style.display = 'none';
-                if (navHomeBottom) navHomeBottom.style.display = 'flex';
-
-                const uploadSuccess = document.getElementById('upload-success-state');
-                if (uploadSuccess) uploadSuccess.style.display = 'block';
+                // Update new upgrade widgets
+                updateUploadDate();
+                calculateRiskScore();
 
                 // Navigate to Dashboard
                 const dashboardNav = document.getElementById('nav-dashboard');
@@ -361,27 +301,7 @@ function initUploadSimulation() {
         if (uploadSuccess) uploadSuccess.style.display = 'none';
         if (uploadInitial) uploadInitial.style.display = 'block';
 
-        // FIX: Re-lock the UI when starting a new upload
-        isAuthenticated = false;
-        document.body.classList.add('pre-auth'); // Hide the app shell
-
-        const allNavs = document.querySelectorAll('.nav-menu .nav-item');
-        allNavs.forEach(nav => {
-            if (nav.id !== 'nav-upload' && nav.id !== 'theme-toggle' && nav.id !== 'nav-home-bottom') {
-                nav.classList.add('locked-nav');
-            }
-        });
-        const chatbotFab = document.getElementById('chatbot-fab');
-        if (chatbotFab) chatbotFab.style.display = 'none';
-
-        // Revert sidebar changes
-        const navUpload = document.getElementById('nav-upload');
-        const navHomeBottom = document.getElementById('nav-home-bottom');
-        if (navUpload) {
-            navUpload.style.display = 'flex';
-            navUpload.click(); // Force navigate to view-upload
-        }
-        if (navHomeBottom) navHomeBottom.style.display = 'none';
+        setAuthenticatedState(false);
     };
 
     if (btnUploadNew) {
@@ -394,6 +314,143 @@ function initUploadSimulation() {
             e.preventDefault();
             resetToHomeFlow();
         });
+    }
+}
+
+// Helper: Apply Extracted Health Data to UI Elements
+function applyHealthDataToUI(eh) {
+    if (!eh) return;
+    const metricValues = document.querySelectorAll('.metric-value');
+    
+    if (eh.bp && metricValues.length > 0) {
+        metricValues[0].innerHTML = `${eh.bp} <span style="font-size: 0.8rem;">mmHg</span> <br><span style="font-size: 0.7rem; color: var(--success);">(อัปเดตจากไฟล์)</span>`;
+    }
+    if (eh.chol && metricValues.length > 1) {
+        metricValues[1].innerHTML = `${eh.chol} <span style="font-size: 0.8rem;">mg/dL</span> <br><span style="font-size: 0.7rem; color: var(--success);">(อัปเดตจากไฟล์)</span>`;
+    }
+    if (eh.hdl && metricValues.length > 2) {
+        metricValues[2].innerHTML = `${eh.hdl} <span style="font-size: 0.8rem;">mg/dL</span> <br><span style="font-size: 0.7rem; color: var(--success);">(อัปเดตจากไฟล์)</span>`;
+    }
+    if (eh.ldl && metricValues.length > 3) {
+        metricValues[3].innerHTML = `${eh.ldl} <span style="font-size: 0.8rem;">mg/dL</span> <br><span style="font-size: 0.7rem; color: var(--success);">(อัปเดตจากไฟล์)</span>`;
+    }
+    if (eh.fbs && metricValues.length > 4) {
+        metricValues[4].innerHTML = `${eh.fbs} <span style="font-size: 0.8rem;">mg/dL</span> <br><span style="font-size: 0.7rem; color: var(--success);">(อัปเดตจากไฟล์)</span>`;
+    }
+
+    // 1. Calculate Health Age
+    let baseAge = 35;
+    let ageOffset = 0;
+    if (eh.ldl) { if (eh.ldl > 130) ageOffset += 2; else if (eh.ldl < 100) ageOffset -= 2; }
+    if (eh.fbs) { if (eh.fbs > 100) ageOffset += 3; else if (eh.fbs < 90) ageOffset -= 2; }
+    if (eh.alt) { if (eh.alt > 40) ageOffset += 2; else if (eh.alt < 20) ageOffset -= 1; }
+    
+    let finalAge = baseAge + ageOffset;
+    const healthAgeNum = document.getElementById('health-age-number');
+    const healthAgeText = document.getElementById('health-age-text');
+    
+    if (healthAgeNum && healthAgeText) {
+        healthAgeNum.textContent = finalAge;
+        if (ageOffset < 0) {
+            healthAgeText.textContent = `อ่อนเยาว์กว่าอายุจริง ${Math.abs(ageOffset)} ปี!`;
+            healthAgeText.className = "text-success";
+        } else if (ageOffset > 0) {
+            healthAgeText.textContent = `แก่กว่าอายุจริง ${ageOffset} ปี! (ต้องดูแลตัวเองแล้ว)`;
+            healthAgeText.className = "text-warning";
+            healthAgeText.style.color = "#ef4444";
+        } else {
+            healthAgeText.textContent = `อายุสุขภาพเท่ากับอายุจริง`;
+            healthAgeText.className = "";
+        }
+    }
+
+    // 2. Update AI Anatomy Scanner
+    const organHeart = document.getElementById('organ-heart');
+    const organLiver = document.getElementById('organ-liver');
+    const organPancreas = document.getElementById('organ-pancreas');
+    
+    const colorSafe = "#10b981";
+    const colorWarn = "#f59e0b";
+    const colorDanger = "#ef4444";
+
+    setTimeout(() => {
+        if (organHeart) {
+            let heartStatus = colorSafe;
+            if (eh.ldl > 160 || eh.chol > 240) heartStatus = colorDanger;
+            else if (eh.ldl > 130 || eh.chol > 200) heartStatus = colorWarn;
+            organHeart.style.fill = heartStatus;
+            if (heartStatus === colorDanger) organHeart.style.filter = "drop-shadow(0 0 10px #ef4444)";
+        }
+        
+        if (organLiver) {
+            let liverStatus = colorSafe;
+            if (eh.alt > 60 || eh.ast > 60) liverStatus = colorDanger;
+            else if (eh.alt > 40 || eh.ast > 40) liverStatus = colorWarn;
+            organLiver.style.fill = liverStatus;
+            if (liverStatus === colorDanger) organLiver.style.filter = "drop-shadow(0 0 10px #ef4444)";
+        }
+        
+        if (organPancreas) {
+            let pancStatus = colorSafe;
+            if (eh.fbs > 125) pancStatus = colorDanger;
+            else if (eh.fbs > 100) pancStatus = colorWarn;
+            organPancreas.style.fill = pancStatus;
+            if (pancStatus === colorDanger) organPancreas.style.filter = "drop-shadow(0 0 10px #ef4444)";
+        }
+        
+        // Retrigger SVG draw animation
+        const svg = document.querySelector('.draw-svg');
+        if (svg) {
+            svg.style.animation = 'none';
+            svg.offsetHeight; /* trigger reflow */
+            svg.style.animation = null; 
+        }
+    }, 500);
+}
+
+// Helper: Toggle Authentication State & Persistence
+function setAuthenticatedState(isAuth) {
+    isAuthenticated = isAuth;
+    if (isAuth) {
+        localStorage.setItem('lablink_auth', 'true');
+        document.body.classList.remove('pre-auth');
+
+        const lockedNavs = document.querySelectorAll('.locked-nav');
+        lockedNavs.forEach(nav => nav.classList.remove('locked-nav'));
+        
+        const chatbotFab = document.getElementById('chatbot-fab');
+        if (chatbotFab) chatbotFab.style.display = 'flex';
+
+        const navUpload = document.getElementById('nav-upload');
+        const navHomeBottom = document.getElementById('nav-home-bottom');
+        if (navUpload) navUpload.style.display = 'none';
+        if (navHomeBottom) navHomeBottom.style.display = 'flex';
+
+        const uploadSuccess = document.getElementById('upload-success-state');
+        if (uploadSuccess) uploadSuccess.style.display = 'block';
+    } else {
+        localStorage.removeItem('lablink_auth');
+        localStorage.removeItem('lablink_health_data');
+        localStorage.removeItem('lablink_last_view');
+        document.body.classList.add('pre-auth');
+
+        const allNavs = document.querySelectorAll('.nav-menu .nav-item');
+        allNavs.forEach(nav => {
+            if (nav.id !== 'nav-upload' && nav.id !== 'theme-toggle' && nav.id !== 'nav-home-bottom') {
+                nav.classList.add('locked-nav');
+            }
+        });
+        
+        const chatbotFab = document.getElementById('chatbot-fab');
+        if (chatbotFab) chatbotFab.style.display = 'none';
+
+        const navUpload = document.getElementById('nav-upload');
+        const navHomeBottom = document.getElementById('nav-home-bottom');
+        if (navUpload) {
+            navUpload.style.display = 'flex';
+            navUpload.click();
+        }
+        if (navHomeBottom) navHomeBottom.style.display = 'none';
     }
 }
 
@@ -479,62 +536,42 @@ function initChatbot() {
 
 
             if (geminiKey) {
-                // Use Real Gemini AI
+                // Use Real Gemini AI with Auto Discovery & Smart Fallback
                 const promptCtx = window.extractedHealthData ? JSON.stringify(window.extractedHealthData) : "No health data yet.";
                 const sysPrompt = `คุณคือ Dr. LabLink แพทย์ AI ผู้เชี่ยวชาญการอ่านผลเลือด 
 กรุณาตอบคำถามผู้ป่วยเป็นภาษาไทยแบบเป็นกันเอง สั้นกระชับ เข้าใจง่าย 
-นี่คือผลเลือดปัจจุบันของผู้ป่วย: ${promptCtx}`;
+นี่คือผลเลือดปัจจุบันของผู้ป่วย: ${promptCtx}
 
-                
-                
-                fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${geminiKey}`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        contents: [
-                            { role: "user", parts: [{ text: sysPrompt + "\nคำถามจากผู้ป่วย: " + text }] }
-                        ],
-                        
-                        safetySettings: [
-                            { category: "HARM_CATEGORY_DANGEROUS_CONTENT", threshold: "BLOCK_NONE" },
-                            { category: "HARM_CATEGORY_HARASSMENT", threshold: "BLOCK_NONE" },
-                            { category: "HARM_CATEGORY_HATE_SPEECH", threshold: "BLOCK_NONE" },
-                            { category: "HARM_CATEGORY_SEXUALLY_EXPLICIT", threshold: "BLOCK_NONE" }
-                        ]
+คำถามจากผู้ป่วย: ${text}`;
 
-                    })
-                }).then(res => res.json()).then(data => {
-                    if (data.error) {
-                        console.error("Gemini API Error:", data.error);
-                        handleAIResponse(`❌ ข้อผิดพลาดจาก AI: ${data.error.message} <br><br>👉 โปรดตรวจสอบว่า API Key ถูกต้องหรือไม่`);
-                        return;
-                    }
-                    if (data.candidates && data.candidates.length > 0) {
-                        const candidate = data.candidates[0];
-                        if (candidate.content && candidate.content.parts && candidate.content.parts.length > 0) {
-                            handleAIResponse(candidate.content.parts[0].text);
-                        } else {
-                            handleAIResponse(`❌ AI ไม่สามารถตอบได้ (Finish Reason: ${candidate.finishReason}) อาจติดเรื่อง Safety Filter ทางการแพทย์`);
-                        }
+                requestGeminiGenerate(geminiKey, sysPrompt).then(res => {
+                    if (res.error) {
+                        // Fallback to Mock if API fails (so no annoying errors)
+                        console.warn("API Failed, falling back to mock:", res.error);
+                        fallbackToMock(text);
+                    } else if (res.text) {
+                        handleAIResponse(res.text);
                     } else {
-                        handleAIResponse("ขออภัยครับ AI ไม่สามารถตอบได้ในขณะนี้ กรุณาลองใหม่");
+                        fallbackToMock(text);
                     }
                 }).catch(err => {
-                    console.error("Fetch Error:", err);
-                    handleAIResponse("❌ เกิดข้อผิดพลาดในระบบ (โปรดตรวจสอบ Console)");
+                    console.error("Gemini Error:", err);
+                    fallbackToMock(text);
                 });
-
-
             } else {
                 // Fallback to Rule-based Mock
+                fallbackToMock(text);
+            }
+
+            function fallbackToMock(userText) {
                 setTimeout(() => {
                     let mockRes = "";
-                    if (text.includes('น้ำตาล') || text.toLowerCase().includes('fbs')) {
+                    if (userText.includes('น้ำตาล') || userText.toLowerCase().includes('fbs')) {
                         mockRes = `<strong>เรื่องน้ำตาล (FBS):</strong> ค่าของคุณอยู่ที่ 88 mg/dL ซึ่งอยู่ในเกณฑ์ปกติเยี่ยมมากครับ! พยายามรักษาการกินคาร์บเชิงซ้อนต่อไปนะครับ 👏`;
-                    } else if (text.includes('ไขมัน') || text.toLowerCase().includes('ldl') || text.includes('คอเลสเตอรอล')) {
+                    } else if (userText.includes('ไขมัน') || userText.toLowerCase().includes('ldl') || userText.includes('คอเลสเตอรอล')) {
                         mockRes = `<strong>เรื่องไขมันในเลือด:</strong> แม้ว่า LDL จะ 130 (ปริ่มเกณฑ์) แต่คุณมี HDL ถึง 55 ช่วยดึงไขมันทิ้งได้ดีครับ แนะนำให้ออกกำลังกายแบบคาร์ดิโอเพิ่มสัปดาห์ละ 2-3 วันครับ 🏃‍♂️`;
                     } else {
-                        mockRes = `คำถามที่ดีครับ! จากผลแล็บโดยรวมของคุณอยู่ในเกณฑ์ที่ยอดเยี่ยม 🌟 หากต้องการให้ผมวิเคราะห์แบบ Real-time ของจริง กรุณาใส่ Gemini API Key ในหน้าตั้งค่าครับ!`;
+                        mockRes = `คำถามที่ดีครับ! จากผลแล็บโดยรวมของคุณอยู่ในเกณฑ์ที่ยอดเยี่ยม 🌟 (นี่คือข้อความจำลอง เนื่องจากไม่ได้เชื่อมต่อ API หรือ API ไม่ตอบสนอง)`;
                     }
                     handleAIResponse(mockRes);
                 }, 1200);
@@ -918,6 +955,83 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 
+// --- Gemini AI Request Helper ---
+async function requestGeminiGenerate(geminiKey, promptText) {
+    // Trim the key just in case
+    const cleanKey = geminiKey.trim();
+    
+    // Ordered list of models to try
+    const candidateModels = [
+        'gemini-2.0-flash',
+        'gemini-1.5-flash',
+        'gemini-1.5-flash-latest',
+        'gemini-1.5-pro'
+    ];
+
+    let lastError = null;
+
+    for (const modelName of candidateModels) {
+        // Try v1beta first, then v1
+        const endpoints = [
+            `https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent?key=${encodeURIComponent(cleanKey)}`,
+            `https://generativelanguage.googleapis.com/v1/models/${modelName}:generateContent?key=${encodeURIComponent(cleanKey)}`
+        ];
+
+        for (const endpoint of endpoints) {
+            try {
+                const res = await fetch(endpoint, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        contents: [
+                            { role: "user", parts: [{ text: promptText }] }
+                        ]
+                    })
+                });
+
+                const data = await res.json();
+
+                if (data.error) {
+                    lastError = data.error;
+                    
+                    // If API key is invalid or quota exceeded, stop trying immediately!
+                    if (data.error.code === 400 && data.error.message.toLowerCase().includes('api key not valid')) {
+                        return { error: `❌ API Key ไม่ถูกต้อง กรุณาตรวจสอบอีกครั้ง` };
+                    }
+                    if (data.error.code === 429) {
+                        return { error: `❌ โควต้า API เต็ม (Quota Exceeded)` };
+                    }
+                    
+                    // If model not found, try the next one
+                    continue;
+                }
+
+                if (data.candidates && data.candidates.length > 0) {
+                    const candidate = data.candidates[0];
+                    if (candidate.content && candidate.content.parts && candidate.content.parts.length > 0) {
+                        return { text: candidate.content.parts[0].text, model: modelName };
+                    } else if (candidate.finishReason) {
+                        return { error: `❌ AI ตอบกลับไม่ได้ (Finish Reason: ${candidate.finishReason})` };
+                    }
+                }
+            } catch (err) {
+                lastError = err;
+                // For network errors (like CORS or offline), return immediately
+                if (err.name === 'TypeError' || err.message.includes('fetch')) {
+                    return { error: `❌ เกิดข้อผิดพลาดในการเชื่อมต่อ (Network Error): โปรดตรวจสอบอินเทอร์เน็ตหรือการตั้งค่า API` };
+                }
+            }
+        }
+    }
+
+    const msg = lastError ? (lastError.message || JSON.stringify(lastError)) : "ไม่สามารถเชื่อมต่อโมเดลได้เลย";
+    return {
+        error: `❌ ข้อผิดพลาดจาก AI: ${msg}`
+    };
+}
+
 // --- Gemini API Key Logic ---
 document.addEventListener('DOMContentLoaded', () => {
     const btnSaveGemini = document.getElementById('btn-save-gemini');
@@ -929,7 +1043,11 @@ document.addEventListener('DOMContentLoaded', () => {
         const existingKey = localStorage.getItem('gemini_api_key');
         if (existingKey) {
             inputGemini.value = existingKey;
-            if (statusGemini) statusGemini.style.display = 'block';
+            if (statusGemini) {
+                statusGemini.style.display = 'block';
+                statusGemini.style.color = 'var(--success)';
+                statusGemini.textContent = "✅ มีการบันทึก Gemini API Key ไว้แล้ว (พร้อมใช้งาน)";
+            }
         }
 
         btnSaveGemini.addEventListener('click', () => {
@@ -938,12 +1056,491 @@ document.addEventListener('DOMContentLoaded', () => {
                 localStorage.setItem('gemini_api_key', key);
                 if (statusGemini) {
                     statusGemini.style.display = 'block';
-                    statusGemini.textContent = "✅ เชื่อมต่อ Gemini AI สำเร็จ! (Key saved)";
+                    statusGemini.style.color = 'var(--success)';
+                    statusGemini.textContent = "✅ บันทึก API Key สำเร็จ! ระบบพร้อมใช้งาน AI จริงในการตอบคำถาม";
                 }
             } else {
                 localStorage.removeItem('gemini_api_key');
-                if (statusGemini) statusGemini.style.display = 'none';
+                if (statusGemini) {
+                    statusGemini.style.display = 'block';
+                    statusGemini.style.color = 'var(--text-muted)';
+                    statusGemini.textContent = "ℹ️ ลบ API Key แล้ว (ระบบจะกลับไปใช้คำตอบจำลอง)";
+                }
             }
         });
     }
 });
+
+
+// =========================================
+//  UPGRADE: Real-time Clock
+// =========================================
+function initRealtimeClock() {
+    const clockEl = document.getElementById('realtime-clock');
+    if (!clockEl) return;
+
+    function updateClock() {
+        const now = new Date();
+        const opts = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+        const dateStr = now.toLocaleDateString('th-TH', opts);
+        const timeStr = now.toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+        clockEl.textContent = `${dateStr} • ${timeStr}`;
+    }
+    updateClock();
+    setInterval(updateClock, 1000);
+}
+
+// =========================================
+//  UPGRADE: Drag & Drop Upload
+// =========================================
+function initDragAndDrop() {
+    const uploadBox = document.querySelector('.upload-box');
+    const realFileUpload = document.getElementById('real-file-upload');
+    if (!uploadBox || !realFileUpload) return;
+
+    ['dragenter', 'dragover'].forEach(evt => {
+        uploadBox.addEventListener(evt, (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            uploadBox.classList.add('drag-over');
+        });
+    });
+
+    ['dragleave', 'drop'].forEach(evt => {
+        uploadBox.addEventListener(evt, (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            uploadBox.classList.remove('drag-over');
+        });
+    });
+
+    uploadBox.addEventListener('drop', (e) => {
+        const files = e.dataTransfer.files;
+        if (files.length > 0) {
+            // Create a new DataTransfer and assign to file input
+            const dt = new DataTransfer();
+            dt.items.add(files[0]);
+            realFileUpload.files = dt.files;
+            realFileUpload.dispatchEvent(new Event('change', { bubbles: true }));
+        }
+    });
+}
+
+// =========================================
+//  UPGRADE: Demo File Loader
+// =========================================
+function loadDemoFile() {
+    fetch('sample_report.txt')
+        .then(res => {
+            if (!res.ok) throw new Error('Demo file not found');
+            return res.text();
+        })
+        .then(text => {
+            // Create a File-like blob from text
+            const blob = new Blob([text], { type: 'text/plain' });
+            const file = new File([blob], 'sample_report.txt', { type: 'text/plain' });
+            const dt = new DataTransfer();
+            dt.items.add(file);
+            const realFileUpload = document.getElementById('real-file-upload');
+            if (realFileUpload) {
+                realFileUpload.files = dt.files;
+                realFileUpload.dispatchEvent(new Event('change', { bubbles: true }));
+            }
+        })
+        .catch(err => {
+            console.error('Demo file error:', err);
+            alert('ไม่พบไฟล์ตัวอย่าง กรุณาอัปโหลดไฟล์จริงแทน');
+        });
+}
+
+// =========================================
+//  UPGRADE: Anatomy SVG Tooltips
+// =========================================
+function initAnatomyTooltips() {
+    const organs = [
+        { id: 'organ-brain', name: '🧠 สมอง', detail: 'ระบบประสาทส่วนกลาง' },
+        { id: 'organ-lungs', name: '🫁 ปอด', detail: 'ระบบทางเดินหายใจ' },
+        { id: 'organ-heart', name: '🫀 หัวใจ', detail: 'ระบบหัวใจและหลอดเลือด' },
+        { id: 'organ-liver', name: '🫁 ตับ', detail: 'การทำงานของตับ (AST/ALT)' },
+        { id: 'organ-pancreas', name: '🍎 ตับอ่อน', detail: 'น้ำตาลในเลือด (FBS)' }
+    ];
+
+    // Create tooltip element
+    const tooltip = document.createElement('div');
+    tooltip.className = 'organ-tooltip';
+    tooltip.id = 'anatomy-tooltip';
+    document.body.appendChild(tooltip);
+
+    organs.forEach(organ => {
+        const el = document.getElementById(organ.id);
+        if (!el) return;
+
+        el.style.cursor = 'pointer';
+
+        el.addEventListener('mouseenter', (e) => {
+            tooltip.innerHTML = `<strong>${organ.name}</strong><br>${organ.detail}`;
+            tooltip.classList.add('visible');
+        });
+
+        el.addEventListener('mousemove', (e) => {
+            const svgRect = el.closest('svg').getBoundingClientRect();
+            tooltip.style.left = (e.clientX + 12) + 'px';
+            tooltip.style.top = (e.clientY - 40) + 'px';
+        });
+
+        el.addEventListener('mouseleave', () => {
+            tooltip.classList.remove('visible');
+        });
+    });
+}
+
+// =========================================
+//  UPGRADE: Risk Score Calculator & Gauge
+// =========================================
+function initRiskScore() {
+    // Wait a bit for DOM to be ready with data
+    setTimeout(() => {
+        calculateRiskScore();
+    }, 1000);
+}
+
+function calculateRiskScore() {
+    const eh = window.extractedHealthData || {};
+    
+    // Simple risk estimation (0-100)
+    let risk = 5; // base risk
+    
+    if (eh.ldl) {
+        if (eh.ldl > 190) risk += 30;
+        else if (eh.ldl > 160) risk += 20;
+        else if (eh.ldl > 130) risk += 10;
+    }
+    if (eh.chol) {
+        if (eh.chol > 240) risk += 15;
+        else if (eh.chol > 200) risk += 7;
+    }
+    if (eh.fbs) {
+        if (eh.fbs > 126) risk += 20;
+        else if (eh.fbs > 100) risk += 8;
+    }
+    if (eh.hdl) {
+        if (eh.hdl < 40) risk += 15;
+        else if (eh.hdl > 60) risk -= 5;
+    }
+    
+    risk = Math.max(0, Math.min(100, risk));
+    
+    // Update gauge needle (-90deg = 0%, 90deg = 100%)
+    const needle = document.getElementById('risk-needle');
+    const scoreEl = document.getElementById('risk-score-value');
+    
+    if (needle) {
+        const angle = -90 + (risk / 100 * 180);
+        needle.style.transform = `translateX(-50%) rotate(${angle}deg)`;
+    }
+    
+    if (scoreEl) {
+        scoreEl.textContent = risk + '%';
+        if (risk < 20) {
+            scoreEl.style.color = 'var(--success)';
+        } else if (risk < 40) {
+            scoreEl.style.color = 'var(--warning)';
+        } else {
+            scoreEl.style.color = 'var(--danger)';
+        }
+    }
+}
+
+// =========================================
+//  UPGRADE: Upload Date Tracker
+// =========================================
+function updateUploadDate() {
+    const now = new Date();
+    const dateDisplay = document.getElementById('upload-date-display');
+    const dateDetail = document.getElementById('upload-date-detail');
+    
+    if (dateDisplay) {
+        const opts = { day: 'numeric', month: 'short', year: 'numeric' };
+        dateDisplay.textContent = now.toLocaleDateString('th-TH', opts);
+    }
+    if (dateDetail) {
+        const timeStr = now.toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit' });
+        dateDetail.textContent = `อัปโหลดเมื่อ ${timeStr} น.`;
+    }
+    
+    localStorage.setItem('lablink_upload_date', now.toISOString());
+}
+
+// =========================================
+//  ULTIMATE UPGRADE: Toast Notifications
+// =========================================
+function showToast(message, type = 'success') {
+    const container = document.getElementById('toast-container');
+    if (!container) return;
+
+    const toast = document.createElement('div');
+    toast.className = `toast ${type}`;
+    
+    let icon = '✅';
+    if (type === 'warning') icon = '⚠️';
+    if (type === 'danger') icon = '❌';
+
+    toast.innerHTML = `<span style="font-size: 1.2rem;">${icon}</span> <span>${message}</span>`;
+    container.appendChild(toast);
+
+    // Trigger animation
+    setTimeout(() => toast.classList.add('show'), 10);
+
+    // Remove after 3 seconds
+    setTimeout(() => {
+        toast.classList.remove('show');
+        setTimeout(() => toast.remove(), 400);
+    }, 3000);
+}
+
+// =========================================
+//  ULTIMATE UPGRADE: Number Counter Animation
+// =========================================
+function animateValue(obj, start, end, duration) {
+    if (!obj) return;
+    let startTimestamp = null;
+    const step = (timestamp) => {
+        if (!startTimestamp) startTimestamp = timestamp;
+        const progress = Math.min((timestamp - startTimestamp) / duration, 1);
+        // easeOutQuart
+        const ease = 1 - Math.pow(1 - progress, 4);
+        obj.innerHTML = Math.floor(ease * (end - start) + start);
+        if (progress < 1) {
+            window.requestAnimationFrame(step);
+        } else {
+            obj.innerHTML = end;
+        }
+    };
+    window.requestAnimationFrame(step);
+}
+
+// =========================================
+//  ULTIMATE UPGRADE: Gamification (Level & Quests)
+// =========================================
+let userExp = 10;
+let userLevel = 1;
+
+function updateLevelUI() {
+    const fill = document.getElementById('user-exp-fill');
+    const text = document.getElementById('user-exp-text');
+    const badge = document.getElementById('user-level-badge');
+    
+    if (fill) fill.style.width = `${userExp}%`;
+    if (text) text.textContent = `${userExp} / 100 EXP`;
+    
+    let title = "Beginner";
+    if (userLevel === 2) title = "Health Seeker";
+    if (userLevel >= 3) title = "Wellness Master";
+    
+    if (badge) badge.textContent = `LV. ${userLevel} ${title}`;
+}
+
+function addExp(amount) {
+    userExp += amount;
+    if (userExp >= 100) {
+        userExp -= 100;
+        userLevel++;
+        showToast(`🎉 Level Up! ยินดีด้วย คุณเลื่อนเป็นเลเวล ${userLevel} แล้ว!`, 'success');
+    }
+    updateLevelUI();
+}
+
+window.completeQuest = function(btn) {
+    const item = btn.closest('.quest-item');
+    if (!item.classList.contains('completed')) {
+        item.classList.add('completed');
+        btn.textContent = 'Completed!';
+        addExp(50);
+        showToast('🎯 ทำภารกิจสำเร็จ! +50 EXP');
+    }
+};
+
+// =========================================
+//  ULTIMATE UPGRADE: Wearable Sync
+// =========================================
+window.syncWearable = function() {
+    const btn = document.getElementById('btn-sync-wearable');
+    const placeholder = document.getElementById('wearable-placeholder');
+    const container = document.getElementById('wearable-data-container');
+    const stepsEl = document.getElementById('wearable-steps');
+    const sleepEl = document.getElementById('wearable-sleep');
+    const insightEl = document.getElementById('wearable-ai-insight');
+    
+    if (!btn) return;
+    
+    btn.innerHTML = '<span class="animate-pulse">🔄 Syncing...</span>';
+    btn.disabled = true;
+    
+    setTimeout(() => {
+        // Simulate pulling data
+        const steps = Math.floor(Math.random() * 5000) + 3000;
+        const sleep = (Math.random() * 3 + 4).toFixed(1); // 4.0 - 7.0 hours
+        
+        if (placeholder) placeholder.style.display = 'none';
+        if (container) container.style.display = 'block';
+        
+        animateValue(stepsEl, 0, steps, 1500);
+        
+        // Float animation for sleep (handle decimal manually)
+        let s = 0;
+        const intv = setInterval(() => {
+            s += 0.2;
+            if (s >= parseFloat(sleep)) {
+                clearInterval(intv);
+                sleepEl.textContent = sleep;
+            } else {
+                sleepEl.textContent = s.toFixed(1);
+            }
+        }, 30);
+        
+        // AI Insight based on random data
+        setTimeout(() => {
+            if (sleep < 6) {
+                insightEl.innerHTML = "⚠️ <strong>AI Insight:</strong> คุณนอนพักผ่อนน้อยกว่า 6 ชั่วโมง ซึ่งอาจส่งผลให้ระดับคอร์ติซอล (ความเครียด) และความดันโลหิตสูงขึ้นได้ ควรเข้านอนก่อน 23:00 น.";
+            } else if (steps < 5000) {
+                insightEl.innerHTML = "💡 <strong>AI Insight:</strong> กิจกรรมทางกายค่อนข้างน้อย แนะนำให้เดินเพิ่มอีกนิด เพื่อช่วยเร่งการเผาผลาญ LDL (ไขมันเลว) ในเลือดครับ";
+            } else {
+                insightEl.innerHTML = "✅ <strong>AI Insight:</strong> กิจกรรมและการนอนอยู่ในเกณฑ์ดีเยี่ยม! รักษาวินัยแบบนี้ไว้ ค่าสุขภาพของคุณจะดีขึ้นอย่างต่อเนื่องแน่นอนครับ";
+            }
+            showToast('⌚ ซิงค์ข้อมูล Smart Watch สำเร็จ!');
+            btn.innerHTML = 'Synced ✅';
+        }, 1500);
+        
+    }, 2000);
+};
+
+// =========================================
+//  ULTIMATE UPGRADE: 7-Day Nutrition Plan
+// =========================================
+window.generateNutritionPlan = async function() {
+    const eh = window.extractedHealthData;
+    if (!eh) {
+        showToast('กรุณาอัปโหลดผลตรวจเลือดก่อนสร้างแผนโภชนาการ', 'warning');
+        return;
+    }
+
+    const btn = document.getElementById('btn-generate-plan');
+    const loading = document.getElementById('nutrition-loading');
+    const content = document.getElementById('nutrition-content');
+    const exportBtn = document.getElementById('btn-export-plan');
+    
+    btn.style.display = 'none';
+    loading.style.display = 'block';
+    content.style.display = 'none';
+    exportBtn.style.display = 'none';
+
+    // Build prompt based on real health data
+    const prompt = `คุณคือ Dr. LabLink แพทย์และนักโภชนาการผู้เชี่ยวชาญ 
+ข้อมูลผลเลือดคนไข้: 
+LDL: ${eh.ldl || '-'} mg/dL, 
+HDL: ${eh.hdl || '-'} mg/dL, 
+Cholesterol: ${eh.chol || '-'} mg/dL, 
+FBS (น้ำตาล): ${eh.fbs || '-'} mg/dL, 
+AST: ${eh.ast || '-'}, ALT: ${eh.alt || '-'}
+
+จงสร้าง "แผนโภชนาการและการออกกำลังกาย 7 วัน" ที่ออกแบบมาเพื่อแก้ปัญหาค่าผลเลือดเหล่านี้โดยเฉพาะ 
+ขอให้ออกแบบเป็น HTML Format ล้วนๆ (ไม่ต้องมี Markdown) โดยใช้โครงสร้างนี้สำหรับแต่ละวัน (เขียนมาให้ครบ 7 วัน):
+
+<div class="nutrition-day-card">
+  <h4>📅 วันที่ [X]: [Theme ของวัน เช่น วันดีท็อกซ์ตับ]</h4>
+  <div class="nutrition-meal">
+     <div class="meal-icon">🍳</div>
+     <div><strong>เช้า:</strong> [เมนู] - <em>[เหตุผลทางการแพทย์สั้นๆ]</em></div>
+  </div>
+  <div class="nutrition-meal">
+     <div class="meal-icon">🥗</div>
+     <div><strong>กลางวัน:</strong> [เมนู]</div>
+  </div>
+  <div class="nutrition-meal">
+     <div class="meal-icon">🐟</div>
+     <div><strong>เย็น:</strong> [เมนู]</div>
+  </div>
+  <div class="nutrition-meal">
+     <div class="meal-icon">🏃</div>
+     <div><strong>กิจกรรม:</strong> [การออกกำลังกาย]</div>
+  </div>
+</div>`;
+
+    const geminiKey = localStorage.getItem('gemini_api_key');
+    let useMock = false;
+    let res = null;
+
+    if (!geminiKey) {
+        useMock = true;
+    } else {
+        res = await requestGeminiGenerate(geminiKey, prompt);
+        if (res.error) {
+            console.warn("API Error, falling back to mock:", res.error);
+            useMock = true;
+        }
+    }
+
+    loading.style.display = 'none';
+
+    if (useMock) {
+        // Fallback to Mock Data so the user sees something without a valid key
+        const mockHTML = `
+        <div class="nutrition-day-card">
+          <h4>📅 วันที่ 1: ลดการอักเสบและลดไขมันเลว</h4>
+          <div class="nutrition-meal">
+             <div class="meal-icon">🍳</div>
+             <div><strong>เช้า:</strong> ข้าวโอ๊ตต้มนมถั่วเหลือง ใส่ผลไม้ตระกูลเบอร์รี่ - <em>ไฟเบอร์สูงช่วยกวาดไขมัน LDL</em></div>
+          </div>
+          <div class="nutrition-meal">
+             <div class="meal-icon">🥗</div>
+             <div><strong>กลางวัน:</strong> สลัดปลาแซลมอนย่าง น้ำสลัดน้ำใส - <em>โอเมก้า 3 ช่วยเพิ่ม HDL และลดการอักเสบ</em></div>
+          </div>
+          <div class="nutrition-meal">
+             <div class="meal-icon">🐟</div>
+             <div><strong>เย็น:</strong> แกงเลียงผักรวม (ไม่ใส่ผงชูรส) - <em>ลดปริมาณโซเดียม ช่วยเรื่องความดัน</em></div>
+          </div>
+          <div class="nutrition-meal">
+             <div class="meal-icon">🏃</div>
+             <div><strong>กิจกรรม:</strong> เดินเร็ว 30 นาที (สลับวิ่งเหยาะ) - <em>เพิ่มการเผาผลาญ</em></div>
+          </div>
+        </div>
+        <p style="text-align: center; color: var(--warning); margin-top: 16px;">
+          (⚠️ ข้อมูลจำลอง - หากต้องการให้ AI วางแผนแบบ 7 วันจริง กรุณาใส่ API Key ให้ถูกต้องในเมนูตั้งค่า)
+        </p>`;
+        
+        content.innerHTML = mockHTML;
+        content.style.display = 'block';
+        exportBtn.style.display = 'inline-block';
+        showToast('🥗 สร้างแผน (ระบบจำลอง) สำเร็จ!', 'success');
+        addExp(20);
+    } else {
+        // Clean markdown backticks if AI hallucinates them
+        let cleanHTML = res.text.replace(/```html/g, '').replace(/```/g, '');
+        content.innerHTML = cleanHTML;
+        content.style.display = 'block';
+        exportBtn.style.display = 'inline-block';
+        showToast('🥗 สร้างแผนโภชนาการ 7 วันสำเร็จ!', 'success');
+        addExp(20); // Reward for generating plan
+    }
+};
+
+window.exportPlanPDF = function() {
+    showToast('กำลังเตรียมไฟล์ PDF...', 'success');
+    const { jsPDF } = window.jspdf;
+    
+    // Quick snapshot using html2canvas
+    const content = document.getElementById('view-nutrition');
+    
+    html2canvas(content, { scale: 2 }).then(canvas => {
+        const imgData = canvas.toDataURL('image/png');
+        const pdf = new jsPDF('p', 'mm', 'a4');
+        const pdfWidth = pdf.internal.pageSize.getWidth();
+        const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
+        
+        pdf.text("LabLink - Personalized 7-Day Health Plan", 10, 10);
+        pdf.addImage(imgData, 'PNG', 0, 20, pdfWidth, pdfHeight);
+        pdf.save('LabLink-7-Day-Plan.pdf');
+        
+        showToast('📄 ดาวน์โหลด PDF สำเร็จ!', 'success');
+    });
+};

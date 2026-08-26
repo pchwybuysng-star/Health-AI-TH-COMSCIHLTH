@@ -21,6 +21,13 @@
     --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
     --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1);
     --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1);
+    --primary-glow: rgba(59, 130, 246, 0.4);
+    --success-glow: rgba(16, 185, 129, 0.4);
+    --warning-glow: rgba(245, 158, 11, 0.4);
+    --danger-glow: rgba(239, 68, 68, 0.4);
+    --glass-bg: rgba(255, 255, 255, 0.7);
+    --glass-border: rgba(255, 255, 255, 0.3);
+    --gradient-premium: linear-gradient(135deg, #3b82f6, #8b5cf6, #06b6d4);
 }
 
 * {
@@ -2196,4 +2203,537 @@ html {
     .kidney-container {
         transform: scale(0.8);
     }
+}
+
+/* =========================================
+   Upgrade: Glassmorphism Cards
+   ========================================= */
+.glass-card {
+    background: var(--glass-bg) !important;
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid var(--glass-border) !important;
+}
+
+/* =========================================
+   Upgrade: Metric Card Glow Effects
+   ========================================= */
+.metric-card.success {
+    box-shadow: 0 4px 15px -3px var(--success-glow), var(--shadow-sm);
+    border-left: 4px solid var(--success);
+}
+.metric-card.warning {
+    box-shadow: 0 4px 15px -3px var(--warning-glow), var(--shadow-sm);
+    border-left: 4px solid var(--warning);
+}
+.metric-card.danger {
+    box-shadow: 0 4px 15px -3px var(--danger-glow), var(--shadow-sm);
+    border-left: 4px solid var(--danger);
+}
+.metric-card {
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+.metric-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 8px 25px -5px var(--primary-glow);
+}
+
+/* =========================================
+   Upgrade: Sidebar Active Glow
+   ========================================= */
+.nav-menu a.active {
+    background: linear-gradient(135deg, rgba(59, 130, 246, 0.1), rgba(99, 102, 241, 0.1)) !important;
+    box-shadow: inset 3px 0 0 var(--primary), 0 2px 8px rgba(59, 130, 246, 0.15);
+    color: var(--primary) !important;
+    font-weight: 600;
+}
+
+/* =========================================
+   Upgrade: Header Glass Effect
+   ========================================= */
+.top-header {
+    background: var(--glass-bg);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border-bottom: 1px solid var(--glass-border);
+}
+
+/* =========================================
+   Upgrade: Animations
+   ========================================= */
+@keyframes pulse-glow {
+    0%, 100% { filter: drop-shadow(0 0 6px currentColor); opacity: 0.8; }
+    50% { filter: drop-shadow(0 0 16px currentColor); opacity: 1; }
+}
+@keyframes shimmer {
+    0% { background-position: -200% 0; }
+    100% { background-position: 200% 0; }
+}
+@keyframes float-up {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-8px); }
+}
+@keyframes typewriter {
+    from { width: 0; }
+    to { width: 100%; }
+}
+@keyframes gradient-shift {
+    0% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
+}
+
+.animate-float {
+    animation: float-up 3s ease-in-out infinite;
+}
+.animate-shimmer {
+    background: linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.4) 50%, transparent 100%);
+    background-size: 200% 100%;
+    animation: shimmer 2s ease-in-out infinite;
+}
+.animate-gradient {
+    background-size: 200% 200%;
+    animation: gradient-shift 4s ease infinite;
+}
+
+/* =========================================
+   Upgrade: Upload Drag & Drop
+   ========================================= */
+.upload-box {
+    transition: border-color 0.3s ease, box-shadow 0.3s ease, transform 0.3s ease;
+}
+.upload-box.drag-over {
+    border-color: var(--primary) !important;
+    box-shadow: 0 0 30px var(--primary-glow), inset 0 0 30px rgba(59, 130, 246, 0.05);
+    transform: scale(1.02);
+}
+
+/* Feature Pills */
+.feature-pills {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    justify-content: center;
+    margin-top: 16px;
+}
+.feature-pill {
+    background: linear-gradient(135deg, rgba(59,130,246,0.08), rgba(99,102,241,0.08));
+    border: 1px solid rgba(59,130,246,0.2);
+    padding: 6px 14px;
+    border-radius: 20px;
+    font-size: 0.82rem;
+    font-weight: 500;
+    color: var(--primary-dark);
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    transition: all 0.2s ease;
+}
+.feature-pill:hover {
+    background: linear-gradient(135deg, rgba(59,130,246,0.15), rgba(99,102,241,0.15));
+    transform: translateY(-2px);
+}
+
+/* =========================================
+   Upgrade: Quick Insights Banner
+   ========================================= */
+.insights-banner {
+    background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+    color: white;
+    padding: 20px 24px;
+    border-radius: 16px;
+    margin-bottom: 24px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    box-shadow: 0 8px 30px -10px rgba(59, 130, 246, 0.5);
+    position: relative;
+    overflow: hidden;
+}
+.insights-banner::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    right: -20%;
+    width: 300px;
+    height: 300px;
+    background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
+    pointer-events: none;
+}
+.insights-banner .insights-icon {
+    font-size: 2.5rem;
+    flex-shrink: 0;
+    animation: float-up 3s ease-in-out infinite;
+}
+.insights-banner .insights-text h3 {
+    font-size: 1.1rem;
+    font-weight: 700;
+    margin-bottom: 4px;
+}
+.insights-banner .insights-text p {
+    font-size: 0.9rem;
+    opacity: 0.9;
+    line-height: 1.5;
+}
+
+/* =========================================
+   Upgrade: Risk Score Gauge
+   ========================================= */
+.risk-gauge-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 24px;
+}
+.risk-gauge {
+    width: 160px;
+    height: 80px;
+    position: relative;
+    overflow: hidden;
+}
+.risk-gauge-bg {
+    width: 160px;
+    height: 160px;
+    border-radius: 50%;
+    background: conic-gradient(
+        #10b981 0deg 108deg,
+        #f59e0b 108deg 180deg,
+        #ef4444 180deg 252deg,
+        #7f1d1d 252deg 360deg
+    );
+    position: absolute;
+    top: 0;
+    left: 0;
+}
+.risk-gauge-mask {
+    width: 120px;
+    height: 120px;
+    background: var(--bg-card);
+    border-radius: 50%;
+    position: absolute;
+    top: 20px;
+    left: 20px;
+}
+.risk-gauge-needle {
+    width: 3px;
+    height: 60px;
+    background: var(--text-main);
+    position: absolute;
+    bottom: 0;
+    left: 50%;
+    transform-origin: bottom center;
+    transform: translateX(-50%) rotate(-90deg);
+    transition: transform 1.5s cubic-bezier(0.4, 0, 0.2, 1);
+    border-radius: 2px;
+    z-index: 2;
+}
+.risk-gauge-center {
+    width: 12px;
+    height: 12px;
+    background: var(--text-main);
+    border-radius: 50%;
+    position: absolute;
+    bottom: -6px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 3;
+}
+.risk-score-value {
+    font-size: 2rem;
+    font-weight: 800;
+    margin-top: 8px;
+}
+.risk-score-label {
+    font-size: 0.85rem;
+    color: var(--text-light);
+    margin-top: 4px;
+}
+
+/* =========================================
+   Upgrade: Sparkline
+   ========================================= */
+.sparkline-container {
+    margin-top: 8px;
+    height: 30px;
+    width: 100%;
+}
+.sparkline-container svg {
+    width: 100%;
+    height: 100%;
+}
+
+/* =========================================
+   Upgrade: Live Badge
+   ========================================= */
+.live-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: rgba(239, 68, 68, 0.1);
+    color: #ef4444;
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 0.75rem;
+    font-weight: 600;
+}
+.live-dot {
+    width: 8px;
+    height: 8px;
+    background: #ef4444;
+    border-radius: 50%;
+    animation: pulse-glow 1.5s ease-in-out infinite;
+}
+
+/* =========================================
+   Upgrade: Real-time Clock
+   ========================================= */
+.realtime-clock {
+    font-size: 0.85rem;
+    color: var(--text-light);
+    font-weight: 500;
+    font-family: 'Inter', monospace;
+}
+
+/* =========================================
+   Upgrade: Anatomy Tooltip
+   ========================================= */
+.organ-tooltip {
+    position: absolute;
+    background: rgba(15, 23, 42, 0.9);
+    color: white;
+    padding: 8px 14px;
+    border-radius: 8px;
+    font-size: 0.8rem;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.2s ease;
+    z-index: 100;
+    white-space: nowrap;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+}
+.organ-tooltip.visible {
+    opacity: 1;
+}
+
+/* =========================================
+   Upgrade: Demo Button
+   ========================================= */
+.btn-demo {
+    background: transparent;
+    border: 1px dashed var(--text-light);
+    color: var(--text-light);
+    padding: 8px 20px;
+    border-radius: 8px;
+    font-size: 0.85rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    margin-top: 12px;
+}
+.btn-demo:hover {
+    border-color: var(--primary);
+    color: var(--primary);
+    background: rgba(59, 130, 246, 0.05);
+}
+
+/* =========================================
+   Ultimate Upgrade: Toast Notifications
+   ========================================= */
+#toast-container {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    z-index: 9999;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+.toast {
+    background: var(--glass-bg);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border-left: 4px solid var(--primary);
+    padding: 16px 20px;
+    border-radius: 8px;
+    box-shadow: var(--shadow-lg);
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    transform: translateX(120%);
+    opacity: 0;
+    transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275), opacity 0.4s;
+    font-weight: 500;
+}
+.toast.show {
+    transform: translateX(0);
+    opacity: 1;
+}
+.toast.success { border-color: var(--success); }
+.toast.warning { border-color: var(--warning); }
+.toast.danger { border-color: var(--danger); }
+
+/* =========================================
+   Ultimate Upgrade: Gamification (Sidebar)
+   ========================================= */
+.user-level-container {
+    margin-top: 8px;
+    width: 100%;
+}
+.level-badge {
+    font-size: 0.75rem;
+    font-weight: 700;
+    background: var(--gradient-premium);
+    color: white;
+    padding: 2px 8px;
+    border-radius: 12px;
+    display: inline-block;
+    margin-bottom: 4px;
+}
+.exp-bar-bg {
+    width: 100%;
+    height: 6px;
+    background: rgba(0,0,0,0.1);
+    border-radius: 3px;
+    overflow: hidden;
+}
+.exp-bar-fill {
+    height: 100%;
+    background: var(--gradient-premium);
+    width: 0%;
+    transition: width 1s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* =========================================
+   Ultimate Upgrade: Gamification (Quests)
+   ========================================= */
+.quest-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px;
+    background: rgba(59, 130, 246, 0.05);
+    border: 1px solid rgba(59, 130, 246, 0.1);
+    border-radius: 8px;
+    margin-bottom: 8px;
+    transition: all 0.3s ease;
+}
+.quest-item.completed {
+    background: rgba(16, 185, 129, 0.05);
+    border-color: rgba(16, 185, 129, 0.2);
+    opacity: 0.7;
+}
+.quest-item.completed .quest-text {
+    text-decoration: line-through;
+    color: var(--text-light);
+}
+.btn-quest {
+    background: var(--primary);
+    color: white;
+    border: none;
+    padding: 6px 12px;
+    border-radius: 12px;
+    font-size: 0.8rem;
+    cursor: pointer;
+    font-weight: 600;
+    transition: all 0.2s;
+}
+.btn-quest:hover { background: var(--primary-dark); transform: scale(1.05); }
+.quest-item.completed .btn-quest {
+    background: var(--success);
+    pointer-events: none;
+}
+
+/* =========================================
+   Ultimate Upgrade: DNA Scanner
+   ========================================= */
+.dna-scanner {
+    width: 100%;
+    height: 120px;
+    position: relative;
+    overflow: hidden;
+    background: linear-gradient(to bottom, rgba(16,185,129,0.05), rgba(16,185,129,0.2), rgba(16,185,129,0.05));
+    border-radius: 8px;
+    border: 1px solid rgba(16,185,129,0.3);
+}
+.dna-matrix {
+    position: absolute;
+    top: -100%;
+    left: 0;
+    width: 100%;
+    height: 200%;
+    background-image: linear-gradient(rgba(16,185,129,0.3) 1px, transparent 1px),
+                      linear-gradient(90deg, rgba(16,185,129,0.3) 1px, transparent 1px);
+    background-size: 20px 20px;
+    animation: matrixScroll 4s linear infinite;
+}
+.dna-laser {
+    position: absolute;
+    width: 100%;
+    height: 4px;
+    background: #10b981;
+    box-shadow: 0 0 15px 5px rgba(16,185,129,0.5);
+    animation: scanLaser 2s ease-in-out infinite alternate;
+}
+@keyframes matrixScroll {
+    0% { top: -100%; }
+    100% { top: 0; }
+}
+@keyframes scanLaser {
+    0% { top: 0; }
+    100% { top: 116px; }
+}
+
+/* =========================================
+   Ultimate Upgrade: SVG Draw Animation
+   ========================================= */
+.draw-svg path {
+    stroke-dasharray: 1000;
+    stroke-dashoffset: 1000;
+    animation: drawPath 3s ease-out forwards;
+}
+@keyframes drawPath {
+    to { stroke-dashoffset: 0; }
+}
+
+/* =========================================
+   Ultimate Upgrade: Wearable & Nutrition UI
+   ========================================= */
+.wearable-stat {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 12px;
+    background: rgba(255,255,255,0.5);
+    border-radius: 8px;
+    flex: 1;
+}
+[data-theme="dark"] .wearable-stat { background: rgba(0,0,0,0.2); }
+
+.nutrition-day-card {
+    background: var(--glass-bg);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 20px;
+    margin-bottom: 16px;
+    box-shadow: var(--shadow-sm);
+}
+.nutrition-day-card h4 {
+    color: var(--primary);
+    border-bottom: 2px solid var(--primary-glow);
+    padding-bottom: 8px;
+    margin-bottom: 12px;
+}
+.nutrition-meal {
+    display: flex;
+    gap: 12px;
+    margin-bottom: 12px;
+}
+.nutrition-meal .meal-icon {
+    font-size: 1.5rem;
+    background: rgba(59, 130, 246, 0.1);
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
 }

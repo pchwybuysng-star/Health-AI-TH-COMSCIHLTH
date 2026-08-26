@@ -75,9 +75,15 @@
             </nav>
             <div class="user-profile">
                 <div class="avatar">U</div>
-                <div class="user-info">
+                <div class="user-info" style="width: 100%;">
                     <span class="name">ผู้ใช้งานทดสอบ</span>
-                    <span class="role">Premium Plan</span>
+                    <div class="user-level-container">
+                        <span class="level-badge" id="user-level-badge">LV. 1 Beginner</span>
+                        <div class="exp-bar-bg">
+                            <div class="exp-bar-fill" id="user-exp-fill" style="width: 10%;"></div>
+                        </div>
+                        <div style="font-size: 0.65rem; color: var(--text-light); text-align: right; margin-top: 2px;" id="user-exp-text">10 / 100 EXP</div>
+                    </div>
                 </div>
             </div>
         </aside>
@@ -87,7 +93,11 @@
             <header class="top-header">
                 <div class="header-text">
                     <h1>ยินดีต้อนรับสู่ LabLink <span>AI</span></h1>
-                    <p style="color: var(--text-light); margin-top: 4px;">เปลี่ยนตัวเลขผลแล็บที่ซับซ้อน ให้เป็นภาพที่คุณเข้าใจได้ทันที</p>
+                    <div style="display: flex; align-items: center; gap: 12px; margin-top: 4px;">
+                        <p style="color: var(--text-light);">เปลี่ยนตัวเลขผลแล็บที่ซับซ้อน ให้เป็นภาพที่คุณเข้าใจได้ทันที</p>
+                        <span class="live-badge"><span class="live-dot"></span> Live</span>
+                    </div>
+                    <div class="realtime-clock" id="realtime-clock"></div>
                 </div>
                                 <div class="header-action" style="display: flex; flex-direction: column; align-items: flex-end; gap: 8px;">
                     <span class="badge-pro" style="background: linear-gradient(135deg, var(--primary), var(--secondary)); color: white; padding: 8px 16px; border-radius: 20px; font-weight: 600; font-size: 0.9rem; box-shadow: 0 4px 10px rgba(59,130,246,0.3);">✨ Medical Grade AI</span>
@@ -107,20 +117,24 @@
                         <button class="btn-primary animate-pulse" id="btn-upload" onclick="document.getElementById('real-file-upload').click();">
                             คลิกเพื่ออัปโหลดผลตรวจ (PDF, รูปภาพ)
                         </button>
+                        <div class="feature-pills">
+                            <span class="feature-pill">🩸 CBC</span>
+                            <span class="feature-pill">🫀 Lipid</span>
+                            <span class="feature-pill">🍎 Glucose</span>
+                            <span class="feature-pill">🦴 Liver</span>
+                            <span class="feature-pill">🧬 Hormone</span>
+                        </div>
+                        <button class="btn-demo" id="btn-demo-file" onclick="loadDemoFile()">
+                            📂 ไม่มีไฟล์? ลองด้วยไฟล์ตัวอย่าง
+                        </button>
                     </div>
 
                     <div id="loadingState" class="processing-state" style="display: none;">
-                        <div class="scanner-container">
-                            <div class="mock-document">
-                                <div class="doc-line" style="width: 80%"></div>
-                                <div class="doc-line" style="width: 60%"></div>
-                                <div class="doc-line" style="width: 90%"></div>
-                                <div class="doc-line" style="width: 70%"></div>
-                                <div class="doc-line" style="width: 50%"></div>
-                                <div class="scanner-laser"></div>
-                            </div>
+                        <div class="dna-scanner">
+                            <div class="dna-matrix"></div>
+                            <div class="dna-laser"></div>
                         </div>
-                        <p class="scanning-text" id="scanningText">AI กำลังสกัดข้อมูล...</p>
+                        <p class="scanning-text" id="scanningText" style="margin-top: 16px; font-weight: 600; color: var(--primary);">🧬 AI กำลังสกัดรหัสพันธุกรรมและผลเลือด...</p>
                     </div>
 
                     <div id="upload-verify-state" style="display: none; text-align: center; padding: 20px;">
@@ -157,6 +171,14 @@
             <!-- View 2: Dashboard -->
             <section class="view-section" id="view-dashboard" style="display: none;">
                 <div class="dashboard-grid">
+                    <!-- Quick Insights Banner -->
+                    <div class="insights-banner" style="grid-column: 1 / -1;">
+                        <div class="insights-icon">🧬</div>
+                        <div class="insights-text">
+                            <h3>AI Quick Insights</h3>
+                            <p id="ai-quick-summary">สุขภาพโดยรวมของคุณอยู่ในเกณฑ์ดี ✅ แต่มี 2 จุดที่ควรเฝ้าระวัง: ไขมัน LDL ปริ่มเกณฑ์ 🍔 และคอเลสเตอรอลรวมสูงเล็กน้อย 🛡️ — AI แนะนำให้เพิ่มการออกกำลังกายแบบคาร์ดิโอ</p>
+                        </div>
+                    </div>
                                         <div class="card glass-card score-card">
                         <h3>อายุสุขภาพของคุณ (Health Age)</h3>
                         <div class="circular-progress" data-progress="85" style="width: 140px; height: 140px; margin: 0 auto; position: relative;">
@@ -177,27 +199,54 @@
                             <div class="metric-header"><span>ความดันโลหิต</span> <span class="icon">🫀</span></div>
                             <div class="metric-value">125/82 <span style="font-size: 0.8rem;">mmHg</span></div>
                             <div class="metric-status">ค่อนข้างสูง</div>
+                            <div class="sparkline-container"><svg viewBox="0 0 100 30" preserveAspectRatio="none"><polyline fill="none" stroke="var(--warning)" stroke-width="2" points="0,20 15,18 30,22 45,15 60,20 75,12 100,18"/></svg></div>
                         </div>
                         <div class="metric-card warning">
                             <div class="metric-header"><span>คอเลสเตอรอลรวม</span> <span class="icon">🛡️</span></div>
                             <div class="metric-value">210 <span style="font-size: 0.8rem;">mg/dL</span></div>
                             <div class="metric-status">สูงเล็กน้อย</div>
+                            <div class="sparkline-container"><svg viewBox="0 0 100 30" preserveAspectRatio="none"><polyline fill="none" stroke="var(--warning)" stroke-width="2" points="0,25 15,22 30,20 45,18 60,22 75,15 100,12"/></svg></div>
                         </div>
                         <div class="metric-card success">
                             <div class="metric-header"><span>HDL (ไขมันดี)</span> <span class="icon">🥑</span></div>
                             <div class="metric-value">55 <span style="font-size: 0.8rem;">mg/dL</span></div>
                             <div class="metric-status">ปกติ</div>
+                            <div class="sparkline-container"><svg viewBox="0 0 100 30" preserveAspectRatio="none"><polyline fill="none" stroke="var(--success)" stroke-width="2" points="0,22 15,20 30,18 45,15 60,12 75,10 100,8"/></svg></div>
                         </div>
                         <div class="metric-card warning">
                             <div class="metric-header"><span>LDL (ไขมันเลว)</span> <span class="icon">🍔</span></div>
                             <div class="metric-value">130 <span style="font-size: 0.8rem;">mg/dL</span></div>
                             <div class="metric-status">ปริ่มเกณฑ์</div>
+                            <div class="sparkline-container"><svg viewBox="0 0 100 30" preserveAspectRatio="none"><polyline fill="none" stroke="var(--warning)" stroke-width="2" points="0,10 15,12 30,15 45,18 60,16 75,20 100,22"/></svg></div>
                         </div>
                         <div class="metric-card success">
                             <div class="metric-header"><span>ระดับน้ำตาล (FBS)</span> <span class="icon">🍎</span></div>
                             <div class="metric-value">88 <span style="font-size: 0.8rem;">mg/dL</span></div>
                             <div class="metric-status">ปกติ</div>
+                            <div class="sparkline-container"><svg viewBox="0 0 100 30" preserveAspectRatio="none"><polyline fill="none" stroke="var(--success)" stroke-width="2" points="0,18 15,15 30,12 45,14 60,10 75,12 100,8"/></svg></div>
                         </div>
+                    </div>
+
+                    <!-- Risk Score Widget -->
+                    <div class="card glass-card" style="text-align: center;">
+                        <h3 style="margin-bottom: 16px;">⚡ ความเสี่ยงโรคหัวใจ</h3>
+                        <div class="risk-gauge-container">
+                            <div class="risk-gauge">
+                                <div class="risk-gauge-bg"></div>
+                                <div class="risk-gauge-mask"></div>
+                                <div class="risk-gauge-needle" id="risk-needle"></div>
+                                <div class="risk-gauge-center"></div>
+                            </div>
+                            <div class="risk-score-value" id="risk-score-value" style="color: var(--success);">12%</div>
+                            <div class="risk-score-label">ASCVD Risk (10 ปี)</div>
+                        </div>
+                    </div>
+
+                    <!-- Upload Date Badge -->
+                    <div class="card glass-card" style="text-align: center;">
+                        <h3 style="margin-bottom: 12px;">📅 ผลตรวจล่าสุด</h3>
+                        <div id="upload-date-display" style="font-size: 1.3rem; font-weight: 700; color: var(--primary);">วันนี้</div>
+                        <p style="color: var(--text-light); font-size: 0.85rem; margin-top: 8px;" id="upload-date-detail">อัปโหลดเมื่อเข้าสู่ระบบ</p>
                     </div>
 
                     
@@ -209,7 +258,7 @@
                             <span class="badge-pro" style="background: var(--primary); color: white; padding: 4px 10px; border-radius: 12px; font-size: 0.8rem;">Real-time</span>
                         </div>
                         <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 20px 0;">
-                            <svg viewBox="0 0 200 300" style="width: 100%; max-height: 350px; drop-shadow: 0 0 20px rgba(14, 165, 233, 0.3);">
+                            <svg class="draw-svg" viewBox="0 0 200 300" style="width: 100%; max-height: 350px; drop-shadow: 0 0 20px rgba(14, 165, 233, 0.3);">
                                 <!-- Outline Torso -->
                                 <path d="M100,20 C130,20 140,50 140,70 C140,100 120,110 100,110 C80,110 60,100 60,70 C60,50 70,20 100,20 Z" fill="none" stroke="#e2e8f0" stroke-width="2" stroke-dasharray="4,4" class="dark-mode-stroke"/>
                                 <path d="M60,110 C80,105 120,105 140,110 C160,120 175,160 175,200 C175,260 150,300 120,300 L80,300 C50,300 25,260 25,200 C25,160 40,120 60,110 Z" fill="none" stroke="#e2e8f0" stroke-width="2" class="dark-mode-stroke"/>
@@ -234,6 +283,56 @@
                                 <div style="display: flex; align-items: center; gap: 6px;"><div style="width: 12px; height: 12px; background: #10b981; border-radius: 50%;"></div> ปกติ (Optimal)</div>
                                 <div style="display: flex; align-items: center; gap: 6px;"><div style="width: 12px; height: 12px; background: #f59e0b; border-radius: 50%;"></div> เฝ้าระวัง (Warning)</div>
                                 <div style="display: flex; align-items: center; gap: 6px;"><div style="width: 12px; height: 12px; background: #ef4444; border-radius: 50%; box-shadow: 0 0 8px #ef4444;"></div> อันตราย (Critical)</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Wearable & Quests -->
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 24px; margin-bottom: 24px;">
+                        
+                        <!-- Smartwatch Sync -->
+                        <div class="card glass-card">
+                            <div class="card-header-flex">
+                                <h3>⌚ อุปกรณ์สวมใส่ (Wearables)</h3>
+                                <button class="btn-outline" id="btn-sync-wearable" style="padding: 4px 12px; font-size: 0.8rem;" onclick="syncWearable()">Sync Data</button>
+                            </div>
+                            <div id="wearable-data-container" style="display: none; margin-top: 16px;">
+                                <div style="display: flex; gap: 12px;">
+                                    <div class="wearable-stat">
+                                        <span style="font-size: 1.5rem;">👣</span>
+                                        <span id="wearable-steps" style="font-weight: 700; font-size: 1.2rem; margin-top: 4px;">--</span>
+                                        <span style="font-size: 0.75rem; color: var(--text-light);">ก้าว/วัน</span>
+                                    </div>
+                                    <div class="wearable-stat">
+                                        <span style="font-size: 1.5rem;">🛌</span>
+                                        <span id="wearable-sleep" style="font-weight: 700; font-size: 1.2rem; margin-top: 4px;">--</span>
+                                        <span style="font-size: 0.75rem; color: var(--text-light);">ชั่วโมง</span>
+                                    </div>
+                                </div>
+                                <div id="wearable-ai-insight" style="margin-top: 16px; font-size: 0.85rem; color: var(--primary-dark); background: rgba(59,130,246,0.1); padding: 12px; border-radius: 8px;">
+                                    วิเคราะห์...
+                                </div>
+                            </div>
+                            <div id="wearable-placeholder" style="text-align: center; padding: 20px; color: var(--text-light);">
+                                กดปุ่ม Sync เพื่อเชื่อมต่อข้อมูลสุขภาพ
+                            </div>
+                        </div>
+
+                        <!-- Daily Quests -->
+                        <div class="card glass-card">
+                            <div class="card-header-flex">
+                                <h3>🎯 ภารกิจสุขภาพวันนี้</h3>
+                                <span style="font-size: 0.8rem; color: var(--primary);">+50 EXP/ภารกิจ</span>
+                            </div>
+                            <div style="margin-top: 16px;" id="quest-container">
+                                <div class="quest-item">
+                                    <div class="quest-text">💧 ดื่มน้ำ 2.5 ลิตร (ลดความข้นเลือด)</div>
+                                    <button class="btn-quest" onclick="completeQuest(this)">Check-in</button>
+                                </div>
+                                <div class="quest-item">
+                                    <div class="quest-text">🏃 เดินครบ 8,000 ก้าว (ลด LDL)</div>
+                                    <button class="btn-quest" onclick="completeQuest(this)">Check-in</button>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -1048,6 +1147,39 @@
                 </div>
             </section>
 
+            <!-- View 5: Nutrition & 7-Day Plan -->
+            <section class="view-section" id="view-nutrition" style="display: none;">
+                <div class="card glass-card full-width" style="margin-bottom: 24px;">
+                    <div style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 16px;">
+                        <div>
+                            <h2>🥗 แผนโภชนาการสั่งตัด (AI 7-Day Plan)</h2>
+                            <p style="color: var(--text-light); margin-top: 8px;">AI จะวิเคราะห์ผลเลือดปัจจุบันของคุณ (เช่น ค่าไขมัน, น้ำตาล, ตับ) และสร้างตารางอาหารและออกกำลังกายที่เหมาะสมที่สุดสำหรับคุณในสัปดาห์นี้</p>
+                        </div>
+                        <div style="display: flex; gap: 12px;">
+                            <button class="btn-primary animate-pulse" id="btn-generate-plan" onclick="generateNutritionPlan()">
+                                ✨ สร้างแผน 7 วันด้วย AI
+                            </button>
+                            <button class="btn-outline" id="btn-export-plan" style="display: none;" onclick="exportPlanPDF()">
+                                📄 Export PDF
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="nutrition-loading" style="display: none; text-align: center; padding: 40px;">
+                    <div class="dna-scanner" style="width: 200px; margin: 0 auto 20px;">
+                        <div class="dna-matrix"></div>
+                        <div class="dna-laser"></div>
+                    </div>
+                    <h3 style="color: var(--primary);">Dr. LabLink กำลังออกแบบแผนสุขภาพเฉพาะคุณ...</h3>
+                    <p style="color: var(--text-light); margin-top: 8px;">วิเคราะห์ค่า LDL, FBS, และตับ เพื่อคัดเลือกวัตถุดิบที่ดีที่สุด</p>
+                </div>
+
+                <div id="nutrition-content" style="display: none;">
+                    <!-- AI will inject the 7-day plan here -->
+                </div>
+            </section>
+
             <section class="view-section" id="view-trends" style="display: none;">
                 <div class="header-action" style="margin-bottom: 24px;">
                     <h2>📈 ประวัติผลตรวจย้อนหลัง & การวิเคราะห์เชิงลึก (Deep Analytics)</h2>
@@ -1477,7 +1609,7 @@
                                     <p class="text-sm" style="margin-top: 4px;">เปิดใช้งาน AI ของแท้สำหรับแชทบอทและการวิเคราะห์ผลแล็บ (ดึงข้อมูล Context ผลเลือดปัจจุบันไปวิเคราะห์สด)</p>
                                 </div>
                                 <div style="display: flex; gap: 8px; width: 100%;">
-                                    <input type="password" id="gemini-api-key" placeholder="Paste your Gemini API Key here (AIzaSy...)" style="flex: 1; padding: 10px; border: 1px solid var(--border); border-radius: 6px; font-family: monospace;">
+                                    <input type="password" id="gemini-api-key" placeholder="Paste your Gemini API Key here" style="flex: 1; padding: 10px; border: 1px solid var(--border); border-radius: 6px; font-family: monospace;">
                                     <button class="btn-primary" id="btn-save-gemini" style="padding: 10px 20px;">บันทึก Key</button>
                                 </div>
                                 <p id="gemini-status" style="font-size: 0.85rem; color: var(--success); display: none;">✅ เชื่อมต่อ Gemini AI สำเร็จ! บอทจะใช้ AI จริงในการตอบคำถาม</p>
@@ -1550,6 +1682,8 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/tsparticles@2.12.0/tsparticles.bundle.min.js"></script>
     <script src="Script.js"></script>
+    <!-- Toast Notifications Container -->
+    <div id="toast-container"></div>
 </body>
 
 </html>
