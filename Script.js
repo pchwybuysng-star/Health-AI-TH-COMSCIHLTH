@@ -9,8 +9,7 @@ document.addEventListener('DOMContentLoaded', () => {
     initChatbot();
     initThemeToggle();
     init3DTilt();
-    initExportPDF();
-    initTrendsChart();
+        initTrendsChart();
 
     // Set initial view
     const uploadNav = document.getElementById('nav-upload');
@@ -487,30 +486,44 @@ function initChatbot() {
 นี่คือผลเลือดปัจจุบันของผู้ป่วย: ${promptCtx}`;
 
                 
+                
                 fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${geminiKey}`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
                         contents: [
                             { role: "user", parts: [{ text: sysPrompt + "\nคำถามจากผู้ป่วย: " + text }] }
+                        ],
+                        
+                        safetySettings: [
+                            { category: "HARM_CATEGORY_DANGEROUS_CONTENT", threshold: "BLOCK_NONE" },
+                            { category: "HARM_CATEGORY_HARASSMENT", threshold: "BLOCK_NONE" },
+                            { category: "HARM_CATEGORY_HATE_SPEECH", threshold: "BLOCK_NONE" },
+                            { category: "HARM_CATEGORY_SEXUALLY_EXPLICIT", threshold: "BLOCK_NONE" }
                         ]
+
                     })
                 }).then(res => res.json()).then(data => {
                     if (data.error) {
                         console.error("Gemini API Error:", data.error);
-                        handleAIResponse(`❌ ข้อผิดพลาดจาก AI: ${data.error.message} <br><br>👉 โปรดตรวจสอบว่า API Key ถูกต้องหรือไม่ ในหน้าตั้งค่า`);
+                        handleAIResponse(`❌ ข้อผิดพลาดจาก AI: ${data.error.message} <br><br>👉 โปรดตรวจสอบว่า API Key ถูกต้องหรือไม่`);
                         return;
                     }
                     if (data.candidates && data.candidates.length > 0) {
-                        const aiText = data.candidates[0].content.parts[0].text;
-                        handleAIResponse(aiText);
+                        const candidate = data.candidates[0];
+                        if (candidate.content && candidate.content.parts && candidate.content.parts.length > 0) {
+                            handleAIResponse(candidate.content.parts[0].text);
+                        } else {
+                            handleAIResponse(`❌ AI ไม่สามารถตอบได้ (Finish Reason: ${candidate.finishReason}) อาจติดเรื่อง Safety Filter ทางการแพทย์`);
+                        }
                     } else {
                         handleAIResponse("ขออภัยครับ AI ไม่สามารถตอบได้ในขณะนี้ กรุณาลองใหม่");
                     }
                 }).catch(err => {
                     console.error("Fetch Error:", err);
-                    handleAIResponse("❌ เกิดข้อผิดพลาดในการเชื่อมต่อเครือข่าย หรือ API Key มีปัญหา");
+                    handleAIResponse("❌ เกิดข้อผิดพลาดในระบบ (โปรดตรวจสอบ Console)");
                 });
+
 
             } else {
                 // Fallback to Rule-based Mock
@@ -571,50 +584,7 @@ function init3DTilt() {
     }
 }
 
-// 7. Export PDF Logic
-function initExportPDF() {
-    const btnExport = document.getElementById('btn-export-pdf');
-    if (!btnExport) return;
 
-    btnExport.addEventListener('click', () => {
-        // Switch to dashboard view temporarily to capture it
-        const dashboardNav = document.getElementById('nav-dashboard');
-        if (dashboardNav) dashboardNav.click();
-
-        const originalText = btnExport.innerText;
-        btnExport.innerText = "กำลังสร้าง PDF...";
-        btnExport.disabled = true;
-
-        // Allow UI to render the dashboard before capturing
-        setTimeout(() => {
-            const element = document.getElementById('view-dashboard');
-
-            const opt = {
-                margin: [10, 10, 10, 10],
-                filename: 'LabLink-Health-Report.pdf',
-                image: { type: 'jpeg', quality: 0.98 },
-                html2canvas: { scale: 2, useCORS: true, logging: false },
-                jsPDF: { unit: 'mm', format: 'a3', orientation: 'portrait' }
-            };
-
-            // Call html2pdf
-            if (typeof html2pdf !== 'undefined') {
-                html2pdf().set(opt).from(element).save().then(() => {
-                    // Reset button text
-                    const settingsNav = document.getElementById('nav-settings');
-                    if (settingsNav) settingsNav.click();
-
-                    btnExport.innerText = originalText;
-                    btnExport.disabled = false;
-                });
-            } else {
-                alert("ระบบไม่พบไลบรารีสำหรับสร้าง PDF กรุณาลองใหม่อีกครั้ง");
-                btnExport.innerText = originalText;
-                btnExport.disabled = false;
-            }
-        }, 500);
-    });
-}
 
 // 8. Trends Chart (Chart.js)
 function initTrendsChart() {
@@ -888,10 +858,13 @@ function initParticles() {
     });
 }
 // --- Medical Standard PDF Export ---
+
 document.addEventListener('DOMContentLoaded', () => {
-    const btnExport = document.getElementById('btn-export-pdf');
-    if (btnExport) {
+    const btnsExport = document.querySelectorAll('#btn-export-pdf, #btn-export-pdf-settings');
+    
+    btnsExport.forEach(btnExport => {
         btnExport.addEventListener('click', async () => {
+
             const originalText = btnExport.innerHTML;
             btnExport.innerHTML = '<span class="icon animate-pulse">⏳</span> Generating...';
             
@@ -899,9 +872,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 const { jsPDF } = window.jspdf;
                 const doc = new jsPDF('p', 'mm', 'a4');
                 
-                // Set light background for clean medical look
-                document.body.style.background = '#ffffff';
                 const dashboard = document.querySelector('.main-content');
+
+                const isDark = document.body.classList.contains('dark-mode');
+                if (isDark) document.body.classList.remove('dark-mode');
                 
                 // Hide things we don't want in PDF
                 const toggle = document.getElementById('theme-toggle');
@@ -914,8 +888,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 });
                 
                 // Reset styles
-                document.body.style.background = '';
+                if (isDark) document.body.classList.add('dark-mode');
                 if (toggle) toggle.style.display = '';
+
                 
                 const imgData = canvas.toDataURL('image/jpeg', 0.95);
                 const pdfWidth = doc.internal.pageSize.getWidth();
@@ -939,7 +914,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 setTimeout(() => { btnExport.innerHTML = originalText; }, 3000);
             }
         });
-    }
+    });
 });
 
 
