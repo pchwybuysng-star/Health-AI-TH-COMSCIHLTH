@@ -2737,3 +2737,115 @@ html {
     justify-content: center;
     border-radius: 50%;
 }
+
+/* =========================================
+   8 Basic Functions: Print Mode
+   ========================================= */
+@media print {
+    body { background: white !important; color: black !important; }
+    .sidebar, .chatbot-fab, #toast-container, .top-header .action-buttons, .theme-toggle { display: none !important; }
+    .main-content { margin-left: 0 !important; width: 100% !important; padding: 0 !important; }
+    .card { box-shadow: none !important; border: 1px solid #ccc !important; break-inside: avoid; }
+    .glass-card { background: white !important; backdrop-filter: none !important; }
+    /* Hide some heavy graphics for printing */
+    .dna-scanner, .animate-float { display: none !important; }
+}
+
+/* =========================================
+   8 Basic Functions: Modals (PDPA, Share, SOS)
+   ========================================= */
+.modal-overlay {
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: rgba(0,0,0,0.6);
+    backdrop-filter: blur(5px);
+    z-index: 10000;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    transition: opacity 0.3s;
+}
+.modal-overlay.active { display: flex; opacity: 1; }
+.modal-box {
+    background: var(--bg-card);
+    width: 90%; max-width: 500px;
+    border-radius: 16px;
+    padding: 30px;
+    box-shadow: 0 20px 40px rgba(0,0,0,0.2);
+    transform: translateY(20px);
+    transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    border: 1px solid var(--border);
+}
+.modal-overlay.active .modal-box { transform: translateY(0); }
+.modal-header {
+    display: flex; justify-content: space-between; align-items: center;
+    margin-bottom: 20px; border-bottom: 1px solid var(--border); padding-bottom: 10px;
+}
+.modal-close {
+    background: none; border: none; font-size: 1.5rem; cursor: pointer; color: var(--text-light);
+}
+.modal-close:hover { color: var(--danger); }
+
+/* SOS specific */
+.modal-box.sos-modal { border-top: 6px solid var(--danger); }
+.sos-row { display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px dashed var(--border); }
+.sos-row:last-child { border-bottom: none; }
+
+/* Share specific */
+.qr-placeholder {
+    width: 200px; height: 200px;
+    background: repeating-linear-gradient(45deg, var(--bg-main), var(--bg-main) 10px, var(--border) 10px, var(--border) 20px);
+    margin: 0 auto 20px; border-radius: 12px;
+    display: flex; align-items: center; justify-content: center;
+    font-weight: bold; color: var(--primary);
+    border: 2px dashed var(--primary);
+}
+
+/* =========================================
+   8 Basic Functions: Profile & Vaccine UI
+   ========================================= */
+.profile-form-grid {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 24px;
+}
+.form-group { display: flex; flex-direction: column; gap: 6px; }
+.form-group label { font-size: 0.85rem; font-weight: 600; color: var(--text-light); }
+.form-group input, .form-group select {
+    padding: 10px 14px; border-radius: 8px; border: 1px solid var(--border);
+    background: var(--bg-main); color: var(--text-main); font-family: inherit;
+}
+.vaccine-table {
+    width: 100%; border-collapse: collapse; margin-top: 10px;
+}
+.vaccine-table th, .vaccine-table td {
+    padding: 12px; text-align: left; border-bottom: 1px solid var(--border);
+}
+.vaccine-table th { background: rgba(59, 130, 246, 0.05); font-weight: 600; }
+
+/* =========================================
+   8 Basic Functions: Header Actions
+   ========================================= */
+.action-buttons { display: flex; gap: 12px; align-items: center; }
+.btn-action-icon {
+    display: flex; align-items: center; gap: 6px;
+    background: var(--glass-bg); border: 1px solid var(--glass-border);
+    padding: 6px 14px; border-radius: 20px; font-size: 0.85rem;
+    font-weight: 600; cursor: pointer; color: var(--text-main);
+    transition: all 0.2s;
+}
+.btn-action-icon:hover { transform: translateY(-2px); box-shadow: var(--shadow-sm); }
+.btn-sos {
+    background: rgba(239, 68, 68, 0.1); color: var(--danger); border-color: rgba(239, 68, 68, 0.3);
+}
+.btn-sos:hover { background: var(--danger); color: white; }
+
+/* Language Toggle */
+.lang-toggle {
+    display: flex; background: var(--bg-main); border-radius: 20px; padding: 2px;
+    border: 1px solid var(--border); margin-left: 10px; cursor: pointer;
+}
+.lang-btn {
+    padding: 4px 10px; font-size: 0.75rem; font-weight: 700; border-radius: 18px;
+    color: var(--text-light); transition: all 0.2s;
+}
+.lang-btn.active { background: var(--primary); color: white; }

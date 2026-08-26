@@ -91,7 +91,9 @@ function initNavigation() {
                     if (targetId === 'view-trends') {
                         setTimeout(() => {
                             window.dispatchEvent(new Event('resize'));
-                            window.dispatchEvent(new Event('trends-opened'));
+                            if (window.updateTrendsChart) {
+                                window.updateTrendsChart();
+                            }
                         }, 50);
                     }
                 }
@@ -538,8 +540,19 @@ function initChatbot() {
             if (geminiKey) {
                 // Use Real Gemini AI with Auto Discovery & Smart Fallback
                 const promptCtx = window.extractedHealthData ? JSON.stringify(window.extractedHealthData) : "No health data yet.";
+                
+                let profileCtx = "";
+                try {
+                    const savedProf = localStorage.getItem('lablink_profile');
+                    if (savedProf) {
+                        const p = JSON.parse(savedProf);
+                        profileCtx = `ข้อมูลผู้ป่วย: น้ำหนัก ${p.weight || '-'} kg, ส่วนสูง ${p.height || '-'} cm, โรคประจำตัว: ${p.disease || '-'}, ประวัติแพ้ยา: ${p.allergy || '-'}`;
+                    }
+                } catch(e) {}
+
                 const sysPrompt = `คุณคือ Dr. LabLink แพทย์ AI ผู้เชี่ยวชาญการอ่านผลเลือด 
 กรุณาตอบคำถามผู้ป่วยเป็นภาษาไทยแบบเป็นกันเอง สั้นกระชับ เข้าใจง่าย 
+${profileCtx}
 นี่คือผลเลือดปัจจุบันของผู้ป่วย: ${promptCtx}
 
 คำถามจากผู้ป่วย: ${text}`;
@@ -1434,8 +1447,19 @@ window.generateNutritionPlan = async function() {
     content.style.display = 'none';
     exportBtn.style.display = 'none';
 
+    // Retrieve user profile
+    let profileText = "";
+    try {
+        const savedProf = localStorage.getItem('lablink_profile');
+        if (savedProf) {
+            const p = JSON.parse(savedProf);
+            profileText = `ข้อมูลผู้ป่วย: น้ำหนัก ${p.weight || '-'} kg, ส่วนสูง ${p.height || '-'} cm, โรคประจำตัว: ${p.disease || '-'}, ประวัติแพ้ยา: ${p.allergy || '-'}`;
+        }
+    } catch(e) {}
+
     // Build prompt based on real health data
     const prompt = `คุณคือ Dr. LabLink แพทย์และนักโภชนาการผู้เชี่ยวชาญ 
+${profileText}
 ข้อมูลผลเลือดคนไข้: 
 LDL: ${eh.ldl || '-'} mg/dL, 
 HDL: ${eh.hdl || '-'} mg/dL, 
@@ -1443,7 +1467,7 @@ Cholesterol: ${eh.chol || '-'} mg/dL,
 FBS (น้ำตาล): ${eh.fbs || '-'} mg/dL, 
 AST: ${eh.ast || '-'}, ALT: ${eh.alt || '-'}
 
-จงสร้าง "แผนโภชนาการและการออกกำลังกาย 7 วัน" ที่ออกแบบมาเพื่อแก้ปัญหาค่าผลเลือดเหล่านี้โดยเฉพาะ 
+จงสร้าง "แผนโภชนาการและการออกกำลังกาย 7 วัน" ที่ออกแบบมาเพื่อแก้ปัญหาค่าผลเลือดเหล่านี้โดยเฉพาะ (หากมีโรคประจำตัวหรือแพ้ยาให้ระวังเรื่องโภชนาการด้วย)
 ขอให้ออกแบบเป็น HTML Format ล้วนๆ (ไม่ต้องมี Markdown) โดยใช้โครงสร้างนี้สำหรับแต่ละวัน (เขียนมาให้ครบ 7 วัน):
 
 <div class="nutrition-day-card">
@@ -1485,27 +1509,51 @@ AST: ${eh.ast || '-'}, ALT: ${eh.alt || '-'}
     if (useMock) {
         // Fallback to Mock Data so the user sees something without a valid key
         const mockHTML = `
+        <h3 style="margin-bottom: 16px; color: var(--primary-dark);">แผนโภชนาการ 7 วัน (จำลอง)</h3>
         <div class="nutrition-day-card">
-          <h4>📅 วันที่ 1: ลดการอักเสบและลดไขมันเลว</h4>
-          <div class="nutrition-meal">
-             <div class="meal-icon">🍳</div>
-             <div><strong>เช้า:</strong> ข้าวโอ๊ตต้มนมถั่วเหลือง ใส่ผลไม้ตระกูลเบอร์รี่ - <em>ไฟเบอร์สูงช่วยกวาดไขมัน LDL</em></div>
-          </div>
-          <div class="nutrition-meal">
-             <div class="meal-icon">🥗</div>
-             <div><strong>กลางวัน:</strong> สลัดปลาแซลมอนย่าง น้ำสลัดน้ำใส - <em>โอเมก้า 3 ช่วยเพิ่ม HDL และลดการอักเสบ</em></div>
-          </div>
-          <div class="nutrition-meal">
-             <div class="meal-icon">🐟</div>
-             <div><strong>เย็น:</strong> แกงเลียงผักรวม (ไม่ใส่ผงชูรส) - <em>ลดปริมาณโซเดียม ช่วยเรื่องความดัน</em></div>
-          </div>
-          <div class="nutrition-meal">
-             <div class="meal-icon">🏃</div>
-             <div><strong>กิจกรรม:</strong> เดินเร็ว 30 นาที (สลับวิ่งเหยาะ) - <em>เพิ่มการเผาผลาญ</em></div>
-          </div>
+          <h4>📅 วันที่ 1: ดีท็อกซ์ตับและปรับสมดุล</h4>
+          <div class="nutrition-meal"><div class="meal-icon">🍳</div><div><strong>เช้า:</strong> ข้าวโอ๊ตต้มนมถั่วเหลือง ใส่ผลไม้ตระกูลเบอร์รี่</div></div>
+          <div class="nutrition-meal"><div class="meal-icon">🥗</div><div><strong>กลางวัน:</strong> สลัดปลาแซลมอนย่าง น้ำสลัดน้ำใส</div></div>
+          <div class="nutrition-meal"><div class="meal-icon">🐟</div><div><strong>เย็น:</strong> แกงเลียงผักรวม (ไม่ใส่ผงชูรส)</div></div>
+        </div>
+        <div class="nutrition-day-card">
+          <h4>📅 วันที่ 2: ลดคอเลสเตอรอล (LDL)</h4>
+          <div class="nutrition-meal"><div class="meal-icon">🍳</div><div><strong>เช้า:</strong> โยเกิร์ตไขมันต่ำพร้อมธัญพืชและอัลมอนด์</div></div>
+          <div class="nutrition-meal"><div class="meal-icon">🥗</div><div><strong>กลางวัน:</strong> อกไก่ย่างกับข้าวกล้อง และบรอกโคลีลวก</div></div>
+          <div class="nutrition-meal"><div class="meal-icon">🐟</div><div><strong>เย็น:</strong> ปลานึ่งมะนาว กินคู่กับผักกาดขาว</div></div>
+        </div>
+        <div class="nutrition-day-card">
+          <h4>📅 วันที่ 3: ควบคุมน้ำตาลในเลือด</h4>
+          <div class="nutrition-meal"><div class="meal-icon">🍳</div><div><strong>เช้า:</strong> ไข่ต้ม 2 ฟอง ขนมปังโฮลวีต 1 แผ่น</div></div>
+          <div class="nutrition-meal"><div class="meal-icon">🥗</div><div><strong>กลางวัน:</strong> ก๋วยเตี๋ยวเส้นหมี่น้ำใส (ไม่กระเทียมเจียว)</div></div>
+          <div class="nutrition-meal"><div class="meal-icon">🐟</div><div><strong>เย็น:</strong> ยำทูน่าในน้ำแร่ รสไม่จัด</div></div>
+        </div>
+        <div class="nutrition-day-card">
+          <h4>📅 วันที่ 4: เติมไขมันดี (HDL)</h4>
+          <div class="nutrition-meal"><div class="meal-icon">🍳</div><div><strong>เช้า:</strong> อะโวคาโดโทสต์ (ขนมปังโฮลวีต)</div></div>
+          <div class="nutrition-meal"><div class="meal-icon">🥗</div><div><strong>กลางวัน:</strong> ข้าวผัดธัญพืช ใช้น้ำมันมะกอก</div></div>
+          <div class="nutrition-meal"><div class="meal-icon">🐟</div><div><strong>เย็น:</strong> สเต็กเต้าหู้ ซอสเห็ดหอม</div></div>
+        </div>
+        <div class="nutrition-day-card">
+          <h4>📅 วันที่ 5: พักผ่อนและซ่อมแซมร่างกาย</h4>
+          <div class="nutrition-meal"><div class="meal-icon">🍳</div><div><strong>เช้า:</strong> นมจืดไขมันต่ำ 1 แก้ว + กล้วยหอม</div></div>
+          <div class="nutrition-meal"><div class="meal-icon">🥗</div><div><strong>กลางวัน:</strong> สุกี้น้ำไก่ล้วน วุ้นเส้นน้อย</div></div>
+          <div class="nutrition-meal"><div class="meal-icon">🐟</div><div><strong>เย็น:</strong> ซุปมักกะโรนีใส่ผัก 3 สี</div></div>
+        </div>
+        <div class="nutrition-day-card">
+          <h4>📅 วันที่ 6: ลดโซเดียม ปรับความดัน</h4>
+          <div class="nutrition-meal"><div class="meal-icon">🍳</div><div><strong>เช้า:</strong> โจ๊กข้าวโอ๊ตหมูสับ (ไม่ปรุงเพิ่ม)</div></div>
+          <div class="nutrition-meal"><div class="meal-icon">🥗</div><div><strong>กลางวัน:</strong> ข้าวยำปักษ์ใต้ (น้ำบูดูน้อย)</div></div>
+          <div class="nutrition-meal"><div class="meal-icon">🐟</div><div><strong>เย็น:</strong> สลัดอกไก่ฉีก น้ำสลัดโยเกิร์ต</div></div>
+        </div>
+        <div class="nutrition-day-card">
+          <h4>📅 วันที่ 7: รักษาความสมดุลระยะยาว</h4>
+          <div class="nutrition-meal"><div class="meal-icon">🍳</div><div><strong>เช้า:</strong> ไข่กระทะ (ใช้น้ำเปล่าทอด)</div></div>
+          <div class="nutrition-meal"><div class="meal-icon">🥗</div><div><strong>กลางวัน:</strong> ข้าวกล้อง + ผัดกะเพราปลา (ใช้น้ำมันสเปรย์)</div></div>
+          <div class="nutrition-meal"><div class="meal-icon">🐟</div><div><strong>เย็น:</strong> แกงจืดเต้าหู้หมูสับสาหร่าย</div></div>
         </div>
         <p style="text-align: center; color: var(--warning); margin-top: 16px;">
-          (⚠️ ข้อมูลจำลอง - หากต้องการให้ AI วางแผนแบบ 7 วันจริง กรุณาใส่ API Key ให้ถูกต้องในเมนูตั้งค่า)
+          (⚠️ ข้อมูลจำลอง - หากต้องการให้ AI วางแผนแบบเฉพาะบุคคล กรุณาใส่ API Key ในหน้าตั้งค่า)
         </p>`;
         
         content.innerHTML = mockHTML;
@@ -1542,5 +1590,192 @@ window.exportPlanPDF = function() {
         pdf.save('LabLink-7-Day-Plan.pdf');
         
         showToast('📄 ดาวน์โหลด PDF สำเร็จ!', 'success');
+    });
+};
+
+// =========================================
+//  8 Basic Functions: Modals & PDPA
+// =========================================
+window.openModal = function(id) {
+    const modal = document.getElementById(id);
+    if (modal) modal.classList.add('active');
+};
+window.closeModal = function(id) {
+    const modal = document.getElementById(id);
+    if (modal) modal.classList.remove('active');
+};
+window.copyShareLink = function() {
+    navigator.clipboard.writeText(window.location.href).then(() => {
+        showToast('คัดลอกลิงก์สำเร็จแล้ว!', 'success');
+        closeModal('modal-share');
+    });
+};
+
+document.addEventListener('DOMContentLoaded', () => {
+    // Check PDPA Consent on first load
+    if (!localStorage.getItem('lablink_pdpa')) {
+        setTimeout(() => openModal('modal-pdpa'), 500);
+    }
+});
+
+window.acceptPDPA = function() {
+    localStorage.setItem('lablink_pdpa', 'true');
+    closeModal('modal-pdpa');
+    showToast('ขอบคุณที่ยินยอมให้ระบบวิเคราะห์ข้อมูล 🛡️');
+};
+
+// =========================================
+//  8 Basic Functions: Profile Management
+// =========================================
+window.saveProfile = function() {
+    const profile = {
+        weight: document.getElementById('prof-weight')?.value || '',
+        height: document.getElementById('prof-height')?.value || '',
+        blood: document.getElementById('prof-blood')?.value || '',
+        disease: document.getElementById('prof-disease')?.value || '',
+        allergy: document.getElementById('prof-allergy')?.value || ''
+    };
+    localStorage.setItem('lablink_profile', JSON.stringify(profile));
+    
+    // Sync to SOS modal
+    document.getElementById('sos-blood').textContent = profile.blood || 'ยังไม่ระบุ';
+    document.getElementById('sos-disease').textContent = profile.disease || 'ไม่มี/ไม่ระบุ';
+    document.getElementById('sos-allergy').textContent = profile.allergy || 'ไม่มี/ไม่ระบุ';
+
+    showToast('บันทึกข้อมูลส่วนตัวและข้อมูลฉุกเฉินสำเร็จ! 💾');
+    addExp(10);
+};
+
+// Load Profile on init
+document.addEventListener('DOMContentLoaded', () => {
+    const saved = localStorage.getItem('lablink_profile');
+    if (saved) {
+        const p = JSON.parse(saved);
+        if(document.getElementById('prof-weight')) document.getElementById('prof-weight').value = p.weight;
+        if(document.getElementById('prof-height')) document.getElementById('prof-height').value = p.height;
+        if(document.getElementById('prof-blood')) document.getElementById('prof-blood').value = p.blood;
+        if(document.getElementById('prof-disease')) document.getElementById('prof-disease').value = p.disease;
+        if(document.getElementById('prof-allergy')) document.getElementById('prof-allergy').value = p.allergy;
+        
+        // Sync SOS
+        if(document.getElementById('sos-blood')) document.getElementById('sos-blood').textContent = p.blood || 'ยังไม่ระบุ';
+        if(document.getElementById('sos-disease')) document.getElementById('sos-disease').textContent = p.disease || 'ไม่มี/ไม่ระบุ';
+        if(document.getElementById('sos-allergy')) document.getElementById('sos-allergy').textContent = p.allergy || 'ไม่มี/ไม่ระบุ';
+    }
+});
+
+// =========================================
+//  8 Basic Functions: Translation (TH/EN)
+// =========================================
+const translations = {
+    th: {
+        header_title: "LabLink Dashboard",
+        btn_share: "📤 แชร์",
+        btn_print: "🖨️ พิมพ์",
+        nav_upload: "อัปโหลดผลตรวจ",
+        nav_dashboard: "ภาพรวมสุขภาพ",
+        nav_trends: "แนวโน้มสุขภาพ",
+        nav_nutrition: "โภชนาการบำบัด",
+        nav_settings: "โปรไฟล์ & ตั้งค่า",
+        nav_logout: "ออกจากระบบ (หน้าแรก)",
+        trends_title: "📈 กราฟเปรียบเทียบผลเลือดย้อนหลัง",
+        trends_desc: "เปรียบเทียบผลตรวจสุขภาพของปีนี้กับข้อมูลประวัติย้อนหลัง (2024-2025)",
+        profile_title: "📝 จัดการข้อมูลส่วนตัว & การตั้งค่า",
+        dash_risk: "คะแนนความเสี่ยง",
+        dash_health: "สรุปสุขภาพรวม",
+        dash_smartwatch: "ข้อมูลจาก Smart Watch"
+    },
+    en: {
+        header_title: "LabLink Dashboard",
+        btn_share: "📤 Share",
+        btn_print: "🖨️ Print",
+        nav_upload: "Upload Lab",
+        nav_dashboard: "Health Overview",
+        nav_trends: "Historical Trends",
+        nav_nutrition: "Nutrition Plan",
+        nav_settings: "Profile & Settings",
+        nav_logout: "Logout (Home)",
+        trends_title: "📈 Historical Lab Result Trends",
+        trends_desc: "Compare your current health data with historical records (2024-2025)",
+        profile_title: "📝 Profile Management & Settings",
+        dash_risk: "Health Risk Score",
+        dash_health: "Health Summary",
+        dash_smartwatch: "Smart Watch Data"
+    }
+};
+
+let currentLang = 'th';
+window.toggleLanguage = function() {
+    currentLang = currentLang === 'th' ? 'en' : 'th';
+    
+    // Update active UI toggle
+    document.getElementById('lang-th').classList.toggle('active', currentLang === 'th');
+    document.getElementById('lang-en').classList.toggle('active', currentLang === 'en');
+
+    // Translate texts
+    document.querySelectorAll('[data-i18n]').forEach(el => {
+        const key = el.getAttribute('data-i18n');
+        if (translations[currentLang][key]) {
+            // Keep icons if they are part of the original HTML, but for now we just set text.
+            // Some elements might have <span> icon </span> <span data-i18n="...">. The data-i18n target specific span.
+            el.textContent = translations[currentLang][key];
+        }
+    });
+};
+
+// =========================================
+//  8 Basic Functions: Historical Trends Chart
+// =========================================
+let trendChartInstance = null;
+
+window.updateTrendsChart = function() {
+    const ctx = document.getElementById('historicalChart');
+    if (!ctx) return;
+    
+    const selector = document.getElementById('trend-selector');
+    const type = selector ? selector.value : 'ldl';
+    
+    let chartData = {};
+    if (type === 'ldl') {
+        chartData = {
+            label: currentLang === 'en' ? 'LDL Cholesterol (mg/dL)' : 'ไขมันเลว LDL (mg/dL)',
+            data: [180, 165, window.extractedHealthData?.ldl || 130],
+            borderColor: '#ef4444'
+        };
+    } else {
+        chartData = {
+            label: currentLang === 'en' ? 'Fasting Blood Sugar (mg/dL)' : 'น้ำตาลในเลือด FBS (mg/dL)',
+            data: [110, 105, window.extractedHealthData?.fbs || 88],
+            borderColor: '#3b82f6'
+        };
+    }
+
+    if (trendChartInstance) {
+        trendChartInstance.destroy();
+    }
+
+    trendChartInstance = new Chart(ctx.getContext('2d'), {
+        type: 'line',
+        data: {
+            labels: ['2024', '2025', 'ปัจจุบัน (Current)'],
+            datasets: [{
+                label: chartData.label,
+                data: chartData.data,
+                borderColor: chartData.borderColor,
+                backgroundColor: chartData.borderColor + '33', // 20% opacity
+                borderWidth: 3,
+                pointBackgroundColor: chartData.borderColor,
+                pointRadius: 6,
+                fill: true,
+                tension: 0.3
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+                y: { beginAtZero: false }
+            }
+        }
     });
 };

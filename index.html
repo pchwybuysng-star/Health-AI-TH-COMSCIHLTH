@@ -48,31 +48,33 @@
             <div class="logo">
                 <span class="logo-icon">🧬</span> LabLink
             </div>
-            <nav class="nav-menu">
-                <a href="#" class="nav-item active" id="nav-upload" data-target="view-upload">
-                    <span class="icon">📄</span> อัปโหลดผลตรวจ
-                </a>
-                <a href="#" class="nav-item locked-nav" id="nav-dashboard" data-target="view-dashboard">
-                    <span class="icon">📊</span> แดชบอร์ดสุขภาพ
-                </a>
-                <a href="#" class="nav-item locked-nav" id="nav-trends" data-target="view-trends">
-                    <span class="icon">📈</span> ประวัติผลตรวจ
-                </a>
-                <a href="#" class="nav-item locked-nav" id="nav-ai" data-target="view-ai">
+                                    <ul class="nav-menu">
+                <li><a href="#" class="nav-item active" id="nav-upload" data-target="view-upload">
+                    <span class="icon">📤</span> <span data-i18n="nav_upload">อัปโหลดผลตรวจ</span>
+                </a></li>
+                <li><a href="#" class="nav-item locked-nav" id="nav-dashboard" data-target="view-dashboard">
+                    <span class="icon">📊</span> <span data-i18n="nav_dashboard">ภาพรวมสุขภาพ</span>
+                </a></li>
+                <li><a href="#" class="nav-item locked-nav" id="nav-trends" data-target="view-trends">
+                    <span class="icon">📈</span> <span data-i18n="nav_trends">แนวโน้มสุขภาพ</span>
+                </a></li>
+                <li><a href="#" class="nav-item locked-nav" id="nav-ai" data-target="view-ai">
                     <span class="icon">🧠</span> ปรึกษา AI แพทย์
-                </a>
-                <a href="#" class="nav-item locked-nav" id="nav-nutrition" data-target="view-nutrition">
-                    <span class="icon">🥗</span> โภชนาการบำบัด
-                </a>
-                <a href="#" class="nav-item locked-nav" id="nav-academy" data-target="view-academy">
+                </a></li>
+                <li><a href="#" class="nav-item locked-nav" id="nav-nutrition" data-target="view-nutrition">
+                    <span class="icon">🥗</span> <span data-i18n="nav_nutrition">โภชนาการบำบัด</span>
+                </a></li>
+                <li><a href="#" class="nav-item locked-nav" id="nav-academy" data-target="view-academy">
                     <span class="icon">🎓</span> คลังความรู้ MedTech
-                </a>
-                <a href="#" class="nav-item" id="theme-toggle"><span class="icon">🌙</span> โหมดกลางคืน</a>
-                <a href="#" class="nav-item locked-nav" id="nav-settings" data-target="view-settings"><span class="icon">⚙️</span> ตั้งค่า</a>
-                <a href="#" class="nav-item" id="nav-home-bottom" style="display: none; margin-top: auto; color: var(--warning); border-top: 1px solid var(--border); padding-top: 12px;">
-                    <span class="icon">🏠</span> กลับไปที่หน้าหลัก
-                </a>
-            </nav>
+                </a></li>
+                <li><a href="#" class="nav-item" id="theme-toggle"><span class="icon">🌙</span> โหมดกลางคืน</a></li>
+                <li><a href="#" class="nav-item" id="nav-settings" data-target="view-settings">
+                    <span class="icon">⚙️</span> <span data-i18n="nav_settings">โปรไฟล์ & ตั้งค่า</span>
+                </a></li>
+                <li style="display: none;" id="nav-home-bottom-wrapper"><a href="#" class="nav-item" id="nav-home-bottom" style="margin-top: auto; color: var(--danger); border-top: 1px solid var(--border); padding-top: 12px;" data-target="view-upload" onclick="location.reload()">
+                    <span class="icon">🚪</span> <span data-i18n="nav_logout">ออกจากระบบ (หน้าแรก)</span>
+                </a></li>
+            </ul>
             <div class="user-profile">
                 <div class="avatar">U</div>
                 <div class="user-info" style="width: 100%;">
@@ -91,17 +93,19 @@
         <!-- Main Content Area -->
         <main class="main-content">
             <header class="top-header">
-                <div class="header-text">
-                    <h1>ยินดีต้อนรับสู่ LabLink <span>AI</span></h1>
-                    <div style="display: flex; align-items: center; gap: 12px; margin-top: 4px;">
-                        <p style="color: var(--text-light);">เปลี่ยนตัวเลขผลแล็บที่ซับซ้อน ให้เป็นภาพที่คุณเข้าใจได้ทันที</p>
-                        <span class="live-badge"><span class="live-dot"></span> Live</span>
-                    </div>
-                    <div class="realtime-clock" id="realtime-clock"></div>
+                <div style="display: flex; align-items: center;">
+                    <h2 style="font-size: 1.25rem; font-weight: 700; color: var(--text-main); letter-spacing: -0.5px;" data-i18n="header_title">LabLink Dashboard</h2>
+                <!-- Clean Header -->
+                <div class="lang-toggle" onclick="toggleLanguage()" style="margin-left: 12px; transform: scale(0.9);">
+                    <span class="lang-btn active" id="lang-th">TH</span>
+                    <span class="lang-btn" id="lang-en">EN</span>
                 </div>
-                                <div class="header-action" style="display: flex; flex-direction: column; align-items: flex-end; gap: 8px;">
-                    <span class="badge-pro" style="background: linear-gradient(135deg, var(--primary), var(--secondary)); color: white; padding: 8px 16px; border-radius: 20px; font-weight: 600; font-size: 0.9rem; box-shadow: 0 4px 10px rgba(59,130,246,0.3);">✨ Medical Grade AI</span>
-                    <span style="background: rgba(16, 185, 129, 0.1); color: #10b981; padding: 4px 12px; border-radius: 20px; font-weight: 600; font-size: 0.75rem; border: 1px solid #10b981; display: flex; align-items: center; gap: 4px;"><span class="icon">🔒</span> HIPAA & PDPA Compliant (On-Device Local Processing)</span>
+            </div>
+                
+                <div class="action-buttons">
+                    <button class="btn-action-icon" onclick="openModal('modal-share')" data-i18n="btn_share">📤 แชร์</button>
+                    <button class="btn-action-icon" onclick="window.print()" data-i18n="btn_print">🖨️ พิมพ์</button>
+                    <button class="btn-action-icon btn-sos" onclick="openModal('modal-sos')">🆘 SOS</button>
                 </div>
             </header>
 
@@ -1180,126 +1184,33 @@
                 </div>
             </section>
 
+            <!-- View: Trends (Historical Data) -->
             <section class="view-section" id="view-trends" style="display: none;">
-                <div class="header-action" style="margin-bottom: 24px;">
-                    <h2>📈 ประวัติผลตรวจย้อนหลัง & การวิเคราะห์เชิงลึก (Deep Analytics)</h2>
-                    <p style="color: var(--text-light); margin-top: 8px;">แสดงแนวโน้มสุขภาพของคุณในทุกมิติ ทั้งไขมัน น้ำตาล เลือด ตับ และฮอร์โมน</p>
-                </div>
-
-                <!-- Top Row Charts: Lipid (Line) & Sugar (Bar) -->
-                <div class="dashboard-grid" style="gap: 24px; margin-bottom: 24px;" id="trend-charts-top">
-                    <div class="card" style="padding: 24px; box-shadow: var(--shadow-md);">
-                        <h3 style="display: flex; justify-content: space-between;">
-                            <span>🩸 แนวโน้มไขมันในเลือด (Lipid Profile)</span>
-                            <span style="font-size: 0.9rem; font-weight: normal; color: var(--success);">ดีขึ้น 16% 📉</span>
-                        </h3>
-                        <div style="position: relative; height: 280px; width: 100%; margin-top: 16px;">
-                            <canvas id="chartLipid"></canvas>
-                        </div>
+                <div class="card glass-card full-width">
+                    <div class="card-header-flex">
+                        <h2 data-i18n="trends_title">📈 กราฟเปรียบเทียบผลเลือดย้อนหลัง</h2>
+                        <select id="trend-selector" style="padding: 6px; border-radius: 6px; border: 1px solid var(--border);" onchange="updateTrendsChart()">
+                            <option value="ldl">ไขมันเลว (LDL)</option>
+                            <option value="fbs">น้ำตาล (FBS)</option>
+                        </select>
                     </div>
-
-                    <div class="card" style="padding: 24px; box-shadow: var(--shadow-md);">
-                        <h3 style="display: flex; justify-content: space-between;">
-                            <span>🍎 ระดับน้ำตาล (FBS)</span>
-                            <span style="font-size: 0.9rem; font-weight: normal; color: var(--success);">คงที่ 🟢</span>
-                        </h3>
-                        <div style="position: relative; height: 280px; width: 100%; margin-top: 16px;">
-                            <canvas id="chartSugar"></canvas>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Bottom Row Charts: Liver (Line Fill), CBC (Doughnut), Hormones (Radar) -->
-                <div class="dashboard-grid" style="gap: 24px; margin-bottom: 24px;" id="trend-charts-bottom">
-                    <div class="card" style="padding: 20px; box-shadow: var(--shadow-sm);">
-                        <h3 style="font-size: 1.1rem; margin-bottom: 16px;">🥦 การทำงานของตับ</h3>
-                        <div style="position: relative; height: 220px; width: 100%;">
-                            <canvas id="chartLiver"></canvas>
-                        </div>
-                    </div>
+                    <p style="color: var(--text-light); margin-bottom: 24px;" data-i18n="trends_desc">เปรียบเทียบผลตรวจสุขภาพของปีนี้กับข้อมูลประวัติย้อนหลัง (2024-2025)</p>
                     
-                    <div class="card" style="padding: 20px; box-shadow: var(--shadow-sm);">
-                        <h3 style="font-size: 1.1rem; margin-bottom: 16px;">🔬 เม็ดเลือดขาว (WBC)</h3>
-                        <div style="position: relative; height: 220px; width: 100%;">
-                            <canvas id="chartBlood"></canvas>
+                    <div style="display: grid; grid-template-columns: 3fr 1fr; gap: 20px;">
+                        <div style="width: 100%; height: 350px; position: relative;">
+                            <canvas id="historicalChart"></canvas>
                         </div>
-                    </div>
-
-                    <div class="card" style="padding: 20px; box-shadow: var(--shadow-sm);">
-                        <h3 style="font-size: 1.1rem; margin-bottom: 16px;">⚖️ สมดุลฮอร์โมน (Radar)</h3>
-                        <div style="position: relative; height: 220px; width: 100%;">
-                            <canvas id="chartHormone"></canvas>
-                        </div>
-                    </div>
-                </div>
-                
-                <!-- Bottom Grid: AI Analysis & Data Table -->
-                <div class="dashboard-grid" style="gap: 24px;">
-                                        <!-- Clinical Standard: ASCVD Risk & PDF Export -->
-                    <div class="card" style="background: linear-gradient(to right bottom, #ffffff, #f8fafc); border: 1px solid var(--border); box-shadow: var(--shadow-sm); position: relative;" id="trend-ai-summary">
-                        <div style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 12px;">
-                            <h3 style="display: flex; align-items: center; gap: 8px; margin: 0;">
-                                <span style="font-size: 1.5rem;">🫀</span> ASCVD 10-Year Risk Score (ACC/AHA Standard)
-                            </h3>
-                            <button id="btn-export-pdf" class="btn-primary" style="padding: 8px 16px; font-size: 0.85rem; background: var(--success); display: flex; align-items: center; gap: 8px;">
-                                <span class="icon">📄</span> Export Medical Report (PDF)
-                            </button>
-                        </div>
-                        <p style="color: var(--text-light); margin-top: 8px; font-size: 0.85rem;">
-                            ประเมินความเสี่ยงโรคหลอดเลือดหัวใจตีบใน 10 ปีข้างหน้า อ้างอิงตามมาตรฐาน American College of Cardiology (ACC) และ American Heart Association (AHA)
-                        </p>
-                        
-                        <div style="margin-top: 20px; padding: 20px; background: #fff; border-radius: 8px; border: 1px solid var(--border); display: flex; gap: 24px; align-items: center;">
-                            <div style="position: relative; width: 100px; height: 100px;">
-                                <svg viewBox="0 0 36 36" style="width: 100%; height: 100%;">
-                                    <path d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke="#e2e8f0" stroke-width="3"/>
-                                    <path id="ascvd-ring" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke="#10b981" stroke-width="3" stroke-dasharray="12, 100" style="transition: stroke-dasharray 1s ease-out;"/>
-                                </svg>
-                                <div style="position: absolute; top: 0; left: 0; right: 0; bottom: 0; display: flex; flex-direction: column; align-items: center; justify-content: center;">
-                                    <span id="ascvd-score" style="font-size: 1.5rem; font-weight: bold; color: var(--text-main);">1.2%</span>
-                                    <span style="font-size: 0.6rem; color: var(--text-light);">Risk</span>
-                                </div>
+                        <div style="display: flex; flex-direction: column; gap: 12px;">
+                            <div style="background: rgba(16, 185, 129, 0.1); padding: 16px; border-radius: 12px; border: 1px solid rgba(16, 185, 129, 0.3);">
+                                <h4 style="color: var(--success); margin-bottom: 4px;">สุขภาพดีขึ้น! 🟢</h4>
+                                <p style="font-size: 0.85rem; color: var(--text-light);">ค่าไขมันโดยรวมมีแนวโน้มลดลงจากปี 2024 แสดงถึงการคุมอาหารที่ดีเยี่ยม</p>
                             </div>
-                            <div style="flex: 1;">
-                                <strong id="ascvd-status" style="color: var(--success); display: block; margin-bottom: 8px; font-size: 1.1rem;">ความเสี่ยงต่ำมาก (Low Risk)</strong>
-                                <span id="ascvd-desc" style="font-size: 0.95rem; color: var(--text-main); line-height: 1.6;">
-                                    คุณมีความเสี่ยงเพียงเล็กน้อยที่จะเกิดภาวะหัวใจวายหรือสโตรกใน 10 ปีข้างหน้า ค่าคอเลสเตอรอลและความดันโลหิตของคุณอยู่ในเกณฑ์ดีเยี่ยม กรุณารักษาสุขภาพเช่นนี้ต่อไป
-                                </span>
+                            <div style="background: rgba(245, 158, 11, 0.1); padding: 16px; border-radius: 12px; border: 1px solid rgba(245, 158, 11, 0.3);">
+                                <h4 style="color: var(--warning); margin-bottom: 4px;">จุดที่ต้องระวัง 🟡</h4>
+                                <p style="font-size: 0.85rem; color: var(--text-light);">ค่าน้ำตาลในเลือดยังทรงตัวอยู่ในเกณฑ์ค่อนข้างสูง ควรลดแป้งมื้อเย็นลง</p>
                             </div>
+                            <button class="btn-primary" style="margin-top: auto;" onclick="document.getElementById('nav-nutrition').click()">ดูแผนโภชนาการ 7 วัน</button>
                         </div>
-                    </div>
-
-                    <!-- Historical Data Table -->
-                    <div class="card" style="padding: 0; overflow: hidden; box-shadow: var(--shadow-sm);">
-                        <div style="padding: 20px; border-bottom: 1px solid var(--border); background: #f8fafc;">
-                            <h3 style="margin: 0; font-size: 1.1rem; color: var(--text-main);">📊 ข้อมูลดิบย้อนหลัง (Raw Data)</h3>
-                        </div>
-                        <table style="width: 100%; border-collapse: collapse; text-align: left;">
-                            <thead>
-                                <tr style="background: #f1f5f9; color: var(--text-light); font-size: 0.9rem;">
-                                    <th style="padding: 12px 20px;">เดือน</th>
-                                    <th style="padding: 12px 20px;">LDL (ไขมันเลว)</th>
-                                    <th style="padding: 12px 20px;">FBS (น้ำตาล)</th>
-                                </tr>
-                            </thead>
-                            <tbody style="font-size: 0.95rem;">
-                                <tr style="border-bottom: 1px solid var(--border);">
-                                    <td style="padding: 12px 20px;">มิ.ย. (ปัจจุบัน)</td>
-                                    <td style="padding: 12px 20px; font-weight: bold;">130 <span style="color: var(--warning); font-size: 0.8rem;">🟡 ปริ่มเกณฑ์</span></td>
-                                    <td style="padding: 12px 20px; font-weight: bold;">88 <span style="color: var(--success); font-size: 0.8rem;">🟢 ปกติ</span></td>
-                                </tr>
-                                <tr style="border-bottom: 1px solid var(--border);">
-                                    <td style="padding: 12px 20px;">พ.ค.</td>
-                                    <td style="padding: 12px 20px; font-weight: bold;">135 <span style="color: var(--warning); font-size: 0.8rem;">🟡 ปริ่มเกณฑ์</span></td>
-                                    <td style="padding: 12px 20px; font-weight: bold;">89 <span style="color: var(--success); font-size: 0.8rem;">🟢 ปกติ</span></td>
-                                </tr>
-                                <tr>
-                                    <td style="padding: 12px 20px;">เม.ย.</td>
-                                    <td style="padding: 12px 20px; font-weight: bold;">140 <span style="color: var(--danger); font-size: 0.8rem;">🔴 สูง</span></td>
-                                    <td style="padding: 12px 20px; font-weight: bold;">90 <span style="color: var(--success); font-size: 0.8rem;">🟢 ปกติ</span></td>
-                                </tr>
-                            </tbody>
-                        </table>
                     </div>
                 </div>
             </section>
@@ -1592,83 +1503,63 @@
                 </div>
             </section>
 
-            <!-- View 4: Settings -->
+            <!-- View: Profile & Settings -->
             <section class="view-section" id="view-settings" style="display: none;">
-                <div class="card full-width">
-                    <div class="card-header-flex">
-                        <h3>⚙️ ตั้งค่าระบบ (Settings)</h3>
-                    </div>
-
-                    <div class="settings-grid">
-                        
-                        <div class="setting-group" style="margin-top: 30px;">
-                            <h4 style="display: flex; align-items: center; gap: 8px;"><span class="icon">✨</span> Gemini AI Core Integration</h4>
-                            <div class="setting-item" style="display: flex; flex-direction: column; align-items: flex-start; gap: 12px; background: rgba(59, 130, 246, 0.05); border: 1px solid var(--primary); padding: 16px; border-radius: 8px;">
-                                <div>
-                                    <strong style="color: var(--primary-dark);">Google Gemini API Key</strong>
-                                    <p class="text-sm" style="margin-top: 4px;">เปิดใช้งาน AI ของแท้สำหรับแชทบอทและการวิเคราะห์ผลแล็บ (ดึงข้อมูล Context ผลเลือดปัจจุบันไปวิเคราะห์สด)</p>
-                                </div>
-                                <div style="display: flex; gap: 8px; width: 100%;">
-                                    <input type="password" id="gemini-api-key" placeholder="Paste your Gemini API Key here" style="flex: 1; padding: 10px; border: 1px solid var(--border); border-radius: 6px; font-family: monospace;">
-                                    <button class="btn-primary" id="btn-save-gemini" style="padding: 10px 20px;">บันทึก Key</button>
-                                </div>
-                                <p id="gemini-status" style="font-size: 0.85rem; color: var(--success); display: none;">✅ เชื่อมต่อ Gemini AI สำเร็จ! บอทจะใช้ AI จริงในการตอบคำถาม</p>
-                            </div>
+                <h2 style="margin-bottom: 24px;" data-i18n="profile_title">📝 จัดการข้อมูลส่วนตัว & การตั้งค่า</h2>
+                
+                <div class="card glass-card" style="margin-bottom: 24px;">
+                    <h3 style="margin-bottom: 16px; border-bottom: 1px solid var(--border); padding-bottom: 8px;">👤 ข้อมูลสุขภาพพื้นฐาน</h3>
+                    <div class="profile-form-grid">
+                        <div class="form-group">
+                            <label>น้ำหนัก (kg)</label>
+                            <input type="number" id="prof-weight" placeholder="เช่น 65">
                         </div>
-
-                        <div class="setting-group" style="margin-top: 30px;">
-                            <h4>บัญชีผู้ใช้</h4>
-
-                            <div class="setting-item">
-                                <div>
-                                    <strong>ชื่อผู้ใช้</strong>
-                                    <p class="text-sm">ผู้ใช้งานทดสอบ (Premium)</p>
-                                </div>
-                                <button class="btn-outline">แก้ไข</button>
-                            </div>
-                            <div class="setting-item">
-                                <div>
-                                    <strong>อีเมล</strong>
-                                    <p class="text-sm">user@lablink.test</p>
-                                </div>
-                                <button class="btn-outline">แก้ไข</button>
-                            </div>
+                        <div class="form-group">
+                            <label>ส่วนสูง (cm)</label>
+                            <input type="number" id="prof-height" placeholder="เช่น 170">
                         </div>
-
-                        <div class="setting-group">
-                            <h4>การแจ้งเตือน</h4>
-                            <div class="setting-item">
-                                <div>
-                                    <strong>แจ้งเตือนตารางสุขภาพ</strong>
-                                    <p class="text-sm">รับการแจ้งเตือนดื่มน้ำ, ทานยา, เวลานอน</p>
-                                </div>
-                                <label class="switch">
-                                    <input type="checkbox" checked>
-                                    <span class="slider round"></span>
-                                </label>
-                            </div>
-                            <div class="setting-item">
-                                <div>
-                                    <strong>อัปเดตผลแล็บผ่านอีเมล</strong>
-                                </div>
-                                <label class="switch">
-                                    <input type="checkbox">
-                                    <span class="slider round"></span>
-                                </label>
-                            </div>
+                        <div class="form-group">
+                            <label>กรุ๊ปเลือด</label>
+                            <select id="prof-blood">
+                                <option value="">เลือกกรุ๊ปเลือด</option>
+                                <option value="A">A</option><option value="B">B</option>
+                                <option value="O">O</option><option value="AB">AB</option>
+                            </select>
                         </div>
-
-                        <div class="setting-group">
-                            <h4>จัดการข้อมูล</h4>
-                            <div class="setting-item">
-                                <div>
-                                    <strong>ส่งออกข้อมูลสุขภาพ (Export Data)</strong>
-                                    <p class="text-sm">ดาวน์โหลดผลแล็บทั้งหมดเป็น PDF</p>
-                                </div>
-                                <button class="btn-primary" id="btn-export-pdf-settings" style="padding: 8px 16px;">ดาวน์โหลด</button>
-                            </div>
+                        <div class="form-group">
+                            <label>โรคประจำตัว</label>
+                            <input type="text" id="prof-disease" placeholder="เช่น ความดัน, เบาหวาน (ถ้าไม่มีเว้นว่าง)">
+                        </div>
+                        <div class="form-group" style="grid-column: span 2;">
+                            <label>ประวัติแพ้ยา</label>
+                            <input type="text" id="prof-allergy" placeholder="เช่น Penicillin, อาหารทะเล">
                         </div>
                     </div>
+                    <button class="btn-primary" onclick="saveProfile()">💾 บันทึกข้อมูลสุขภาพ</button>
+                </div>
+
+                <div class="card glass-card" style="margin-bottom: 24px;">
+                    <h3 style="margin-bottom: 16px; border-bottom: 1px solid var(--border); padding-bottom: 8px;">💉 สมุดบันทึกวัคซีนพื้นฐาน</h3>
+                    <table class="vaccine-table">
+                        <thead>
+                            <tr><th>วัคซีน</th><th>เข็มล่าสุด</th><th>สถานะ</th></tr>
+                        </thead>
+                        <tbody>
+                            <tr><td>COVID-19 (Booster)</td><td>12 ส.ค. 2024</td><td>✅ คุ้มครอง</td></tr>
+                            <tr><td>ไข้หวัดใหญ่ (Flu)</td><td>-</td><td>⚠️ แนะนำให้ฉีดปีนี้</td></tr>
+                            <tr><td>บาดทะยัก (Tetanus)</td><td>2021</td><td>✅ คุ้มครอง</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="card glass-card">
+                    <h3 style="margin-bottom: 16px; border-bottom: 1px solid var(--border); padding-bottom: 8px;">⚙️ การตั้งค่า AI (Gemini)</h3>
+                    <p style="color: var(--text-light); margin-bottom: 16px;">ใส่ API Key เพื่อเปิดใช้งานระบบแชทบอทวิเคราะห์ผลเลือดแบบ Real-time</p>
+                    <div style="display: flex; gap: 12px; align-items: center;">
+                        <input type="password" id="gemini-api-key" placeholder="Paste your Gemini API Key here..." style="flex: 1; padding: 12px; border-radius: 8px; border: 1px solid var(--border); background: var(--bg-main); color: var(--text-main);">
+                        <button class="btn-primary" id="btn-save-gemini">บันทึก Key</button>
+                    </div>
+                    <p id="gemini-status" style="margin-top: 12px; font-size: 0.85rem; display: none;"></p>
                 </div>
             </section>
         </main>
@@ -1682,6 +1573,63 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/tsparticles@2.12.0/tsparticles.bundle.min.js"></script>
     <script src="Script.js"></script>
+    <!-- 8 Basic Functions: Modals -->
+    <!-- 1. PDPA Consent Modal -->
+    <div class="modal-overlay" id="modal-pdpa">
+        <div class="modal-box">
+            <div class="modal-header">
+                <h3 style="color: var(--primary);">🛡️ นโยบายความเป็นส่วนตัว (PDPA)</h3>
+            </div>
+            <p style="font-size: 0.9rem; color: var(--text-light); line-height: 1.6; margin-bottom: 20px;">
+                ยินดีต้อนรับสู่ LabLink! เพื่อการประมวลผลที่แม่นยำ ระบบมีความจำเป็นต้องใช้ AI ในการวิเคราะห์ข้อมูลสุขภาพและผลเลือดของคุณ ข้อมูลของคุณจะถูกประมวลผลชั่วคราวและไม่ถูกบันทึกไว้ในเซิร์ฟเวอร์สาธารณะ
+            </p>
+            <button class="btn-primary" style="width: 100%;" onclick="acceptPDPA()">ข้าพเจ้ายินยอมให้ประมวลผลข้อมูล</button>
+        </div>
+    </div>
+
+    <!-- 2. Share with Doctor Modal -->
+    <div class="modal-overlay" id="modal-share">
+        <div class="modal-box">
+            <div class="modal-header">
+                <h3>📤 แชร์ข้อมูลให้แพทย์</h3>
+                <button class="modal-close" onclick="closeModal('modal-share')">&times;</button>
+            </div>
+            <p style="font-size: 0.9rem; color: var(--text-light); margin-bottom: 16px; text-align: center;">
+                ให้แพทย์สแกน QR Code นี้ เพื่อดู Dashboard สุขภาพของคุณ
+            </p>
+            <div class="qr-placeholder">Scan Me!</div>
+            <button class="btn-outline" style="width: 100%;" onclick="copyShareLink()">📋 คัดลอกลิงก์แชร์</button>
+        </div>
+    </div>
+
+    <!-- 3. Emergency SOS Modal -->
+    <div class="modal-overlay" id="modal-sos">
+        <div class="modal-box sos-modal">
+            <div class="modal-header">
+                <h3 style="color: var(--danger);">🆘 ข้อมูลฉุกเฉินทางการแพทย์</h3>
+                <button class="modal-close" onclick="closeModal('modal-sos')">&times;</button>
+            </div>
+            <div style="font-size: 1.1rem;">
+                <div class="sos-row">
+                    <span style="color: var(--text-light);">กรุ๊ปเลือด:</span>
+                    <strong id="sos-blood" style="color: var(--danger); font-size: 1.3rem;">ยังไม่ระบุ</strong>
+                </div>
+                <div class="sos-row">
+                    <span style="color: var(--text-light);">โรคประจำตัว:</span>
+                    <strong id="sos-disease">ยังไม่ระบุ</strong>
+                </div>
+                <div class="sos-row">
+                    <span style="color: var(--text-light);">ประวัติแพ้ยา:</span>
+                    <strong id="sos-allergy">ยังไม่ระบุ</strong>
+                </div>
+                <div class="sos-row">
+                    <span style="color: var(--text-light);">เบอร์ติดต่อฉุกเฉิน:</span>
+                    <strong>089-999-9999</strong>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- Toast Notifications Container -->
     <div id="toast-container"></div>
 </body>
