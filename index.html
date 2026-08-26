@@ -71,7 +71,7 @@
                 <li><a href="#" class="nav-item" id="nav-settings" data-target="view-settings">
                     <span class="icon">⚙️</span> <span data-i18n="nav_settings">โปรไฟล์ & ตั้งค่า</span>
                 </a></li>
-                <li style="display: none;" id="nav-home-bottom-wrapper"><a href="#" class="nav-item" id="nav-home-bottom" style="margin-top: auto; color: var(--danger); border-top: 1px solid var(--border); padding-top: 12px;" data-target="view-upload" onclick="location.reload()">
+                <li id="nav-home-bottom-wrapper"><a href="#" class="nav-item" id="nav-home-bottom" style="display: none; margin-top: auto; color: var(--danger); border-top: 1px solid var(--border); padding-top: 12px;" data-target="view-upload" onclick="location.reload()">
                     <span class="icon">🚪</span> <span data-i18n="nav_logout">ออกจากระบบ (หน้าแรก)</span>
                 </a></li>
             </ul>
@@ -92,16 +92,14 @@
 
         <!-- Main Content Area -->
         <main class="main-content">
-            <header class="top-header">
-                <div style="display: flex; align-items: center;">
+            <header class="top-header" style="display: flex; justify-content: space-between; align-items: center;">
+                <div style="display: flex; align-items: center; gap: 12px;">
                     <h2 style="font-size: 1.25rem; font-weight: 700; color: var(--text-main); letter-spacing: -0.5px;" data-i18n="header_title">LabLink Dashboard</h2>
-                <!-- Clean Header -->
-                <div class="lang-toggle" onclick="toggleLanguage()" style="margin-left: 12px; transform: scale(0.9);">
-                    <span class="lang-btn active" id="lang-th">TH</span>
-                    <span class="lang-btn" id="lang-en">EN</span>
+                    <div class="lang-toggle" onclick="toggleLanguage()">
+                        <span class="lang-btn active" id="lang-th">TH</span>
+                        <span class="lang-btn" id="lang-en">EN</span>
+                    </div>
                 </div>
-            </div>
-                
                 <div class="action-buttons">
                     <button class="btn-action-icon" onclick="openModal('modal-share')" data-i18n="btn_share">📤 แชร์</button>
                     <button class="btn-action-icon" onclick="window.print()" data-i18n="btn_print">🖨️ พิมพ์</button>
@@ -1186,31 +1184,62 @@
 
             <!-- View: Trends (Historical Data) -->
             <section class="view-section" id="view-trends" style="display: none;">
-                <div class="card glass-card full-width">
-                    <div class="card-header-flex">
-                        <h2 data-i18n="trends_title">📈 กราฟเปรียบเทียบผลเลือดย้อนหลัง</h2>
-                        <select id="trend-selector" style="padding: 6px; border-radius: 6px; border: 1px solid var(--border);" onchange="updateTrendsChart()">
-                            <option value="ldl">ไขมันเลว (LDL)</option>
-                            <option value="fbs">น้ำตาล (FBS)</option>
-                        </select>
+                
+                <!-- Row 1: Historical Comparison (NEW 3 charts) -->
+                <h2 style="margin-bottom: 16px;" data-i18n="trends_title">📈 กราฟเปรียบเทียบผลเลือดย้อนหลัง</h2>
+                <p style="color: var(--text-light); margin-bottom: 20px;" data-i18n="trends_desc">เปรียบเทียบผลตรวจสุขภาพของปีนี้กับข้อมูลประวัติย้อนหลัง (2024-2025)</p>
+                
+                <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; margin-bottom: 24px;">
+                    <div class="card glass-card" style="padding: 16px;">
+                        <h4 style="margin-bottom: 10px; color: #ef4444; text-align: center;">ไขมันเลว (LDL)</h4>
+                        <div style="height: 200px; position: relative;"><canvas id="chart-ldl"></canvas></div>
                     </div>
-                    <p style="color: var(--text-light); margin-bottom: 24px;" data-i18n="trends_desc">เปรียบเทียบผลตรวจสุขภาพของปีนี้กับข้อมูลประวัติย้อนหลัง (2024-2025)</p>
-                    
-                    <div style="display: grid; grid-template-columns: 3fr 1fr; gap: 20px;">
-                        <div style="width: 100%; height: 350px; position: relative;">
-                            <canvas id="historicalChart"></canvas>
+                    <div class="card glass-card" style="padding: 16px;">
+                        <h4 style="margin-bottom: 10px; color: #3b82f6; text-align: center;">น้ำตาลในเลือด (FBS)</h4>
+                        <div style="height: 200px; position: relative;"><canvas id="chart-fbs"></canvas></div>
+                    </div>
+                    <div class="card glass-card" style="padding: 16px;">
+                        <h4 style="margin-bottom: 10px; color: #10b981; text-align: center;">น้ำหนักตัว (Weight)</h4>
+                        <div style="height: 200px; position: relative;"><canvas id="chart-weight"></canvas></div>
+                    </div>
+                </div>
+
+                <!-- Row 2: Original Detailed Charts -->
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px;">
+                    <div class="card glass-card" style="padding: 16px;">
+                        <h4 style="margin-bottom: 10px;">ไขมันในเลือด (Lipid Profile)</h4>
+                        <div style="height: 250px; position: relative;"><canvas id="chartLipid"></canvas></div>
+                    </div>
+                    <div class="card glass-card" style="padding: 16px;">
+                        <h4 style="margin-bottom: 10px;">น้ำตาลในเลือด (FBS)</h4>
+                        <div style="height: 250px; position: relative;"><canvas id="chartSugar"></canvas></div>
+                    </div>
+                </div>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px;">
+                    <div class="card glass-card" style="padding: 16px;">
+                        <h4 style="margin-bottom: 10px;">เอนไซม์ตับ (ALT / AST)</h4>
+                        <div style="height: 250px; position: relative;"><canvas id="chartLiver"></canvas></div>
+                    </div>
+                    <div class="card glass-card" style="padding: 16px;">
+                        <h4 style="margin-bottom: 10px;">เม็ดเลือดขาว (WBC)</h4>
+                        <div style="height: 250px; position: relative;"><canvas id="chartBlood"></canvas></div>
+                    </div>
+                </div>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+                    <div class="card glass-card" style="padding: 16px;">
+                        <h4 style="margin-bottom: 10px;">สมดุลฮอร์โมน (Hormone Radar)</h4>
+                        <div style="height: 280px; position: relative;"><canvas id="chartHormone"></canvas></div>
+                    </div>
+                    <div class="card glass-card" style="padding: 16px; display: flex; flex-direction: column; gap: 12px;">
+                        <div style="background: rgba(16, 185, 129, 0.1); padding: 16px; border-radius: 12px; border: 1px solid rgba(16, 185, 129, 0.3); flex: 1;">
+                            <h4 style="color: var(--success); margin-bottom: 8px;">สุขภาพดีขึ้น! 🟢</h4>
+                            <p style="font-size: 0.9rem; color: var(--text-light); line-height: 1.6;">ค่าไขมัน (LDL) และน้ำหนักตัวมีแนวโน้มลดลงจากปี 2024 แสดงถึงการคุมอาหารที่ดี</p>
                         </div>
-                        <div style="display: flex; flex-direction: column; gap: 12px;">
-                            <div style="background: rgba(16, 185, 129, 0.1); padding: 16px; border-radius: 12px; border: 1px solid rgba(16, 185, 129, 0.3);">
-                                <h4 style="color: var(--success); margin-bottom: 4px;">สุขภาพดีขึ้น! 🟢</h4>
-                                <p style="font-size: 0.85rem; color: var(--text-light);">ค่าไขมันโดยรวมมีแนวโน้มลดลงจากปี 2024 แสดงถึงการคุมอาหารที่ดีเยี่ยม</p>
-                            </div>
-                            <div style="background: rgba(245, 158, 11, 0.1); padding: 16px; border-radius: 12px; border: 1px solid rgba(245, 158, 11, 0.3);">
-                                <h4 style="color: var(--warning); margin-bottom: 4px;">จุดที่ต้องระวัง 🟡</h4>
-                                <p style="font-size: 0.85rem; color: var(--text-light);">ค่าน้ำตาลในเลือดยังทรงตัวอยู่ในเกณฑ์ค่อนข้างสูง ควรลดแป้งมื้อเย็นลง</p>
-                            </div>
-                            <button class="btn-primary" style="margin-top: auto;" onclick="document.getElementById('nav-nutrition').click()">ดูแผนโภชนาการ 7 วัน</button>
+                        <div style="background: rgba(245, 158, 11, 0.1); padding: 16px; border-radius: 12px; border: 1px solid rgba(245, 158, 11, 0.3); flex: 1;">
+                            <h4 style="color: var(--warning); margin-bottom: 8px;">จุดที่ต้องระวัง 🟡</h4>
+                            <p style="font-size: 0.9rem; color: var(--text-light); line-height: 1.6;">ค่าน้ำตาลในเลือด (FBS) ยังทรงตัวค่อนข้างสูง ควรลดแป้งมื้อเย็น</p>
                         </div>
+                        <button class="btn-primary" style="padding: 14px;" onclick="document.getElementById('nav-nutrition').click()">ดูแผนโภชนาการ 7 วัน</button>
                     </div>
                 </div>
             </section>

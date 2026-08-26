@@ -91,10 +91,11 @@ function initNavigation() {
                     if (targetId === 'view-trends') {
                         setTimeout(() => {
                             window.dispatchEvent(new Event('resize'));
+                            window.dispatchEvent(new Event('trends-opened'));
                             if (window.updateTrendsChart) {
                                 window.updateTrendsChart();
                             }
-                        }, 50);
+                        }, 100);
                     }
                 }
                 currentViewId = targetId;
@@ -410,7 +411,6 @@ function applyHealthDataToUI(eh) {
     }, 500);
 }
 
-// Helper: Toggle Authentication State & Persistence
 function setAuthenticatedState(isAuth) {
     isAuthenticated = isAuth;
     if (isAuth) {
@@ -425,8 +425,10 @@ function setAuthenticatedState(isAuth) {
 
         const navUpload = document.getElementById('nav-upload');
         const navHomeBottom = document.getElementById('nav-home-bottom');
-        if (navUpload) navUpload.style.display = 'none';
+        const navSettings = document.getElementById('nav-settings');
+        if (navUpload) navUpload.closest('li').style.display = 'none';
         if (navHomeBottom) navHomeBottom.style.display = 'flex';
+        if (navSettings) navSettings.closest('li').style.display = '';
 
         const uploadSuccess = document.getElementById('upload-success-state');
         if (uploadSuccess) uploadSuccess.style.display = 'block';
@@ -438,7 +440,7 @@ function setAuthenticatedState(isAuth) {
 
         const allNavs = document.querySelectorAll('.nav-menu .nav-item');
         allNavs.forEach(nav => {
-            if (nav.id !== 'nav-upload' && nav.id !== 'theme-toggle' && nav.id !== 'nav-home-bottom') {
+            if (nav.id !== 'nav-upload' && nav.id !== 'theme-toggle' && nav.id !== 'nav-home-bottom' && nav.id !== 'nav-settings') {
                 nav.classList.add('locked-nav');
             }
         });
@@ -449,6 +451,7 @@ function setAuthenticatedState(isAuth) {
         const navUpload = document.getElementById('nav-upload');
         const navHomeBottom = document.getElementById('nav-home-bottom');
         if (navUpload) {
+            navUpload.closest('li').style.display = '';
             navUpload.style.display = 'flex';
             navUpload.click();
         }
@@ -968,81 +971,59 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 
-// --- Gemini AI Request Helper ---
+// --- Gemini AI Request Helper (Updated Aug 2026) ---
 async function requestGeminiGenerate(geminiKey, promptText) {
-    // Trim the key just in case
     const cleanKey = geminiKey.trim();
     
-    // Ordered list of models to try
+    // Current Gemini model names (Aug 2026)
     const candidateModels = [
+        'gemini-3.5-flash',
+        'gemini-3.5-flash-lite',
+        'gemini-3.6-flash',
         'gemini-2.0-flash',
-        'gemini-1.5-flash',
-        'gemini-1.5-flash-latest',
-        'gemini-1.5-pro'
+        'gemini-1.5-flash'
     ];
 
-    let lastError = null;
-
     for (const modelName of candidateModels) {
-        // Try v1beta first, then v1
-        const endpoints = [
-            `https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent?key=${encodeURIComponent(cleanKey)}`,
-            `https://generativelanguage.googleapis.com/v1/models/${modelName}:generateContent?key=${encodeURIComponent(cleanKey)}`
-        ];
+        try {
+            const url = `https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent?key=${encodeURIComponent(cleanKey)}`;
+            
+            const res = await fetch(url, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    contents: [{ role: "user", parts: [{ text: promptText }] }]
+                })
+            });
 
-        for (const endpoint of endpoints) {
-            try {
-                const res = await fetch(endpoint, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({
-                        contents: [
-                            { role: "user", parts: [{ text: promptText }] }
-                        ]
-                    })
-                });
+            const data = await res.json();
 
-                const data = await res.json();
-
-                if (data.error) {
-                    lastError = data.error;
-                    
-                    // If API key is invalid or quota exceeded, stop trying immediately!
-                    if (data.error.code === 400 && data.error.message.toLowerCase().includes('api key not valid')) {
-                        return { error: `❌ API Key ไม่ถูกต้อง กรุณาตรวจสอบอีกครั้ง` };
-                    }
-                    if (data.error.code === 429) {
-                        return { error: `❌ โควต้า API เต็ม (Quota Exceeded)` };
-                    }
-                    
-                    // If model not found, try the next one
-                    continue;
+            // If key is totally invalid or quota exceeded, stop trying other models
+            if (data.error) {
+                if (data.error.code === 400 && data.error.message && data.error.message.toLowerCase().includes('api key not valid')) {
+                    return { error: 'API Key ไม่ถูกต้อง' };
                 }
-
-                if (data.candidates && data.candidates.length > 0) {
-                    const candidate = data.candidates[0];
-                    if (candidate.content && candidate.content.parts && candidate.content.parts.length > 0) {
-                        return { text: candidate.content.parts[0].text, model: modelName };
-                    } else if (candidate.finishReason) {
-                        return { error: `❌ AI ตอบกลับไม่ได้ (Finish Reason: ${candidate.finishReason})` };
-                    }
+                if (data.error.code === 429) {
+                    return { error: 'API โควต้าเต็ม' };
                 }
-            } catch (err) {
-                lastError = err;
-                // For network errors (like CORS or offline), return immediately
-                if (err.name === 'TypeError' || err.message.includes('fetch')) {
-                    return { error: `❌ เกิดข้อผิดพลาดในการเชื่อมต่อ (Network Error): โปรดตรวจสอบอินเทอร์เน็ตหรือการตั้งค่า API` };
+                // Model not found — try next
+                continue;
+            }
+
+            // Success — extract text
+            if (data.candidates && data.candidates.length > 0) {
+                const candidate = data.candidates[0];
+                if (candidate.content && candidate.content.parts && candidate.content.parts.length > 0) {
+                    return { text: candidate.content.parts[0].text, model: modelName };
                 }
             }
+        } catch (err) {
+            // Network error — stop trying
+            return { error: 'เชื่อมต่อไม่ได้ (Network Error)' };
         }
     }
 
-    const msg = lastError ? (lastError.message || JSON.stringify(lastError)) : "ไม่สามารถเชื่อมต่อโมเดลได้เลย";
-    return {
-        error: `❌ ข้อผิดพลาดจาก AI: ${msg}`
-    };
+    return { error: 'ไม่พบโมเดล AI ที่ใช้งานได้' };
 }
 
 // --- Gemini API Key Logic ---
@@ -1716,66 +1697,227 @@ window.toggleLanguage = function() {
     document.querySelectorAll('[data-i18n]').forEach(el => {
         const key = el.getAttribute('data-i18n');
         if (translations[currentLang][key]) {
-            // Keep icons if they are part of the original HTML, but for now we just set text.
-            // Some elements might have <span> icon </span> <span data-i18n="...">. The data-i18n target specific span.
             el.textContent = translations[currentLang][key];
         }
     });
+
+    // Update charts to reflect language changes if applicable
+    if (window.updateTrendsChart && document.getElementById('view-trends').style.display !== 'none') {
+        window.updateTrendsChart();
+    }
 };
 
 // =========================================
 //  8 Basic Functions: Historical Trends Chart
 // =========================================
-let trendChartInstance = null;
+let chartLDL = null;
+let chartFBS = null;
+let chartWeight = null;
 
 window.updateTrendsChart = function() {
-    const ctx = document.getElementById('historicalChart');
-    if (!ctx) return;
+    const ctxLDL = document.getElementById('chart-ldl');
+    const ctxFBS = document.getElementById('chart-fbs');
+    const ctxWeight = document.getElementById('chart-weight');
     
-    const selector = document.getElementById('trend-selector');
-    const type = selector ? selector.value : 'ldl';
-    
-    let chartData = {};
-    if (type === 'ldl') {
-        chartData = {
-            label: currentLang === 'en' ? 'LDL Cholesterol (mg/dL)' : 'ไขมันเลว LDL (mg/dL)',
-            data: [180, 165, window.extractedHealthData?.ldl || 130],
-            borderColor: '#ef4444'
-        };
-    } else {
-        chartData = {
-            label: currentLang === 'en' ? 'Fasting Blood Sugar (mg/dL)' : 'น้ำตาลในเลือด FBS (mg/dL)',
-            data: [110, 105, window.extractedHealthData?.fbs || 88],
-            borderColor: '#3b82f6'
-        };
-    }
+    if (!ctxLDL || !ctxFBS || !ctxWeight) return;
 
-    if (trendChartInstance) {
-        trendChartInstance.destroy();
-    }
+    if (chartLDL) chartLDL.destroy();
+    if (chartFBS) chartFBS.destroy();
+    if (chartWeight) chartWeight.destroy();
 
-    trendChartInstance = new Chart(ctx.getContext('2d'), {
+    const commonOptions = {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: { legend: { display: false } },
+        scales: { y: { beginAtZero: false } }
+    };
+
+    // 1. LDL Chart
+    chartLDL = new Chart(ctxLDL.getContext('2d'), {
         type: 'line',
         data: {
-            labels: ['2024', '2025', 'ปัจจุบัน (Current)'],
+            labels: ['2024', '2025', currentLang === 'en' ? 'Current' : 'ปัจจุบัน'],
             datasets: [{
-                label: chartData.label,
-                data: chartData.data,
-                borderColor: chartData.borderColor,
-                backgroundColor: chartData.borderColor + '33', // 20% opacity
-                borderWidth: 3,
-                pointBackgroundColor: chartData.borderColor,
-                pointRadius: 6,
-                fill: true,
-                tension: 0.3
+                data: [180, 165, window.extractedHealthData?.ldl || 130],
+                borderColor: '#ef4444',
+                backgroundColor: '#ef444433',
+                borderWidth: 3, pointRadius: 5, fill: true, tension: 0.3
             }]
         },
-        options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            scales: {
-                y: { beginAtZero: false }
-            }
+        options: commonOptions
+    });
+
+    // 2. FBS Chart
+    chartFBS = new Chart(ctxFBS.getContext('2d'), {
+        type: 'line',
+        data: {
+            labels: ['2024', '2025', currentLang === 'en' ? 'Current' : 'ปัจจุบัน'],
+            datasets: [{
+                data: [110, 105, window.extractedHealthData?.fbs || 88],
+                borderColor: '#3b82f6',
+                backgroundColor: '#3b82f633',
+                borderWidth: 3, pointRadius: 5, fill: true, tension: 0.3
+            }]
+        },
+        options: commonOptions
+    });
+
+    // 3. Weight Chart
+    // Extract weight from profile if exists
+    let currWeight = 65;
+    try {
+        const savedProf = localStorage.getItem('lablink_profile');
+        if (savedProf) {
+            const p = JSON.parse(savedProf);
+            if (p.weight) currWeight = parseFloat(p.weight);
         }
+    } catch(e) {}
+
+    chartWeight = new Chart(ctxWeight.getContext('2d'), {
+        type: 'line',
+        data: {
+            labels: ['2024', '2025', currentLang === 'en' ? 'Current' : 'ปัจจุบัน'],
+            datasets: [{
+                data: [70, 68, currWeight],
+                borderColor: '#10b981',
+                backgroundColor: '#10b98133',
+                borderWidth: 3, pointRadius: 5, fill: true, tension: 0.3
+            }]
+        },
+        options: commonOptions
     });
 };
+
+// =========================================
+//  QOL: Keyboard Shortcuts
+// =========================================
+document.addEventListener('keydown', (e) => {
+    // Escape = close any open modal
+    if (e.key === 'Escape') {
+        document.querySelectorAll('.modal-overlay.active').forEach(m => m.classList.remove('active'));
+    }
+    // Ctrl+P = Print (override browser default to use our clean print)
+    if ((e.ctrlKey || e.metaKey) && e.key === 'p') {
+        e.preventDefault();
+        window.print();
+    }
+});
+
+// =========================================
+//  QOL: Click outside modal to close
+// =========================================
+document.addEventListener('click', (e) => {
+    if (e.target.classList.contains('modal-overlay') && e.target.classList.contains('active')) {
+        // Don't close PDPA modal by clicking outside (must accept)
+        if (e.target.id === 'modal-pdpa') return;
+        e.target.classList.remove('active');
+    }
+});
+
+// =========================================
+//  QOL: Scroll to top on view switch
+// =========================================
+(function() {
+    const mainContent = document.querySelector('.main-content');
+    if (!mainContent) return;
+    const observer = new MutationObserver(() => {
+        const activeView = mainContent.querySelector('.view-section[style*="display: block"]');
+        if (activeView) mainContent.scrollTop = 0;
+    });
+    observer.observe(mainContent, { childList: true, subtree: true, attributes: true, attributeFilter: ['style'] });
+})();
+
+// =========================================
+//  QOL: Auto-calculate BMI from Profile
+// =========================================
+document.addEventListener('DOMContentLoaded', () => {
+    const wInput = document.getElementById('prof-weight');
+    const hInput = document.getElementById('prof-height');
+    
+    function showBMI() {
+        const w = parseFloat(wInput?.value);
+        const h = parseFloat(hInput?.value);
+        if (!w || !h || h <= 0) return;
+        
+        const bmi = (w / ((h / 100) ** 2)).toFixed(1);
+        let status = '';
+        let color = 'var(--success)';
+        if (bmi < 18.5) { status = 'น้ำหนักต่ำกว่าเกณฑ์'; color = 'var(--warning)'; }
+        else if (bmi < 25) { status = 'น้ำหนักปกติ'; color = 'var(--success)'; }
+        else if (bmi < 30) { status = 'น้ำหนักเกิน'; color = 'var(--warning)'; }
+        else { status = 'โรคอ้วน'; color = 'var(--danger)'; }
+
+        let bmiDisplay = document.getElementById('bmi-display');
+        if (!bmiDisplay) {
+            bmiDisplay = document.createElement('p');
+            bmiDisplay.id = 'bmi-display';
+            bmiDisplay.style.cssText = 'margin-top: 8px; font-size: 0.95rem; font-weight: 600; text-align: center; padding: 8px; border-radius: 8px; background: rgba(59,130,246,0.05);';
+            const saveBtn = document.querySelector('[onclick="saveProfile()"]');
+            if (saveBtn) saveBtn.parentNode.insertBefore(bmiDisplay, saveBtn);
+        }
+        bmiDisplay.innerHTML = `BMI: <span style="color: ${color}; font-size: 1.2rem;">${bmi}</span> — ${status}`;
+    }
+
+    if (wInput) wInput.addEventListener('input', showBMI);
+    if (hInput) hInput.addEventListener('input', showBMI);
+    
+    // Show on load if data exists
+    setTimeout(showBMI, 500);
+});
+
+// =========================================
+//  QOL: Mobile sidebar toggle
+// =========================================
+document.addEventListener('DOMContentLoaded', () => {
+    const sidebar = document.querySelector('.sidebar');
+    if (!sidebar) return;
+    
+    // Create hamburger button
+    const burger = document.createElement('button');
+    burger.id = 'mobile-menu-btn';
+    burger.innerHTML = '☰';
+    burger.style.cssText = 'display: none; position: fixed; top: 12px; left: 12px; z-index: 9999; background: var(--primary); color: white; border: none; border-radius: 8px; width: 40px; height: 40px; font-size: 1.3rem; cursor: pointer; box-shadow: 0 2px 8px rgba(0,0,0,0.2);';
+    document.body.appendChild(burger);
+
+    burger.addEventListener('click', () => {
+        sidebar.classList.toggle('sidebar-open');
+    });
+
+    // Close sidebar when clicking a nav item on mobile
+    sidebar.addEventListener('click', (e) => {
+        if (e.target.closest('.nav-item') && window.innerWidth <= 768) {
+            sidebar.classList.remove('sidebar-open');
+        }
+    });
+});
+
+// =========================================
+//  QOL: Double-click metric card to copy value
+// =========================================
+document.addEventListener('dblclick', (e) => {
+    const card = e.target.closest('.metric-card');
+    if (!card) return;
+    const val = card.querySelector('.metric-value');
+    if (val) {
+        navigator.clipboard.writeText(val.textContent.trim()).then(() => {
+            showToast(`📋 คัดลอกค่า "${val.textContent.trim()}" แล้ว`);
+        });
+    }
+});
+
+// =========================================
+//  QOL: Greeting based on time of day
+// =========================================
+document.addEventListener('DOMContentLoaded', () => {
+    const h = new Date().getHours();
+    let greeting = '🌅 สวัสดีตอนเช้า';
+    if (h >= 12 && h < 17) greeting = '☀️ สวัสดีตอนบ่าย';
+    else if (h >= 17 && h < 21) greeting = '🌇 สวัสดีตอนเย็น';
+    else if (h >= 21 || h < 5) greeting = '🌙 สวัสดียามค่ำคืน';
+    
+    const headerTitle = document.querySelector('[data-i18n="header_title"]');
+    if (headerTitle && currentLang === 'th') {
+        headerTitle.textContent = `${greeting} — LabLink`;
+    }
+});
+
