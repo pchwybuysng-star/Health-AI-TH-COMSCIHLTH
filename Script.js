@@ -97,6 +97,12 @@ function initNavigation() {
                             }
                         }, 100);
                     }
+                    
+                    // Show/hide the nutrition detail view
+                    const nutritionDetail = document.getElementById('nutrition-detail-view');
+                    if (nutritionDetail) {
+                        nutritionDetail.style.display = (targetId === 'view-nutrition') ? 'block' : 'none';
+                    }
                 }
                 currentViewId = targetId;
             };
@@ -602,6 +608,49 @@ ${profileCtx}
                 sendMessage();
             }
         });
+
+        // QOL: Quick Reply Suggestion Buttons
+        const quickReplies = [
+            '🩸 สรุปผลเลือดให้หน่อย',
+            '🍳 วันนี้ควรกินอะไร?',
+            '🏃 ควรออกกำลังกายแบบไหน?',
+            '💊 ค่าไขมัน LDL สูงไหม?'
+        ];
+        
+        const quickContainer = document.createElement('div');
+        quickContainer.style.cssText = 'display: flex; flex-wrap: wrap; gap: 8px; padding: 8px 20px; background: #f8fafc; border-top: 1px solid var(--border);';
+        quickReplies.forEach(text => {
+            const btn = document.createElement('button');
+            btn.textContent = text;
+            btn.style.cssText = 'background: white; border: 1px solid var(--border); border-radius: 20px; padding: 6px 14px; font-size: 0.82rem; cursor: pointer; color: var(--primary); font-family: inherit; transition: all 0.2s; white-space: nowrap;';
+            btn.onmouseenter = () => { btn.style.background = 'var(--primary)'; btn.style.color = 'white'; };
+            btn.onmouseleave = () => { btn.style.background = 'white'; btn.style.color = 'var(--primary)'; };
+            btn.onclick = () => {
+                chatInput.value = text;
+                sendMessage();
+                quickContainer.style.display = 'none'; // Hide after first use
+            };
+            quickContainer.appendChild(btn);
+        });
+        
+        // Insert quick replies before chat footer
+        const chatFooter = document.querySelector('.chat-footer');
+        if (chatFooter) {
+            chatFooter.parentNode.insertBefore(quickContainer, chatFooter);
+        }
+
+        // QOL: Show API status badge in chat header
+        const geminiKey = localStorage.getItem('gemini_api_key');
+        const statusBadge = document.querySelector('.chat-header span:last-child');
+        if (statusBadge) {
+            if (geminiKey) {
+                statusBadge.textContent = '🟢';
+                statusBadge.style.background = 'rgba(16, 185, 129, 0.3)';
+            } else {
+                statusBadge.textContent = '🟡ไม่พบkey';
+                statusBadge.style.background = 'rgba(245, 158, 11, 0.3)';
+            }
+        }
     }
 }
 
@@ -1555,20 +1604,39 @@ AST: ${eh.ast || '-'}, ALT: ${eh.alt || '-'}
 
 window.exportPlanPDF = function() {
     showToast('กำลังเตรียมไฟล์ PDF...', 'success');
-    const { jsPDF } = window.jspdf;
     
-    // Quick snapshot using html2canvas
+    // Check if html2pdf is available
+    if (typeof html2pdf === 'undefined') {
+        showToast('ไม่พบไลบรารี PDF, กรุณาใช้ Ctrl+P เพื่อพิมพ์หน้าจอนี้', 'error');
+        return;
+    }
+
     const content = document.getElementById('view-nutrition');
+    const btnGen = document.getElementById('btn-generate-plan');
+    const btnExp = document.getElementById('btn-export-plan');
+    const themeToggle = document.getElementById('theme-toggle');
+
+    // Temporarily hide UI elements for clean PDF
+    if (btnGen) btnGen.style.display = 'none';
+    if (btnExp) btnExp.style.display = 'none';
     
-    html2canvas(content, { scale: 2 }).then(canvas => {
-        const imgData = canvas.toDataURL('image/png');
-        const pdf = new jsPDF('p', 'mm', 'a4');
-        const pdfWidth = pdf.internal.pageSize.getWidth();
-        const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
-        
-        pdf.text("LabLink - Personalized 7-Day Health Plan", 10, 10);
-        pdf.addImage(imgData, 'PNG', 0, 20, pdfWidth, pdfHeight);
-        pdf.save('LabLink-7-Day-Plan.pdf');
+    // Optional: Switch to light mode for PDF clarity if dark mode is active
+    const wasDark = document.body.classList.contains('dark-mode');
+    if (wasDark) document.body.classList.remove('dark-mode');
+
+    const opt = {
+        margin:       10,
+        filename:     'LabLink-7-Day-Plan.pdf',
+        image:        { type: 'jpeg', quality: 0.98 },
+        html2canvas:  { scale: 2, useCORS: true, windowWidth: 1200 }, // Force desktop width for grid stability
+        jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
+    };
+
+    html2pdf().set(opt).from(content).save().then(() => {
+        // Restore UI
+        if (btnGen) btnGen.style.display = '';
+        if (btnExp) btnExp.style.display = 'inline-block';
+        if (wasDark) document.body.classList.add('dark-mode');
         
         showToast('📄 ดาวน์โหลด PDF สำเร็จ!', 'success');
     });
@@ -1664,7 +1732,34 @@ const translations = {
         profile_title: "📝 จัดการข้อมูลส่วนตัว & การตั้งค่า",
         dash_risk: "คะแนนความเสี่ยง",
         dash_health: "สรุปสุขภาพรวม",
-        dash_smartwatch: "ข้อมูลจาก Smart Watch"
+        dash_smartwatch: "ข้อมูลจาก Smart Watch",
+        dash_activities: "🏃 กิจกรรมเพื่อสุขภาพ",
+        nav_activities: "กิจกรรมเพื่อสุขภาพ",
+        nav_academy: "คลังความรู้ MedTech",
+        nutri_title: "🥗 โภชนาการบำบัดเฉพาะบุคคล (AI Nutrition Therapy)",
+        nutri_desc: "ปรับแต่งโภชนาการตามผลแล็บของคุณ: โฟกัสการลดไขมันเลว (LDL 130) และรักษาค่าตับ/น้ำตาลให้ดีเยี่ยม",
+        nutri_plate: "🍽️ สัดส่วนจานอาหารของคุณ (MyPlate)",
+        nutri_macro: "🎯 เป้าหมายสารอาหารต่อวัน (Macro Targets)",
+        nutri_cal: "พลังงานรวม (Calories)",
+        nutri_carb: "คาร์โบไฮเดรต (Carbs)",
+        nutri_protein: "โปรตีน (Protein)",
+        nutri_fat: "ไขมันดี (Fats)",
+        nutri_3day: "📅 แผนอาหาร 3 วัน (AI Generated Meal Plan)",
+        nutri_superfood: "🌟 Superfoods แนะนำสำหรับคุณ",
+        academy_title: "🎓 คลังความรู้เชิงลึกสำหรับคุณ (Deep-Dive Academy)",
+        academy_desc: "บทความวิทยาศาสตร์การแพทย์ที่คัดสรรและเขียนขึ้นมาให้เชื่อมโยงกับผลแล็บของคุณโดยเฉพาะ",
+        academy_filter_all: "หมวดหมู่ทั้งหมด",
+        academy_filter_mol: "🧬 ชีววิทยาโมเลกุล",
+        academy_filter_met: "⚡ ระบบเผาผลาญ",
+        set_health: "👤 ข้อมูลสุขภาพพื้นฐาน",
+        set_weight: "น้ำหนัก (kg)",
+        set_height: "ส่วนสูง (cm)",
+        set_blood: "กรุ๊ปเลือด",
+        set_disease: "โรคประจำตัว",
+        set_allergy: "ประวัติแพ้ยา",
+        set_save: "💾 บันทึกข้อมูลสุขภาพ",
+        set_vaccine: "💉 สมุดบันทึกวัคซีนพื้นฐาน",
+        set_ai: "⚙️ การตั้งค่า AI (Gemini)"
     },
     en: {
         header_title: "LabLink Dashboard",
@@ -1681,7 +1776,34 @@ const translations = {
         profile_title: "📝 Profile Management & Settings",
         dash_risk: "Health Risk Score",
         dash_health: "Health Summary",
-        dash_smartwatch: "Smart Watch Data"
+        dash_smartwatch: "Smart Watch Data",
+        dash_activities: "🏃 Health Activities",
+        nav_activities: "Health Activities",
+        nav_academy: "MedTech Academy",
+        nutri_title: "🥗 Personalized AI Nutrition Therapy",
+        nutri_desc: "Tailored to your lab results: focusing on lowering LDL (130) and maintaining excellent liver/blood sugar levels.",
+        nutri_plate: "🍽️ Your Ideal Plate (MyPlate)",
+        nutri_macro: "🎯 Daily Macronutrient Targets",
+        nutri_cal: "Total Calories",
+        nutri_carb: "Carbohydrates",
+        nutri_protein: "Protein",
+        nutri_fat: "Healthy Fats",
+        nutri_3day: "📅 3-Day Meal Plan (AI Generated)",
+        nutri_superfood: "🌟 Recommended Superfoods for You",
+        academy_title: "🎓 Deep-Dive Academy",
+        academy_desc: "Curated medical science articles specifically linked to your lab results.",
+        academy_filter_all: "All Categories",
+        academy_filter_mol: "🧬 Molecular Biology",
+        academy_filter_met: "⚡ Metabolism",
+        set_health: "👤 Basic Health Profile",
+        set_weight: "Weight (kg)",
+        set_height: "Height (cm)",
+        set_blood: "Blood Type",
+        set_disease: "Chronic Disease",
+        set_allergy: "Allergies",
+        set_save: "💾 Save Health Profile",
+        set_vaccine: "💉 Vaccine Records",
+        set_ai: "⚙️ AI Settings (Gemini)"
     }
 };
 
@@ -1879,14 +2001,25 @@ document.addEventListener('DOMContentLoaded', () => {
     burger.style.cssText = 'display: none; position: fixed; top: 12px; left: 12px; z-index: 9999; background: var(--primary); color: white; border: none; border-radius: 8px; width: 40px; height: 40px; font-size: 1.3rem; cursor: pointer; box-shadow: 0 2px 8px rgba(0,0,0,0.2);';
     document.body.appendChild(burger);
 
+    const backdrop = document.getElementById('sidebar-backdrop');
+
     burger.addEventListener('click', () => {
-        sidebar.classList.toggle('sidebar-open');
+        const isOpen = sidebar.classList.toggle('sidebar-open');
+        if (backdrop) backdrop.classList.toggle('active', isOpen);
     });
+
+    if (backdrop) {
+        backdrop.addEventListener('click', () => {
+            sidebar.classList.remove('sidebar-open');
+            backdrop.classList.remove('active');
+        });
+    }
 
     // Close sidebar when clicking a nav item on mobile
     sidebar.addEventListener('click', (e) => {
         if (e.target.closest('.nav-item') && window.innerWidth <= 768) {
             sidebar.classList.remove('sidebar-open');
+            if (backdrop) backdrop.classList.remove('active');
         }
     });
 });

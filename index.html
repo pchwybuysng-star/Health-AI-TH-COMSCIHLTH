@@ -44,9 +44,11 @@
 
     <div class="app-container">
         <!-- Sidebar Navigation -->
+        <!-- Mobile Sidebar Backdrop -->
+        <div class="sidebar-backdrop" id="sidebar-backdrop"></div>
         <aside class="sidebar">
             <div class="logo">
-                <span class="logo-icon">🧬</span> LabLink
+                <span class="logo-icon"></span> LabLink
             </div>
                                     <ul class="nav-menu">
                 <li><a href="#" class="nav-item active" id="nav-upload" data-target="view-upload">
@@ -54,6 +56,9 @@
                 </a></li>
                 <li><a href="#" class="nav-item locked-nav" id="nav-dashboard" data-target="view-dashboard">
                     <span class="icon">📊</span> <span data-i18n="nav_dashboard">ภาพรวมสุขภาพ</span>
+                </a></li>
+                <li><a href="#" class="nav-item locked-nav" id="nav-activities" data-target="view-activities">
+                    <span class="icon">🏃</span> <span data-i18n="nav_activities">กิจกรรมเพื่อสุขภาพ</span>
                 </a></li>
                 <li><a href="#" class="nav-item locked-nav" id="nav-trends" data-target="view-trends">
                     <span class="icon">📈</span> <span data-i18n="nav_trends">แนวโน้มสุขภาพ</span>
@@ -65,14 +70,14 @@
                     <span class="icon">🥗</span> <span data-i18n="nav_nutrition">โภชนาการบำบัด</span>
                 </a></li>
                 <li><a href="#" class="nav-item locked-nav" id="nav-academy" data-target="view-academy">
-                    <span class="icon">🎓</span> คลังความรู้ MedTech
+                    <span class="icon">🎓</span> <span data-i18n="nav_academy">คลังความรู้</span>
                 </a></li>
                 <li><a href="#" class="nav-item" id="theme-toggle"><span class="icon">🌙</span> โหมดกลางคืน</a></li>
                 <li><a href="#" class="nav-item" id="nav-settings" data-target="view-settings">
                     <span class="icon">⚙️</span> <span data-i18n="nav_settings">โปรไฟล์ & ตั้งค่า</span>
                 </a></li>
                 <li id="nav-home-bottom-wrapper"><a href="#" class="nav-item" id="nav-home-bottom" style="display: none; margin-top: auto; color: var(--danger); border-top: 1px solid var(--border); padding-top: 12px;" data-target="view-upload" onclick="location.reload()">
-                    <span class="icon">🚪</span> <span data-i18n="nav_logout">ออกจากระบบ (หน้าแรก)</span>
+                    <span class="icon">🚪</span> <span data-i18n="nav_logout">ออกจากระบบ</span>
                 </a></li>
             </ul>
             <div class="user-profile">
@@ -289,55 +294,7 @@
                         </div>
                     </div>
 
-                    <!-- Wearable & Quests -->
-                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 24px; margin-bottom: 24px;">
-                        
-                        <!-- Smartwatch Sync -->
-                        <div class="card glass-card">
-                            <div class="card-header-flex">
-                                <h3>⌚ อุปกรณ์สวมใส่ (Wearables)</h3>
-                                <button class="btn-outline" id="btn-sync-wearable" style="padding: 4px 12px; font-size: 0.8rem;" onclick="syncWearable()">Sync Data</button>
-                            </div>
-                            <div id="wearable-data-container" style="display: none; margin-top: 16px;">
-                                <div style="display: flex; gap: 12px;">
-                                    <div class="wearable-stat">
-                                        <span style="font-size: 1.5rem;">👣</span>
-                                        <span id="wearable-steps" style="font-weight: 700; font-size: 1.2rem; margin-top: 4px;">--</span>
-                                        <span style="font-size: 0.75rem; color: var(--text-light);">ก้าว/วัน</span>
-                                    </div>
-                                    <div class="wearable-stat">
-                                        <span style="font-size: 1.5rem;">🛌</span>
-                                        <span id="wearable-sleep" style="font-weight: 700; font-size: 1.2rem; margin-top: 4px;">--</span>
-                                        <span style="font-size: 0.75rem; color: var(--text-light);">ชั่วโมง</span>
-                                    </div>
-                                </div>
-                                <div id="wearable-ai-insight" style="margin-top: 16px; font-size: 0.85rem; color: var(--primary-dark); background: rgba(59,130,246,0.1); padding: 12px; border-radius: 8px;">
-                                    วิเคราะห์...
-                                </div>
-                            </div>
-                            <div id="wearable-placeholder" style="text-align: center; padding: 20px; color: var(--text-light);">
-                                กดปุ่ม Sync เพื่อเชื่อมต่อข้อมูลสุขภาพ
-                            </div>
-                        </div>
 
-                        <!-- Daily Quests -->
-                        <div class="card glass-card">
-                            <div class="card-header-flex">
-                                <h3>🎯 ภารกิจสุขภาพวันนี้</h3>
-                                <span style="font-size: 0.8rem; color: var(--primary);">+50 EXP/ภารกิจ</span>
-                            </div>
-                            <div style="margin-top: 16px;" id="quest-container">
-                                <div class="quest-item">
-                                    <div class="quest-text">💧 ดื่มน้ำ 2.5 ลิตร (ลดความข้นเลือด)</div>
-                                    <button class="btn-quest" onclick="completeQuest(this)">Check-in</button>
-                                </div>
-                                <div class="quest-item">
-                                    <div class="quest-text">🏃 เดินครบ 8,000 ก้าว (ลด LDL)</div>
-                                    <button class="btn-quest" onclick="completeQuest(this)">Check-in</button>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
 
                     <!-- Executive Summary Table -->
                     <div class="card full-width" style="margin-bottom: 24px;">
@@ -1168,17 +1125,101 @@
                     </div>
                 </div>
 
-                <div id="nutrition-loading" style="display: none; text-align: center; padding: 40px;">
-                    <div class="dna-scanner" style="width: 200px; margin: 0 auto 20px;">
-                        <div class="dna-matrix"></div>
-                        <div class="dna-laser"></div>
+                <div id="nutrition-loading" style="display: none; padding: 20px 0;">
+                    <div style="text-align: center; margin-bottom: 32px;">
+                        <div class="dna-scanner" style="width: 200px; margin: 0 auto 20px;">
+                            <div class="dna-matrix"></div>
+                            <div class="dna-laser"></div>
+                        </div>
+                        <h3 style="color: var(--primary);">Dr. LabLink กำลังออกแบบแผนสุขภาพเฉพาะคุณ...</h3>
+                        <p style="color: var(--text-light); margin-top: 8px;">วิเคราะห์ค่า LDL, FBS, และตับ เพื่อคัดเลือกวัตถุดิบที่ดีที่สุด</p>
                     </div>
-                    <h3 style="color: var(--primary);">Dr. LabLink กำลังออกแบบแผนสุขภาพเฉพาะคุณ...</h3>
-                    <p style="color: var(--text-light); margin-top: 8px;">วิเคราะห์ค่า LDL, FBS, และตับ เพื่อคัดเลือกวัตถุดิบที่ดีที่สุด</p>
+                    <!-- Skeleton Cards -->
+                    <div class="skeleton-card">
+                        <div class="skeleton-box skeleton-title"></div>
+                        <div class="skeleton-box skeleton-text"></div>
+                        <div class="skeleton-box skeleton-text"></div>
+                        <div class="skeleton-box skeleton-text short"></div>
+                    </div>
+                    <div class="skeleton-card">
+                        <div class="skeleton-box skeleton-title" style="width: 30%"></div>
+                        <div class="skeleton-box skeleton-text"></div>
+                        <div class="skeleton-box skeleton-text short"></div>
+                    </div>
                 </div>
 
                 <div id="nutrition-content" style="display: none;">
                     <!-- AI will inject the 7-day plan here -->
+                </div>
+
+                <!-- Static Nutrition Content (always visible) -->
+                <div id="nutrition-static-content">
+                </div>
+            </section>
+
+            <!-- View: Activities -->
+            <section class="view-section" id="view-activities" style="display: none;">
+                <h2 style="margin-bottom: 24px;" data-i18n="dash_activities">🏃 กิจกรรมเพื่อสุขภาพ</h2>
+                
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 24px;">
+                    
+                    <!-- Smartwatch Sync -->
+                    <div class="card glass-card">
+                        <div class="card-header-flex">
+                            <h3>⌚ อุปกรณ์สวมใส่ (Wearables)</h3>
+                            <button class="btn-outline" id="btn-sync-wearable" style="padding: 4px 12px; font-size: 0.8rem;" onclick="syncWearable()">Sync Data</button>
+                        </div>
+                        <div id="wearable-data-container" style="display: none; margin-top: 16px;">
+                            <div style="display: flex; gap: 12px;">
+                                <div class="wearable-stat">
+                                    <span style="font-size: 1.5rem;">👣</span>
+                                    <span id="wearable-steps" style="font-weight: 700; font-size: 1.2rem; margin-top: 4px;">--</span>
+                                    <span style="font-size: 0.75rem; color: var(--text-light);">ก้าว/วัน</span>
+                                </div>
+                                <div class="wearable-stat">
+                                    <span style="font-size: 1.5rem;">🛌</span>
+                                    <span id="wearable-sleep" style="font-weight: 700; font-size: 1.2rem; margin-top: 4px;">--</span>
+                                    <span style="font-size: 0.75rem; color: var(--text-light);">ชั่วโมง</span>
+                                </div>
+                            </div>
+                            <div id="wearable-ai-insight" style="margin-top: 16px; font-size: 0.85rem; color: var(--primary-dark); background: rgba(59,130,246,0.1); padding: 12px; border-radius: 8px;">
+                                วิเคราะห์...
+                            </div>
+                        </div>
+                        <div id="wearable-placeholder" style="text-align: center; padding: 20px; color: var(--text-light);">
+                            กดปุ่ม Sync เพื่อเชื่อมต่อข้อมูลสุขภาพ
+                        </div>
+                    </div>
+
+                    <!-- Daily Quests -->
+                    <div class="card glass-card">
+                        <div class="card-header-flex">
+                            <h3>🎯 ภารกิจสุขภาพวันนี้</h3>
+                            <span style="font-size: 0.8rem; color: var(--primary);">+50 EXP/ภารกิจ</span>
+                        </div>
+                        <div style="margin-top: 16px;" id="quest-container">
+                            <div class="quest-item">
+                                <div class="quest-text">💧 ดื่มน้ำ 2.5 ลิตร (ลดความข้นเลือด)</div>
+                                <button class="btn-quest" onclick="completeQuest(this)">Check-in</button>
+                            </div>
+                            <div class="quest-item">
+                                <div class="quest-text">🏃 เดินครบ 8,000 ก้าว (ลดไขมัน LDL)</div>
+                                <button class="btn-quest" onclick="completeQuest(this)">Check-in</button>
+                            </div>
+                            <div class="quest-item">
+                                <div class="quest-text">🥗 ทานผักให้ได้ครึ่งจาน (เพิ่มกากใย คุมน้ำตาล)</div>
+                                <button class="btn-quest" onclick="completeQuest(this)">Check-in</button>
+                            </div>
+                            <div class="quest-item">
+                                <div class="quest-text">🛌 นอนหลับต่อเนื่อง 7-8 ชั่วโมง (ลดคอร์ติซอล)</div>
+                                <button class="btn-quest" onclick="completeQuest(this)">Check-in</button>
+                            </div>
+                            <div class="quest-item">
+                                <div class="quest-text">🧘 พักสายตาหรือทำสมาธิ 15 นาที (ลดความเครียด)</div>
+                                <button class="btn-quest" onclick="completeQuest(this)">Check-in</button>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </section>
 
@@ -1252,7 +1293,7 @@
                         <div class="chat-title" style="font-size: 1.4rem; font-weight: bold; display: flex; align-items: center; gap: 12px;">
                             <span class="icon" style="font-size: 1.8rem;">👨‍⚕️</span> Dr. LabLink (Medical AI)
                         </div>
-                        <span style="font-size: 0.85rem; background: rgba(255,255,255,0.2); padding: 4px 12px; border-radius: 20px;">Powered by Gemini</span>
+                        <span style="font-size: 0.85rem; background: rgba(255,255,255,0.2); padding: 4px 12px; border-radius: 20px;">Version 1.0.0</span>
                     </div>
                     <div class="chat-body" style="flex: 1; padding: 24px; overflow-y: auto; background: #f8fafc; display: flex; flex-direction: column; gap: 16px;">
                         <div class="message ai-message" style="align-self: flex-start; max-width: 80%;">
@@ -1270,17 +1311,18 @@
             </section>
 
 
-            <section class="view-section" id="view-nutrition" style="display: none;">
+            <!-- Nutrition Detail Content (Static) -->
+            <div id="nutrition-detail-view" style="display: none;">
                 <div class="nutrition-header" style="background: linear-gradient(135deg, #10b981, #059669); color: white; padding: 32px; border-radius: 16px; margin-bottom: 24px; box-shadow: 0 10px 25px rgba(16, 185, 129, 0.3);">
-                    <h2 style="font-size: 1.8rem; margin-bottom: 8px;">🥗 โภชนาการบำบัดเฉพาะบุคคล (AI Nutrition Therapy)</h2>
-                    <p style="font-size: 1.1rem; opacity: 0.9;">ปรับแต่งโภชนาการตามผลแล็บของคุณ: โฟกัสการลดไขมันเลว (LDL 130) และรักษาค่าตับ/น้ำตาลให้ดีเยี่ยม</p>
+                    <h2 style="font-size: 1.8rem; margin-bottom: 8px;" data-i18n="nutri_title">🥗 โภชนาการบำบัดเฉพาะบุคคล (AI Nutrition Therapy)</h2>
+                    <p style="font-size: 1.1rem; opacity: 0.9;" data-i18n="nutri_desc">ปรับแต่งโภชนาการตามผลแล็บของคุณ: โฟกัสการลดไขมันเลว (LDL 130) และรักษาค่าตับ/น้ำตาลให้ดีเยี่ยม</p>
                 </div>
 
                 <div class="dashboard-grid" style="display: grid; grid-template-columns: 1fr 1.5fr; gap: 24px;">
                     <!-- The Plate Method -->
                     <div class="card glass-card">
                         <div class="card-header-flex">
-                            <h3>🍽️ สัดส่วนจานอาหารของคุณ (MyPlate)</h3>
+                            <h3 data-i18n="nutri_plate">🍽️ สัดส่วนจานอาหารของคุณ (MyPlate)</h3>
                         </div>
                         <div class="plate-container">
                             <div class="plate-visual">
@@ -1297,32 +1339,32 @@
                     <!-- Macronutrients target -->
                     <div class="card">
                         <div class="card-header-flex">
-                            <h3>🎯 เป้าหมายสารอาหารต่อวัน (Macro Targets)</h3>
+                            <h3 data-i18n="nutri_macro">🎯 เป้าหมายสารอาหารต่อวัน (Macro Targets)</h3>
                             <span class="ai-badge" style="background: #3b82f6;">AI Calculated</span>
                         </div>
                         <div class="macro-bars">
                             <div class="macro-item">
-                                <div class="macro-label"><span>🔥 พลังงานรวม (Calories)</span> <span>1,800 kcal</span></div>
+                                <div class="macro-label"><span>🔥 <span data-i18n="nutri_cal">พลังงานรวม (Calories)</span></span> <span>1,800 kcal</span></div>
                                 <div class="macro-progress">
                                     <div class="fill" style="width: 100%; background: #64748b;"></div>
                                 </div>
                             </div>
                             <div class="macro-item">
-                                <div class="macro-label"><span>🌾 คาร์โบไฮเดรต (Carbs)</span> <span>180g (40%)</span></div>
+                                <div class="macro-label"><span>🌾 <span data-i18n="nutri_carb">คาร์โบไฮเดรต (Carbs)</span></span> <span>180g (40%)</span></div>
                                 <div class="macro-progress">
                                     <div class="fill" style="width: 40%; background: #f59e0b;"></div>
                                 </div>
                                 <p class="macro-desc">เลือกคาร์บเชิงซ้อน เช่น ข้าวกล้อง, ควินัว, มันหวาน เพื่อคุมน้ำตาล FBS ให้อยู่ที่ 88 ต่อไป</p>
                             </div>
                             <div class="macro-item">
-                                <div class="macro-label"><span>🍗 โปรตีน (Protein)</span> <span>110g (25%)</span></div>
+                                <div class="macro-label"><span>🍗 <span data-i18n="nutri_protein">โปรตีน (Protein)</span></span> <span>110g (25%)</span></div>
                                 <div class="macro-progress">
                                     <div class="fill" style="width: 25%; background: #ef4444;"></div>
                                 </div>
                                 <p class="macro-desc">เน้นโปรตีนย่อยง่ายและไร้หนัง เช่น อกไก่, เต้าหู้, หรือปลาทะเลลึก</p>
                             </div>
                             <div class="macro-item">
-                                <div class="macro-label"><span>🥑 ไขมันดี (Fats)</span> <span>70g (35%)</span></div>
+                                <div class="macro-label"><span>🥑 <span data-i18n="nutri_fat">ไขมันดี (Fats)</span></span> <span>70g (35%)</span></div>
                                 <div class="macro-progress">
                                     <div class="fill" style="width: 35%; background: #10b981;"></div>
                                 </div>
@@ -1338,7 +1380,7 @@
                         <input type="radio" name="meal-tab" id="meal-day3" class="tab-radio">
 
                         <div class="card-header-flex">
-                            <h3>📅 แผนอาหาร 3 วัน (AI Generated Meal Plan)</h3>
+                            <h3 data-i18n="nutri_3day">📅 แผนอาหาร 3 วัน (AI Generated Meal Plan)</h3>
                             <span class="ai-badge" style="background: var(--success); color: white;">Cholesterol Lowering</span>
                         </div>
 
@@ -1424,7 +1466,7 @@
                     <!-- Superfoods -->
                     <div class="card full-width">
                         <div class="card-header-flex">
-                            <h3>🌟 Superfoods แนะนำสำหรับคุณ</h3>
+                            <h3 data-i18n="nutri_superfood">🌟 Superfoods แนะนำสำหรับคุณ</h3>
                         </div>
                         <div class="superfood-grid">
                             <div class="superfood-item">
@@ -1455,14 +1497,14 @@
                         </div>
                     </div>
                 </div>
-            </section>
+            </div>
 
             <!-- View: MedTech Academy -->
             <section class="view-section" id="view-academy" style="display: none;">
                 
                 <div class="academy-header" style="background: linear-gradient(135deg, #1e3a8a, #3b82f6); color: white; padding: 40px; border-radius: 16px; margin-bottom: 32px; box-shadow: 0 10px 25px rgba(59, 130, 246, 0.3);">
-                    <h2 style="font-size: 2rem; margin-bottom: 12px;">🎓 คลังความรู้เชิงลึกสำหรับคุณ (Deep-Dive Academy)</h2>
-                    <p style="font-size: 1.1rem; opacity: 0.9;">บทความวิทยาศาสตร์การแพทย์ที่คัดสรรและเขียนขึ้นมาให้เชื่อมโยงกับผลแล็บของคุณโดยเฉพาะ</p>
+                    <h2 style="font-size: 2rem; margin-bottom: 12px;" data-i18n="academy_title">🎓 คลังความรู้เชิงลึกสำหรับคุณ (Deep-Dive Academy)</h2>
+                    <p style="font-size: 1.1rem; opacity: 0.9;" data-i18n="academy_desc">บทความวิทยาศาสตร์การแพทย์ที่คัดสรรและเขียนขึ้นมาให้เชื่อมโยงกับผลแล็บของคุณโดยเฉพาะ</p>
                 </div>
 
                 <!-- Filter State -->
@@ -1471,9 +1513,9 @@
                 <input type="radio" name="academy-filter" id="filter-metabolism" class="filter-radio">
                 
                 <div class="filter-container" style="margin-bottom: 24px; display: flex; gap: 12px; overflow-x: auto; padding-bottom: 8px;">
-                    <label for="filter-all" class="filter-btn">หมวดหมู่ทั้งหมด</label>
-                    <label for="filter-molecular" class="filter-btn">🧬 ชีววิทยาโมเลกุล</label>
-                    <label for="filter-metabolism" class="filter-btn">⚡ ระบบเผาผลาญ</label>
+                    <label for="filter-all" class="filter-btn" data-i18n="academy_filter_all">หมวดหมู่ทั้งหมด</label>
+                    <label for="filter-molecular" class="filter-btn" data-i18n="academy_filter_mol">🧬 ชีววิทยาโมเลกุล</label>
+                    <label for="filter-metabolism" class="filter-btn" data-i18n="academy_filter_met">⚡ ระบบเผาผลาญ</label>
                 </div>
 
                 <!-- Article List -->
@@ -1537,18 +1579,18 @@
                 <h2 style="margin-bottom: 24px;" data-i18n="profile_title">📝 จัดการข้อมูลส่วนตัว & การตั้งค่า</h2>
                 
                 <div class="card glass-card" style="margin-bottom: 24px;">
-                    <h3 style="margin-bottom: 16px; border-bottom: 1px solid var(--border); padding-bottom: 8px;">👤 ข้อมูลสุขภาพพื้นฐาน</h3>
+                    <h3 style="margin-bottom: 16px; border-bottom: 1px solid var(--border); padding-bottom: 8px;" data-i18n="set_health">👤 ข้อมูลสุขภาพพื้นฐาน</h3>
                     <div class="profile-form-grid">
                         <div class="form-group">
-                            <label>น้ำหนัก (kg)</label>
+                            <label data-i18n="set_weight">น้ำหนัก (kg)</label>
                             <input type="number" id="prof-weight" placeholder="เช่น 65">
                         </div>
                         <div class="form-group">
-                            <label>ส่วนสูง (cm)</label>
+                            <label data-i18n="set_height">ส่วนสูง (cm)</label>
                             <input type="number" id="prof-height" placeholder="เช่น 170">
                         </div>
                         <div class="form-group">
-                            <label>กรุ๊ปเลือด</label>
+                            <label data-i18n="set_blood">กรุ๊ปเลือด</label>
                             <select id="prof-blood">
                                 <option value="">เลือกกรุ๊ปเลือด</option>
                                 <option value="A">A</option><option value="B">B</option>
@@ -1556,19 +1598,19 @@
                             </select>
                         </div>
                         <div class="form-group">
-                            <label>โรคประจำตัว</label>
+                            <label data-i18n="set_disease">โรคประจำตัว</label>
                             <input type="text" id="prof-disease" placeholder="เช่น ความดัน, เบาหวาน (ถ้าไม่มีเว้นว่าง)">
                         </div>
                         <div class="form-group" style="grid-column: span 2;">
-                            <label>ประวัติแพ้ยา</label>
+                            <label data-i18n="set_allergy">ประวัติแพ้ยา</label>
                             <input type="text" id="prof-allergy" placeholder="เช่น Penicillin, อาหารทะเล">
                         </div>
                     </div>
-                    <button class="btn-primary" onclick="saveProfile()">💾 บันทึกข้อมูลสุขภาพ</button>
+                    <button class="btn-primary" onclick="saveProfile()" data-i18n="set_save">💾 บันทึกข้อมูลสุขภาพ</button>
                 </div>
 
                 <div class="card glass-card" style="margin-bottom: 24px;">
-                    <h3 style="margin-bottom: 16px; border-bottom: 1px solid var(--border); padding-bottom: 8px;">💉 สมุดบันทึกวัคซีนพื้นฐาน</h3>
+                    <h3 style="margin-bottom: 16px; border-bottom: 1px solid var(--border); padding-bottom: 8px;" data-i18n="set_vaccine">💉 สมุดบันทึกวัคซีนพื้นฐาน</h3>
                     <table class="vaccine-table">
                         <thead>
                             <tr><th>วัคซีน</th><th>เข็มล่าสุด</th><th>สถานะ</th></tr>
@@ -1582,8 +1624,8 @@
                 </div>
 
                 <div class="card glass-card">
-                    <h3 style="margin-bottom: 16px; border-bottom: 1px solid var(--border); padding-bottom: 8px;">⚙️ การตั้งค่า AI (Gemini)</h3>
-                    <p style="color: var(--text-light); margin-bottom: 16px;">ใส่ API Key เพื่อเปิดใช้งานระบบแชทบอทวิเคราะห์ผลเลือดแบบ Real-time</p>
+                    <h3 style="margin-bottom: 16px; border-bottom: 1px solid var(--border); padding-bottom: 8px;" data-i18n="set_ai">⚙️ การตั้งค่า AI</h3>
+                    <p style="color: var(--text-light); margin-bottom: 16px;">ใส่ API Key</p>
                     <div style="display: flex; gap: 12px; align-items: center;">
                         <input type="password" id="gemini-api-key" placeholder="Paste your Gemini API Key here..." style="flex: 1; padding: 12px; border-radius: 8px; border: 1px solid var(--border); background: var(--bg-main); color: var(--text-main);">
                         <button class="btn-primary" id="btn-save-gemini">บันทึก Key</button>
