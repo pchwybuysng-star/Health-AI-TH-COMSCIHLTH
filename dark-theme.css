@@ -138,3 +138,191 @@ body.dark-mode .organ-tooltip {
     color: #f8fafc;
 }
 
+/* --- DARK MODE ENHANCEMENTS --- */
+body.dark-mode .card::before {
+    background: linear-gradient(135deg, #3b82f6, #a855f7);
+}
+body.dark-mode .card:hover {
+    box-shadow: 0 10px 25px rgba(59, 130, 246, 0.2);
+}
+body.dark-mode .doctor-summary-card {
+    background: linear-gradient(135deg, #0369a1, #4338ca);
+}
+body.dark-mode .btn-mic {
+    background: var(--bg-card);
+    border-color: var(--border);
+    color: var(--text-main);
+}
+body.dark-mode .btn-mic:hover {
+    background: var(--primary);
+    color: white;
+    border-color: var(--primary);
+}
+body.dark-mode .doctor-modal-content {
+    background: var(--bg-card);
+    color: var(--text-main);
+}
+body.dark-mode .medical-disclaimer {
+    background: rgba(127, 29, 29, 0.2);
+    border: 1px solid rgba(239, 68, 68, 0.3);
+    border-left: 4px solid #ef4444;
+}
+body.dark-mode tbody tr:hover {
+    background-color: rgba(59, 130, 246, 0.1);
+}
+body.dark-mode .sidebar {
+    background: linear-gradient(180deg, #020617 0%, #0f172a 50%, #020617 100%);
+}
+body.dark-mode .metric-card:hover {
+    box-shadow: 0 0 15px rgba(59, 130, 246, 0.15);
+}
+
+/* Dark Mode: Traffic Light Barometer */
+body.dark-mode .health-barometer-card {
+    background: linear-gradient(135deg, rgba(30, 41, 59, 0.9), rgba(15, 23, 42, 0.95));
+    border-color: rgba(51, 65, 85, 0.8);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+}
+
+body.dark-mode .barometer-tag {
+    background: rgba(59, 130, 246, 0.15);
+    color: #93c5fd;
+}
+
+body.dark-mode .btn-reset-filter {
+    background: var(--bg-card);
+    border-color: var(--border);
+    color: var(--text-main);
+}
+
+body.dark-mode .barometer-chip.chip-optimal {
+    background: rgba(16, 185, 129, 0.1);
+    border-color: rgba(16, 185, 129, 0.3);
+}
+body.dark-mode .barometer-chip.chip-optimal:hover,
+body.dark-mode .barometer-chip.chip-optimal.active {
+    background: rgba(16, 185, 129, 0.2);
+    border-color: #10b981;
+}
+
+body.dark-mode .barometer-chip.chip-warning {
+    background: rgba(245, 158, 11, 0.1);
+    border-color: rgba(245, 158, 11, 0.3);
+}
+body.dark-mode .barometer-chip.chip-warning:hover,
+body.dark-mode .barometer-chip.chip-warning.active {
+    background: rgba(245, 158, 11, 0.2);
+    border-color: #f59e0b;
+}
+
+body.dark-mode .barometer-chip.chip-critical {
+    background: rgba(239, 68, 68, 0.1);
+    border-color: rgba(239, 68, 68, 0.3);
+}
+body.dark-mode .barometer-chip.chip-critical:hover,
+body.dark-mode .barometer-chip.chip-critical.active {
+    background: rgba(239, 68, 68, 0.2);
+    border-color: #ef4444;
+}
+
+body.dark-mode .table-filter-banner {
+    background: rgba(30, 41, 59, 0.8);
+    border-color: rgba(59, 130, 246, 0.3);
+}
+
+/* Dark Mode: 3-Step Daily Action Plan */
+body.dark-mode .daily-action-plan-card {
+    background: linear-gradient(135deg, rgba(30, 41, 59, 0.95), rgba(15, 23, 42, 0.95));
+    border-color: rgba(14, 165, 233, 0.3);
+}
+
+body.dark-mode .daily-action-tag {
+    background: rgba(14, 165, 233, 0.2);
+    color: #7dd3fc;
+}
+
+body.dark-mode .daily-progress-box {
+    background: var(--bg-card);
+    border-color: var(--border);
+}
+
+body.dark-mode .daily-progress-bar-bg {
+    background: #334155;
+}
+
+body.dark-mode .action-item-card {
+    background: var(--bg-card);
+    border-color: var(--border);
+}
+
+body.dark-mode .action-item-card.completed {
+    background: linear-gradient(135deg, rgba(6, 78, 59, 0.4), rgba(6, 95, 70, 0.25));
+    border-color: #10b981;
+}
+
+body.dark-mode .action-item-card.completed .action-item-title {
+    color: #34d399;
+}
+
+body.dark-mode .custom-checkbox {
+    border-color: #475569;
+}
+
+/* Dark Mode: Biomarker Deep-Dive Modal */
+body.dark-mode .biomarker-modal-content {
+    background: var(--bg-card);
+    color: var(--text-main);
+    border: 1px solid var(--border);
+}
+
+body.dark-mode .biomarker-value-card {
+    background: rgba(15, 23, 42, 0.6);
+    border-color: rgba(51, 65, 85, 0.8);
+}
+
+body.dark-mode .bio-section-box {
+    background: rgba(15, 23, 42, 0.5);
+    border-color: var(--border);
+}
+
+body.dark-mode .guidance-eat {
+    background: rgba(6, 78, 59, 0.25);
+    border-color: rgba(16, 185, 129, 0.3);
+}
+body.dark-mode .guidance-eat .guidance-title {
+    color: #34d399;
+}
+
+body.dark-mode .guidance-avoid {
+    background: rgba(127, 29, 29, 0.25);
+    border-color: rgba(239, 68, 68, 0.3);
+}
+body.dark-mode .guidance-avoid .guidance-title {
+    color: #f87171;
+}
+
+body.dark-mode .guidance-list {
+    color: var(--text-main);
+}
+
+body.dark-mode .bio-doctor-box {
+    background: rgba(49, 46, 129, 0.3);
+    border-color: rgba(99, 102, 241, 0.4);
+}
+body.dark-mode .bio-doctor-title {
+    color: #a5b4fc;
+}
+body.dark-mode .bio-doctor-quote {
+    color: #e0e7ff;
+}
+
+body.dark-mode .btn-close-bio-modal {
+    color: var(--text-light);
+}
+
+body.dark-mode .lab-table-row:hover {
+    background-color: rgba(59, 130, 246, 0.12);
+}
+
+
+

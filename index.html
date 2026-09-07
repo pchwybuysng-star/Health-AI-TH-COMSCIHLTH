@@ -35,6 +35,7 @@
     <!-- html2canvas & jsPDF for Medical Report Export -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 
 </head>
 
@@ -50,36 +51,37 @@
             <div class="logo">
                 <span class="logo-icon"></span> LabLink
             </div>
-                                    <ul class="nav-menu">
-                <li><a href="#" class="nav-item active" id="nav-upload" data-target="view-upload">
+                                    <nav class="nav-menu">
+                <a href="#" class="nav-item active" id="nav-upload" data-target="view-upload">
                     <span class="icon">📤</span> <span data-i18n="nav_upload">อัปโหลดผลตรวจ</span>
-                </a></li>
-                <li><a href="#" class="nav-item locked-nav" id="nav-dashboard" data-target="view-dashboard">
+                </a>
+                <a href="#" class="nav-item locked-nav" id="nav-dashboard" data-target="view-dashboard">
                     <span class="icon">📊</span> <span data-i18n="nav_dashboard">ภาพรวมสุขภาพ</span>
-                </a></li>
-                <li><a href="#" class="nav-item locked-nav" id="nav-activities" data-target="view-activities">
+                </a>
+                <a href="#" class="nav-item locked-nav" id="nav-activities" data-target="view-activities">
                     <span class="icon">🏃</span> <span data-i18n="nav_activities">กิจกรรมเพื่อสุขภาพ</span>
-                </a></li>
-                <li><a href="#" class="nav-item locked-nav" id="nav-trends" data-target="view-trends">
+                </a>
+                <a href="#" class="nav-item locked-nav" id="nav-trends" data-target="view-trends">
                     <span class="icon">📈</span> <span data-i18n="nav_trends">แนวโน้มสุขภาพ</span>
-                </a></li>
-                <li><a href="#" class="nav-item locked-nav" id="nav-ai" data-target="view-ai">
+                </a>
+                <a href="#" class="nav-item locked-nav" id="nav-ai" data-target="view-ai">
                     <span class="icon">🧠</span> ปรึกษา AI แพทย์
-                </a></li>
-                <li><a href="#" class="nav-item locked-nav" id="nav-nutrition" data-target="view-nutrition">
+                </a>
+                <a href="#" class="nav-item locked-nav" id="nav-nutrition" data-target="view-nutrition">
                     <span class="icon">🥗</span> <span data-i18n="nav_nutrition">โภชนาการบำบัด</span>
-                </a></li>
-                <li><a href="#" class="nav-item locked-nav" id="nav-academy" data-target="view-academy">
+                </a>
+                <a href="#" class="nav-item locked-nav" id="nav-academy" data-target="view-academy">
                     <span class="icon">🎓</span> <span data-i18n="nav_academy">คลังความรู้</span>
-                </a></li>
-                <li><a href="#" class="nav-item" id="theme-toggle"><span class="icon">🌙</span> โหมดกลางคืน</a></li>
-                <li><a href="#" class="nav-item" id="nav-settings" data-target="view-settings">
+                </a>
+                <a href="#" class="nav-item" id="theme-toggle"><span class="icon">🌙</span> โหมดกลางคืน</a>
+                <a href="#" class="nav-item" id="nav-settings" data-target="view-settings">
                     <span class="icon">⚙️</span> <span data-i18n="nav_settings">โปรไฟล์ & ตั้งค่า</span>
-                </a></li>
-                <li id="nav-home-bottom-wrapper"><a href="#" class="nav-item" id="nav-home-bottom" style="display: none; margin-top: auto; color: var(--danger); border-top: 1px solid var(--border); padding-top: 12px;" data-target="view-upload" onclick="location.reload()">
+                </a>
+                <div id="nav-home-bottom-wrapper"><a href="#" class="nav-item" id="nav-home-bottom" style="display: none; margin-top: auto; color: var(--danger); border-top: 1px solid var(--border); padding-top: 12px;" data-target="view-upload" onclick="location.reload()">
                     <span class="icon">🚪</span> <span data-i18n="nav_logout">ออกจากระบบ</span>
-                </a></li>
-            </ul>
+                </a>
+                </div>
+            </nav>
             <div class="user-profile">
                 <div class="avatar">U</div>
                 <div class="user-info" style="width: 100%;">
@@ -117,7 +119,7 @@
                 <div class="upload-box">
                     <div id="upload-initial-state">
                         <div class="upload-icon">📑</div>
-                        <h2>อัปโหลดผลตรวจสุขภาพของคุณ</h2>
+                        <h2 class="gradient-text" style="font-size: 1.8rem;">อัปโหลดผลตรวจสุขภาพของคุณ</h2>
                         <p>รองรับไฟล์ PDF จากโรงพยาบาล, JPG, หรือ PNG<br>AI ของเราจะอ่านและแปลผลให้คุณภายใน 3 วินาที</p>
 
                         <input type="file" id="real-file-upload" accept=".pdf,image/png,image/jpeg,.txt" style="display: none;">
@@ -186,7 +188,65 @@
                             <p id="ai-quick-summary">สุขภาพโดยรวมของคุณอยู่ในเกณฑ์ดี ✅ แต่มี 2 จุดที่ควรเฝ้าระวัง: ไขมัน LDL ปริ่มเกณฑ์ 🍔 และคอเลสเตอรอลรวมสูงเล็กน้อย 🛡️ — AI แนะนำให้เพิ่มการออกกำลังกายแบบคาร์ดิโอ</p>
                         </div>
                     </div>
-                                        <div class="card glass-card score-card">
+
+                    <!-- 🚦 Top-Tier Traffic Light Barometer Banner (Item 1) -->
+                    <div class="health-barometer-card card full-width" style="grid-column: 1 / -1;">
+                        <div class="barometer-header">
+                            <div>
+                                <div class="barometer-tag"><span class="pulse-dot"></span> สรุปสถานะผลตรวจใน 1 วินาที (At-A-Glance Barometer)</div>
+                                <h3 class="barometer-title">ภาพรวมสุขภาพ: <span id="barometer-overall-text" class="status-highlight-good">🟢 อยู่ในเกณฑ์ดีเยี่ยม (Optimal)</span></h3>
+                                <p class="barometer-desc">ระบบวิเคราะห์ 14 ค่าแล็บสำคัญ — คลิกที่การ์ดสถานะด้านล่างเพื่อคัดกรองดูเฉพาะกลุ่มค่าที่ต้องการทันที</p>
+                            </div>
+                            <button class="btn-reset-filter" id="btn-reset-filter" onclick="filterByStatus('all')" title="แสดงผลตรวจทั้งหมด">
+                                <span>🔄</span> แสดงทั้งหมด (<span id="count-total">13</span> ค่า)
+                            </button>
+                        </div>
+                        <div class="barometer-chips-grid">
+                            <!-- Optimal Chip -->
+                            <div class="barometer-chip chip-optimal" id="chip-status-optimal" onclick="filterByStatus('optimal')" role="button" tabindex="0">
+                                <div class="chip-dot dot-optimal"></div>
+                                <div class="chip-body">
+                                    <div class="chip-top">
+                                        <span class="chip-count" id="count-optimal">8</span>
+                                        <span class="chip-badge badge-optimal">ปกติ</span>
+                                    </div>
+                                    <div class="chip-title">ปกติสมบูรณ์ (Optimal)</div>
+                                    <div class="chip-sub" id="sub-optimal">น้ำตาล, ตับ, เม็ดเลือด, ไทรอยด์</div>
+                                </div>
+                                <div class="chip-action">ดูรายการ ➜</div>
+                            </div>
+
+                            <!-- Watchlist Chip -->
+                            <div class="barometer-chip chip-warning" id="chip-status-warning" onclick="filterByStatus('warning')" role="button" tabindex="0">
+                                <div class="chip-dot dot-warning"></div>
+                                <div class="chip-body">
+                                    <div class="chip-top">
+                                        <span class="chip-count" id="count-warning">5</span>
+                                        <span class="chip-badge badge-warning">เฝ้าระวัง</span>
+                                    </div>
+                                    <div class="chip-title">ควรเฝ้าระวัง (Watchlist)</div>
+                                    <div class="chip-sub" id="sub-warning">ALT, Total Chol, Tri, LDL, Cortisol</div>
+                                </div>
+                                <div class="chip-action">ดูรายการ ➜</div>
+                            </div>
+
+                            <!-- Critical Chip -->
+                            <div class="barometer-chip chip-critical" id="chip-status-critical" onclick="filterByStatus('critical')" role="button" tabindex="0">
+                                <div class="chip-dot dot-critical"></div>
+                                <div class="chip-body">
+                                    <div class="chip-top">
+                                        <span class="chip-count" id="count-critical">0</span>
+                                        <span class="chip-badge badge-critical">ต้องดูแล</span>
+                                    </div>
+                                    <div class="chip-title">ต้องพบแพทย์ (Action Needed)</div>
+                                    <div class="chip-sub" id="sub-critical">ไม่มีค่าในระดับอันตราย ✅</div>
+                                </div>
+                                <div class="chip-action">ดูรายการ ➜</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="card glass-card score-card">
                         <h3>อายุสุขภาพของคุณ (Health Age)</h3>
                         <div class="circular-progress" data-progress="85" style="width: 140px; height: 140px; margin: 0 auto; position: relative;">
                             <div class="inner-circle" style="width: 120px; height: 120px; display: flex; flex-direction: column; justify-content: center; align-items: center;">
@@ -202,31 +262,31 @@
 
                     <!-- Updated Quick Metrics (5 items) -->
                     <div class="metrics-container" style="grid-column: 2 / -1;">
-                        <div class="metric-card warning">
+                        <div class="metric-card warning" onclick="openBiomarkerModal('bp')" style="cursor: pointer;" title="คลิกเพื่อดูคำอธิบายเจาะลึก">
                             <div class="metric-header"><span>ความดันโลหิต</span> <span class="icon">🫀</span></div>
                             <div class="metric-value">125/82 <span style="font-size: 0.8rem;">mmHg</span></div>
                             <div class="metric-status">ค่อนข้างสูง</div>
                             <div class="sparkline-container"><svg viewBox="0 0 100 30" preserveAspectRatio="none"><polyline fill="none" stroke="var(--warning)" stroke-width="2" points="0,20 15,18 30,22 45,15 60,20 75,12 100,18"/></svg></div>
                         </div>
-                        <div class="metric-card warning">
+                        <div class="metric-card warning" onclick="openBiomarkerModal('chol')" style="cursor: pointer;" title="คลิกเพื่อดูคำอธิบายเจาะลึก">
                             <div class="metric-header"><span>คอเลสเตอรอลรวม</span> <span class="icon">🛡️</span></div>
                             <div class="metric-value">210 <span style="font-size: 0.8rem;">mg/dL</span></div>
                             <div class="metric-status">สูงเล็กน้อย</div>
                             <div class="sparkline-container"><svg viewBox="0 0 100 30" preserveAspectRatio="none"><polyline fill="none" stroke="var(--warning)" stroke-width="2" points="0,25 15,22 30,20 45,18 60,22 75,15 100,12"/></svg></div>
                         </div>
-                        <div class="metric-card success">
+                        <div class="metric-card success" onclick="openBiomarkerModal('hdl')" style="cursor: pointer;" title="คลิกเพื่อดูคำอธิบายเจาะลึก">
                             <div class="metric-header"><span>HDL (ไขมันดี)</span> <span class="icon">🥑</span></div>
                             <div class="metric-value">55 <span style="font-size: 0.8rem;">mg/dL</span></div>
                             <div class="metric-status">ปกติ</div>
                             <div class="sparkline-container"><svg viewBox="0 0 100 30" preserveAspectRatio="none"><polyline fill="none" stroke="var(--success)" stroke-width="2" points="0,22 15,20 30,18 45,15 60,12 75,10 100,8"/></svg></div>
                         </div>
-                        <div class="metric-card warning">
+                        <div class="metric-card warning" onclick="openBiomarkerModal('ldl')" style="cursor: pointer;" title="คลิกเพื่อดูคำอธิบายเจาะลึก">
                             <div class="metric-header"><span>LDL (ไขมันเลว)</span> <span class="icon">🍔</span></div>
                             <div class="metric-value">130 <span style="font-size: 0.8rem;">mg/dL</span></div>
                             <div class="metric-status">ปริ่มเกณฑ์</div>
                             <div class="sparkline-container"><svg viewBox="0 0 100 30" preserveAspectRatio="none"><polyline fill="none" stroke="var(--warning)" stroke-width="2" points="0,10 15,12 30,15 45,18 60,16 75,20 100,22"/></svg></div>
                         </div>
-                        <div class="metric-card success">
+                        <div class="metric-card success" onclick="openBiomarkerModal('fbs')" style="cursor: pointer;" title="คลิกเพื่อดูคำอธิบายเจาะลึก">
                             <div class="metric-header"><span>ระดับน้ำตาล (FBS)</span> <span class="icon">🍎</span></div>
                             <div class="metric-value">88 <span style="font-size: 0.8rem;">mg/dL</span></div>
                             <div class="metric-status">ปกติ</div>
@@ -254,6 +314,99 @@
                         <h3 style="margin-bottom: 12px;">📅 ผลตรวจล่าสุด</h3>
                         <div id="upload-date-display" style="font-size: 1.3rem; font-weight: 700; color: var(--primary);">วันนี้</div>
                         <p style="color: var(--text-light); font-size: 0.85rem; margin-top: 8px;" id="upload-date-detail">อัปโหลดเมื่อเข้าสู่ระบบ</p>
+                    </div>
+
+                    <!-- Doctor Discussion One-Pager -->
+                    <div class="doctor-summary-card" onclick="generateDoctorSummary()" style="grid-column: 1 / -1;">
+                        <div style="display: flex; align-items: center; justify-content: space-between;">
+                            <div>
+                                <h3 style="font-size: 1.3rem; margin-bottom: 8px; display: flex; align-items: center; gap: 10px;">
+                                    📋 สร้างใบคุยกับแพทย์ (Doctor Discussion Sheet)
+                                </h3>
+                                <p style="opacity: 0.9; font-size: 0.95rem;">AI จะสรุปผลตรวจ + สร้าง 3 คำถามที่คุณควรถามแพทย์ในการนัดครั้งต่อไป พร้อมเป้าหมายสุขภาพ 3 เดือน</p>
+                            </div>
+                            <div style="font-size: 3rem; opacity: 0.8;">👨‍⚕️</div>
+                        </div>
+                    </div>
+
+                    <!-- Medical Disclaimer -->
+                    <div class="medical-disclaimer" style="grid-column: 1 / -1;">
+                        ⚕️ <strong>ข้อสำคัญ:</strong> LabLink เป็นระบบช่วยแปลผลตรวจสุขภาพและให้คำแนะนำเบื้องต้นโดย AI เท่านั้น <strong>ไม่ใช่การวินิจฉัยทางการแพทย์</strong> กรุณาปรึกษาแพทย์ก่อนเริ่มหรือหยุดยาใดๆ — ผลลัพธ์ทุกอย่างในระบบนี้มีไว้เพื่อการศึกษาและเป็นข้อมูลประกอบการตัดสินใจเท่านั้น
+                    </div>
+
+                    <!-- 🎯 3-Step Daily Action Plan Card (InsideTracker & Function Health Style) -->
+                    <div class="card full-width daily-action-plan-card" id="daily-action-plan-card" style="grid-column: 1 / -1; margin-bottom: 24px;">
+                        <div class="daily-action-header">
+                            <div>
+                                <div class="daily-action-tag">
+                                    <span class="pulse-dot-green"></span> DAILY MICRO-HABITS
+                                </div>
+                                <h3 class="daily-action-title">🎯 3 สิ่งที่ควรทำวันนี้เพื่อสุขภาพที่ดีขึ้น (Daily Action Plan)</h3>
+                                <p class="daily-action-desc">AI คัดกรอง 3 กิจวัตรง่ายๆ ที่ตรงกับผลเลือดของคุณมากที่สุด — ติ๊กถูกเมื่อทำสำเร็จเพื่อรับ +10 EXP ต่อข้อ!</p>
+                            </div>
+                            <div class="daily-progress-box">
+                                <div class="daily-progress-text">
+                                    <span>ความคืบหน้าวันนี้:</span>
+                                    <strong id="daily-progress-counter">0/3 ข้อ</strong>
+                                </div>
+                                <div class="daily-progress-bar-bg">
+                                    <div class="daily-progress-bar-fill" id="daily-progress-fill" style="width: 0%;"></div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="daily-action-grid">
+                            <!-- Action 1: Nutrition -->
+                            <div class="action-item-card" id="action-card-1">
+                                <div class="action-item-top">
+                                    <div class="action-icon-circle action-icon-nutrition">🥗</div>
+                                    <div class="action-badge badge-impact-ldl" id="action-badge-1">🔻 โฟกัส: ลด LDL & คอเลสเตอรอล</div>
+                                </div>
+                                <h4 class="action-item-title" id="action-title-1">เพิ่มใยอาหารละลายน้ำในมื้อกลางวัน</h4>
+                                <p class="action-item-desc" id="action-desc-1">ทานผักใบเขียวครึ่งจาน + ถั่วหรือข้าวกล้อง และหลีกเลี่ยงของทอด เพื่อช่วยดักจับคอเลสเตอรอลในทางเดินอาหาร</p>
+                                <div class="action-item-footer">
+                                    <label class="action-checkbox-label" for="chk-action-1">
+                                        <input type="checkbox" class="action-checkbox" id="chk-action-1" onchange="toggleDailyAction(1)">
+                                        <span class="custom-checkbox"></span>
+                                        <span class="checkbox-text" id="chk-text-1">ทำสำเร็จแล้ว (+10 EXP)</span>
+                                    </label>
+                                </div>
+                            </div>
+
+                            <!-- Action 2: Movement -->
+                            <div class="action-item-card" id="action-card-2">
+                                <div class="action-item-top">
+                                    <div class="action-icon-circle action-icon-movement">🏃</div>
+                                    <div class="action-badge badge-impact-hdl" id="action-badge-2">🔺 โฟกัส: กระตุ้น HDL ไขมันดี</div>
+                                </div>
+                                <h4 class="action-item-title" id="action-title-2">เดินเร็วหรือคาร์ดิโอ Zone 2 นาน 30 นาที</h4>
+                                <p class="action-item-desc" id="action-desc-2">การออกกำลังกายแบบต่อเนื่องเบาๆ จะช่วยกระตุ้นเอนไซม์ LPL ให้ดึงไขมันเลวไปเผาผลาญและเพิ่มไขมันดี</p>
+                                <div class="action-item-footer">
+                                    <label class="action-checkbox-label" for="chk-action-2">
+                                        <input type="checkbox" class="action-checkbox" id="chk-action-2" onchange="toggleDailyAction(2)">
+                                        <span class="custom-checkbox"></span>
+                                        <span class="checkbox-text" id="chk-text-2">ทำสำเร็จแล้ว (+10 EXP)</span>
+                                    </label>
+                                </div>
+                            </div>
+
+                            <!-- Action 3: Recovery / Stress -->
+                            <div class="action-item-card" id="action-card-3">
+                                <div class="action-item-top">
+                                    <div class="action-icon-circle action-icon-recovery">🌙</div>
+                                    <div class="action-badge badge-impact-cortisol" id="action-badge-3">🔻 โฟกัส: ลด Cortisol & ฟื้นฟูตับ</div>
+                                </div>
+                                <h4 class="action-item-title" id="action-title-3">เข้านอนก่อน 23:00 น. & ฝึกหายใจ 5 นาที</h4>
+                                <p class="action-item-desc" id="action-desc-3">ช่วยลดระดับฮอร์โมนความเครียด Cortisol (ปัจจุบัน 19.5 ug/dL) และเปิดโอกาสให้ตับซ่อมแซมเซลล์ที่อักเสบ</p>
+                                <div class="action-item-footer">
+                                    <label class="action-checkbox-label" for="chk-action-3">
+                                        <input type="checkbox" class="action-checkbox" id="chk-action-3" onchange="toggleDailyAction(3)">
+                                        <span class="custom-checkbox"></span>
+                                        <span class="checkbox-text" id="chk-text-3">ทำสำเร็จแล้ว (+10 EXP)</span>
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
                     </div>
 
                     
@@ -297,10 +450,21 @@
 
 
                     <!-- Executive Summary Table -->
-                    <div class="card full-width" style="margin-bottom: 24px;">
+                    <div class="card full-width" id="executive-summary-card" style="margin-bottom: 24px;">
                         <div class="card-header-flex" style="margin-bottom: 16px;">
                             <h3 style="font-size: 1.2rem; display: flex; align-items: center; gap: 8px;">📋 ตารางสรุปภาพรวมสุขภาพ (Executive Summary)</h3>
                         </div>
+
+                        <!-- Active Filter Notice Banner -->
+                        <div id="table-filter-banner" class="table-filter-banner" style="display: none;">
+                            <div style="display: flex; align-items: center; gap: 8px;">
+                                <span id="filter-banner-icon">🔍</span>
+                                <span>กำลังกรองแสดงเฉพาะ: <strong id="filter-banner-label">ทั้งหมด</strong></span>
+                                <span class="filter-count-badge" id="filter-banner-count">(0 รายการ)</span>
+                            </div>
+                            <button class="btn-clear-filter" onclick="filterByStatus('all')">✕ ยกเลิกการกรอง</button>
+                        </div>
+
                         <div class="table-responsive" style="overflow-x: auto;">
                             <table style="width: 100%; border-collapse: collapse; text-align: left; font-size: 0.95rem;">
                                 <thead>
@@ -312,89 +476,115 @@
                                         <th style="padding: 12px; font-weight: 600; text-align: center;">สถานะ</th>
                                     </tr>
                                 </thead>
-                                <tbody>
-                                    <!-- Liver -->
-                                    <tr style="border-bottom: 1px solid var(--border);">
-                                        <td rowspan="3" style="padding: 12px; font-weight: 600; vertical-align: top; color: var(--primary);">การทำงานของตับ (Liver)</td>
-                                        <td style="padding: 12px;">AST (SGOT)</td>
-                                        <td style="padding: 12px; font-weight: 600;">22 U/L</td>
+                                <tbody id="executive-table-body">
+                                    <!-- Liver Panel -->
+                                    <tr class="lab-table-row" data-status="optimal" data-category="liver" data-key="ast" onclick="openBiomarkerModal('ast')" title="คลิกเพื่อดูคำอธิบายเจาะลึก" style="border-bottom: 1px solid var(--border); cursor: pointer;">
+                                        <td style="padding: 12px;"><span class="panel-pill panel-liver">🫁 ตับ (Liver)</span></td>
+                                        <td style="padding: 12px; font-weight: 500;" class="biomarker-name">AST (SGOT) <span class="click-hint">🔍</span></td>
+                                        <td style="padding: 12px; font-weight: 600;" id="tbl-ast">22 U/L</td>
                                         <td style="padding: 12px; color: var(--text-light);">< 40 U/L</td>
-                                        <td style="padding: 12px; text-align: center;"><span style="background: #dcfce7; color: #166534; padding: 4px 8px; border-radius: 12px; font-size: 0.8rem; font-weight: 600;">ปกติ</span></td>
+                                        <td style="padding: 12px; text-align: center;"><span class="status-badge badge-optimal">ปกติ</span></td>
                                     </tr>
-                                    <tr style="border-bottom: 1px solid var(--border);">
-                                        <td style="padding: 12px;">ALT (SGPT)</td>
-                                        <td style="padding: 12px; font-weight: 600; color: #854d0e;">45 U/L</td>
+                                    <tr class="lab-table-row" data-status="warning" data-category="liver" data-key="alt" onclick="openBiomarkerModal('alt')" title="คลิกเพื่อดูคำอธิบายเจาะลึก" style="border-bottom: 1px solid var(--border); cursor: pointer;">
+                                        <td style="padding: 12px;"><span class="panel-pill panel-liver">🫁 ตับ (Liver)</span></td>
+                                        <td style="padding: 12px; font-weight: 500;" class="biomarker-name">ALT (SGPT) <span class="click-hint">🔍</span></td>
+                                        <td style="padding: 12px; font-weight: 600; color: #854d0e;" id="tbl-alt">45 U/L</td>
                                         <td style="padding: 12px; color: var(--text-light);">< 40 U/L</td>
-                                        <td style="padding: 12px; text-align: center;"><span style="background: #fef08a; color: #854d0e; padding: 4px 8px; border-radius: 12px; font-size: 0.8rem; font-weight: 600;">สูงเล็กน้อย</span></td>
+                                        <td style="padding: 12px; text-align: center;"><span class="status-badge badge-warning">สูงเล็กน้อย</span></td>
                                     </tr>
-                                    <tr style="border-bottom: 2px solid var(--border);">
-                                        <td style="padding: 12px;">ALP</td>
-                                        <td style="padding: 12px; font-weight: 600;">85 U/L</td>
+                                    <tr class="lab-table-row" data-status="optimal" data-category="liver" data-key="alp" onclick="openBiomarkerModal('alp')" title="คลิกเพื่อดูคำอธิบายเจาะลึก" style="border-bottom: 1px solid var(--border); cursor: pointer;">
+                                        <td style="padding: 12px;"><span class="panel-pill panel-liver">🫁 ตับ (Liver)</span></td>
+                                        <td style="padding: 12px; font-weight: 500;" class="biomarker-name">ALP <span class="click-hint">🔍</span></td>
+                                        <td style="padding: 12px; font-weight: 600;" id="tbl-alp">85 U/L</td>
                                         <td style="padding: 12px; color: var(--text-light);">40 - 129 U/L</td>
-                                        <td style="padding: 12px; text-align: center;"><span style="background: #dcfce7; color: #166534; padding: 4px 8px; border-radius: 12px; font-size: 0.8rem; font-weight: 600;">ปกติ</span></td>
+                                        <td style="padding: 12px; text-align: center;"><span class="status-badge badge-optimal">ปกติ</span></td>
                                     </tr>
 
-                                    <!-- Lipid -->
-                                    <tr style="border-bottom: 1px solid var(--border);">
-                                        <td rowspan="4" style="padding: 12px; font-weight: 600; vertical-align: top; color: #d97706;">ไขมันในเลือด (Lipid)</td>
-                                        <td style="padding: 12px;">Total Cholesterol</td>
-                                        <td style="padding: 12px; font-weight: 600; color: #854d0e;">210 mg/dL</td>
+                                    <!-- Glucose Panel -->
+                                    <tr class="lab-table-row" data-status="optimal" data-category="glucose" data-key="fbs" onclick="openBiomarkerModal('fbs')" title="คลิกเพื่อดูคำอธิบายเจาะลึก" style="border-bottom: 1px solid var(--border); cursor: pointer;">
+                                        <td style="padding: 12px;"><span class="panel-pill panel-glucose">🍎 น้ำตาล (Glucose)</span></td>
+                                        <td style="padding: 12px; font-weight: 500;" class="biomarker-name">FBS (น้ำตาลก่อนอาหาร) <span class="click-hint">🔍</span></td>
+                                        <td style="padding: 12px; font-weight: 600; color: #166534;" id="tbl-fbs">88 mg/dL</td>
+                                        <td style="padding: 12px; color: var(--text-light);">70 - 99 mg/dL</td>
+                                        <td style="padding: 12px; text-align: center;"><span class="status-badge badge-optimal">ปกติ</span></td>
+                                    </tr>
+
+                                    <!-- Lipid Panel -->
+                                    <tr class="lab-table-row" data-status="warning" data-category="lipid" data-key="chol" onclick="openBiomarkerModal('chol')" title="คลิกเพื่อดูคำอธิบายเจาะลึก" style="border-bottom: 1px solid var(--border); cursor: pointer;">
+                                        <td style="padding: 12px;"><span class="panel-pill panel-lipid">🫀 ไขมัน (Lipid)</span></td>
+                                        <td style="padding: 12px; font-weight: 500;" class="biomarker-name">Total Cholesterol <span class="click-hint">🔍</span></td>
+                                        <td style="padding: 12px; font-weight: 600; color: #854d0e;" id="tbl-chol">210 mg/dL</td>
                                         <td style="padding: 12px; color: var(--text-light);">< 200 mg/dL</td>
-                                        <td style="padding: 12px; text-align: center;"><span style="background: #fef08a; color: #854d0e; padding: 4px 8px; border-radius: 12px; font-size: 0.8rem; font-weight: 600;">สูงเล็กน้อย</span></td>
+                                        <td style="padding: 12px; text-align: center;"><span class="status-badge badge-warning">สูงเล็กน้อย</span></td>
                                     </tr>
-                                    <tr style="border-bottom: 1px solid var(--border);">
-                                        <td style="padding: 12px;">Triglyceride</td>
-                                        <td style="padding: 12px; font-weight: 600; color: #854d0e;">160 mg/dL</td>
+                                    <tr class="lab-table-row" data-status="warning" data-category="lipid" data-key="tri" onclick="openBiomarkerModal('tri')" title="คลิกเพื่อดูคำอธิบายเจาะลึก" style="border-bottom: 1px solid var(--border); cursor: pointer;">
+                                        <td style="padding: 12px;"><span class="panel-pill panel-lipid">🫀 ไขมัน (Lipid)</span></td>
+                                        <td style="padding: 12px; font-weight: 500;" class="biomarker-name">Triglyceride <span class="click-hint">🔍</span></td>
+                                        <td style="padding: 12px; font-weight: 600; color: #854d0e;" id="tbl-tri">160 mg/dL</td>
                                         <td style="padding: 12px; color: var(--text-light);">< 150 mg/dL</td>
-                                        <td style="padding: 12px; text-align: center;"><span style="background: #fef08a; color: #854d0e; padding: 4px 8px; border-radius: 12px; font-size: 0.8rem; font-weight: 600;">สูงเล็กน้อย</span></td>
+                                        <td style="padding: 12px; text-align: center;"><span class="status-badge badge-warning">สูงเล็กน้อย</span></td>
                                     </tr>
-                                    <tr style="border-bottom: 1px solid var(--border);">
-                                        <td style="padding: 12px;">HDL (ไขมันดี)</td>
-                                        <td style="padding: 12px; font-weight: 600;">55 mg/dL</td>
+                                    <tr class="lab-table-row" data-status="optimal" data-category="lipid" data-key="hdl" onclick="openBiomarkerModal('hdl')" title="คลิกเพื่อดูคำอธิบายเจาะลึก" style="border-bottom: 1px solid var(--border); cursor: pointer;">
+                                        <td style="padding: 12px;"><span class="panel-pill panel-lipid">🫀 ไขมัน (Lipid)</span></td>
+                                        <td style="padding: 12px; font-weight: 500;" class="biomarker-name">HDL (ไขมันดี) <span class="click-hint">🔍</span></td>
+                                        <td style="padding: 12px; font-weight: 600; color: #166534;" id="tbl-hdl">55 mg/dL</td>
                                         <td style="padding: 12px; color: var(--text-light);">> 40 mg/dL</td>
-                                        <td style="padding: 12px; text-align: center;"><span style="background: #dcfce7; color: #166534; padding: 4px 8px; border-radius: 12px; font-size: 0.8rem; font-weight: 600;">ดี</span></td>
+                                        <td style="padding: 12px; text-align: center;"><span class="status-badge badge-optimal">ดี</span></td>
                                     </tr>
-                                    <tr style="border-bottom: 2px solid var(--border);">
-                                        <td style="padding: 12px;">LDL (ไขมันเลว)</td>
-                                        <td style="padding: 12px; font-weight: 600; color: #854d0e;">130 mg/dL</td>
+                                    <tr class="lab-table-row" data-status="warning" data-category="lipid" data-key="ldl" onclick="openBiomarkerModal('ldl')" title="คลิกเพื่อดูคำอธิบายเจาะลึก" style="border-bottom: 1px solid var(--border); cursor: pointer;">
+                                        <td style="padding: 12px;"><span class="panel-pill panel-lipid">🫀 ไขมัน (Lipid)</span></td>
+                                        <td style="padding: 12px; font-weight: 500;" class="biomarker-name">LDL (ไขมันเลว) <span class="click-hint">🔍</span></td>
+                                        <td style="padding: 12px; font-weight: 600; color: #854d0e;" id="tbl-ldl">130 mg/dL</td>
                                         <td style="padding: 12px; color: var(--text-light);">< 130 mg/dL</td>
-                                        <td style="padding: 12px; text-align: center;"><span style="background: #fef08a; color: #854d0e; padding: 4px 8px; border-radius: 12px; font-size: 0.8rem; font-weight: 600;">ปริ่มเกณฑ์</span></td>
+                                        <td style="padding: 12px; text-align: center;"><span class="status-badge badge-warning">ปริ่มเกณฑ์</span></td>
                                     </tr>
 
-                                    <!-- Blood Count -->
-                                    <tr style="border-bottom: 1px solid var(--border);">
-                                        <td rowspan="3" style="padding: 12px; font-weight: 600; vertical-align: top; color: #e11d48;">เม็ดเลือด (CBC)</td>
-                                        <td style="padding: 12px;">WBC Count</td>
-                                        <td style="padding: 12px; font-weight: 600;">8.5 x10^3/uL</td>
+                                    <!-- Blood Count (CBC) -->
+                                    <tr class="lab-table-row" data-status="optimal" data-category="cbc" data-key="wbc" onclick="openBiomarkerModal('wbc')" title="คลิกเพื่อดูคำอธิบายเจาะลึก" style="border-bottom: 1px solid var(--border); cursor: pointer;">
+                                        <td style="padding: 12px;"><span class="panel-pill panel-cbc">🛡️ เม็ดเลือด (CBC)</span></td>
+                                        <td style="padding: 12px; font-weight: 500;" class="biomarker-name">WBC Count <span class="click-hint">🔍</span></td>
+                                        <td style="padding: 12px; font-weight: 600;" id="tbl-wbc">8.5 x10^3/uL</td>
                                         <td style="padding: 12px; color: var(--text-light);">4.0 - 10.0</td>
-                                        <td style="padding: 12px; text-align: center;"><span style="background: #dcfce7; color: #166534; padding: 4px 8px; border-radius: 12px; font-size: 0.8rem; font-weight: 600;">ปกติ</span></td>
+                                        <td style="padding: 12px; text-align: center;"><span class="status-badge badge-optimal">ปกติ</span></td>
                                     </tr>
-                                    <tr style="border-bottom: 1px solid var(--border);">
-                                        <td style="padding: 12px;">Hemoglobin (Hb)</td>
-                                        <td style="padding: 12px; font-weight: 600;">13.5 g/dL</td>
+                                    <tr class="lab-table-row" data-status="optimal" data-category="cbc" data-key="hb" onclick="openBiomarkerModal('hb')" title="คลิกเพื่อดูคำอธิบายเจาะลึก" style="border-bottom: 1px solid var(--border); cursor: pointer;">
+                                        <td style="padding: 12px;"><span class="panel-pill panel-cbc">🛡️ เม็ดเลือด (CBC)</span></td>
+                                        <td style="padding: 12px; font-weight: 500;" class="biomarker-name">Hemoglobin (Hb) <span class="click-hint">🔍</span></td>
+                                        <td style="padding: 12px; font-weight: 600;" id="tbl-hb">13.5 g/dL</td>
                                         <td style="padding: 12px; color: var(--text-light);">12.0 - 16.0</td>
-                                        <td style="padding: 12px; text-align: center;"><span style="background: #dcfce7; color: #166534; padding: 4px 8px; border-radius: 12px; font-size: 0.8rem; font-weight: 600;">ปกติ</span></td>
+                                        <td style="padding: 12px; text-align: center;"><span class="status-badge badge-optimal">ปกติ</span></td>
                                     </tr>
-                                    <tr style="border-bottom: 2px solid var(--border);">
-                                        <td style="padding: 12px;">Platelet Count</td>
-                                        <td style="padding: 12px; font-weight: 600;">250 x10^3/uL</td>
+                                    <tr class="lab-table-row" data-status="optimal" data-category="cbc" data-key="plt" onclick="openBiomarkerModal('plt')" title="คลิกเพื่อดูคำอธิบายเจาะลึก" style="border-bottom: 1px solid var(--border); cursor: pointer;">
+                                        <td style="padding: 12px;"><span class="panel-pill panel-cbc">🛡️ เม็ดเลือด (CBC)</span></td>
+                                        <td style="padding: 12px; font-weight: 500;" class="biomarker-name">Platelet Count <span class="click-hint">🔍</span></td>
+                                        <td style="padding: 12px; font-weight: 600;" id="tbl-plt">250 x10^3/uL</td>
                                         <td style="padding: 12px; color: var(--text-light);">150 - 400</td>
-                                        <td style="padding: 12px; text-align: center;"><span style="background: #dcfce7; color: #166534; padding: 4px 8px; border-radius: 12px; font-size: 0.8rem; font-weight: 600;">ปกติ</span></td>
+                                        <td style="padding: 12px; text-align: center;"><span class="status-badge badge-optimal">ปกติ</span></td>
                                     </tr>
                                     
                                     <!-- Hormones -->
-                                    <tr style="border-bottom: 1px solid var(--border);">
-                                        <td rowspan="2" style="padding: 12px; font-weight: 600; vertical-align: top; color: #8b5cf6;">ฮอร์โมน (Endocrine)</td>
-                                        <td style="padding: 12px;">TSH (ไทรอยด์)</td>
-                                        <td style="padding: 12px; font-weight: 600;">2.1 mIU/L</td>
+                                    <tr class="lab-table-row" data-status="optimal" data-category="hormone" data-key="tsh" onclick="openBiomarkerModal('tsh')" title="คลิกเพื่อดูคำอธิบายเจาะลึก" style="border-bottom: 1px solid var(--border); cursor: pointer;">
+                                        <td style="padding: 12px;"><span class="panel-pill panel-hormone">⚡ ฮอร์โมน (Endocrine)</span></td>
+                                        <td style="padding: 12px; font-weight: 500;" class="biomarker-name">TSH (ไทรอยด์) <span class="click-hint">🔍</span></td>
+                                        <td style="padding: 12px; font-weight: 600;" id="tbl-tsh">2.1 mIU/L</td>
                                         <td style="padding: 12px; color: var(--text-light);">0.4 - 4.0</td>
-                                        <td style="padding: 12px; text-align: center;"><span style="background: #dcfce7; color: #166534; padding: 4px 8px; border-radius: 12px; font-size: 0.8rem; font-weight: 600;">ปกติ</span></td>
+                                        <td style="padding: 12px; text-align: center;"><span class="status-badge badge-optimal">ปกติ</span></td>
                                     </tr>
-                                    <tr style="border-bottom: 1px solid var(--border);">
-                                        <td style="padding: 12px;">Cortisol (เครียด)</td>
-                                        <td style="padding: 12px; font-weight: 600; color: #854d0e;">19.5 ug/dL</td>
+                                    <tr class="lab-table-row" data-status="warning" data-category="hormone" data-key="cor" onclick="openBiomarkerModal('cor')" title="คลิกเพื่อดูคำอธิบายเจาะลึก" style="border-bottom: 1px solid var(--border); cursor: pointer;">
+                                        <td style="padding: 12px;"><span class="panel-pill panel-hormone">⚡ ฮอร์โมน (Endocrine)</span></td>
+                                        <td style="padding: 12px; font-weight: 500;" class="biomarker-name">Cortisol (เครียด) <span class="click-hint">🔍</span></td>
+                                        <td style="padding: 12px; font-weight: 600; color: #854d0e;" id="tbl-cor">19.5 ug/dL</td>
                                         <td style="padding: 12px; color: var(--text-light);">5.0 - 23.0</td>
-                                        <td style="padding: 12px; text-align: center;"><span style="background: #fef08a; color: #854d0e; padding: 4px 8px; border-radius: 12px; font-size: 0.8rem; font-weight: 600;">ค่อนข้างสูง</span></td>
+                                        <td style="padding: 12px; text-align: center;"><span class="status-badge badge-warning">ค่อนข้างสูง</span></td>
+                                    </tr>
+
+                                    <!-- Empty State Row for filter -->
+                                    <tr id="tr-no-data" style="display: none;">
+                                        <td colspan="5" style="text-align: center; padding: 32px 16px;">
+                                            <div style="font-size: 2rem; margin-bottom: 8px;">🎉</div>
+                                            <strong style="color: var(--text-main);">ยอดเยี่ยม! ไม่พบค่าผลตรวจในระดับนี้</strong>
+                                            <p style="color: var(--text-light); font-size: 0.85rem; margin-top: 4px;">สุขภาพของคุณไม่มีตัวชี้วัดที่อยู่ในเกณฑ์อันตราย</p>
+                                        </td>
                                     </tr>
                                 </tbody>
                             </table>
@@ -476,22 +666,22 @@
                         </div>
 
                         <div class="tab-content content-action">
-                            <ul class="action-list">
-                                <li>
+                            <ul class="action-list"><li>
+                                
                                     <div class="action-icon">🥦</div>
                                     <div class="action-text">
                                         <strong>เพิ่มGSHตามธรรมชาติ</strong>
                                         <p>ตับของคุณทำงานได้ดีเยี่ยม! เสริมเกราะป้องกันด้วยการทาน บรอกโคลี หรือ กะหล่ำปลี 2 มื้อ/สัปดาห์</p>
                                     </div>
-                                </li>
-                                <li>
-                                    <div class="action-icon">💧</div>
+                                
+                                
+                                    </li><li><div class="action-icon">💧</div>
                                     <div class="action-text">
                                         <strong>สิ่งที่ควรระวัง (Prevention)</strong>
                                         <p>ดื่มน้ำให้ได้อย่างน้อย 2.5 ลิตร เพื่อรักษาสภาพตับให้ดียาวนาน</p>
                                     </div>
-                                </li>
-                            </ul>
+                                
+                            </li></ul>
                         </div>
                     </div>
 
@@ -591,22 +781,22 @@
                         </div>
 
                         <div class="tab-content content-action">
-                            <ul class="action-list">
-                                <li>
+                            <ul class="action-list"><li>
+                                
                                     <div class="action-icon">🐟</div>
                                     <div class="action-text">
                                         <strong>โภชนาการ: เพิ่มโอเมก้า 3 ลดทรานส์</strong>
                                         <p>หลีกเลี่ยงไขมันทรานส์ (ของทอด, เบเกอรี่) และทานปลาทะเลลึก เช่น แซลมอน เพื่อเพิ่ม HDL อย่างมีนัยสำคัญ</p>
                                     </div>
-                                </li>
-                                <li>
-                                    <div class="action-icon">🏃</div>
+                                
+                                
+                                    </li><li><div class="action-icon">🏃</div>
                                     <div class="action-text">
                                         <strong>การออกกำลังกายแบบคาร์ดิโอ</strong>
                                         <p>วิ่ง ปั่นจักรยาน หรือว่ายน้ำ ต่อเนื่อง 30-45 นาที 3-4 วัน/สัปดาห์ ช่วยเผาผลาญ LDL ในกระแสเลือดได้โดยตรง</p>
                                     </div>
-                                </li>
-                            </ul>
+                                
+                            </li></ul>
                         </div>
                     </div>
 
@@ -730,22 +920,22 @@
                         </div>
 
                         <div class="tab-content content-action">
-                            <ul class="action-list">
-                                <li>
+                            <ul class="action-list"><li>
+                                
                                     <div class="action-icon">💤</div>
                                     <div class="action-text">
                                         <strong>ปรับเวลานอน (Circadian Rhythm)</strong>
                                         <p>นอนหลับให้ได้ 7-8 ชั่วโมงต่อวัน และพยายามนอนก่อนเที่ยงคืน เพื่อให้ร่างกายผลิตฮอร์โมนลดการอักเสบได้อย่างเต็มประสิทธิภาพ</p>
                                     </div>
-                                </li>
-                                <li>
-                                    <div class="action-icon">☀️</div>
+                                
+                                
+                                    </li><li><div class="action-icon">☀️</div>
                                     <div class="action-text">
                                         <strong>เสริม Vitamin D3 และ Zinc</strong>
                                         <p>แร่ธาตุและวิตามินเหล่านี้คือ "เสบียง" สำคัญที่ช่วยปรับสมดุลภูมิคุ้มกัน พิจารณารับแสงแดดอ่อนๆ ยามเช้า 15 นาทีเป็นประจำ</p>
                                     </div>
-                                </li>
-                            </ul>
+                                
+                            </li></ul>
                         </div>
                     </div>
 
@@ -876,29 +1066,29 @@
 
                         <!-- ACTION VIEW -->
                         <div class="tab-content content-action">
-                            <ul class="action-list">
-                                <li>
+                            <ul class="action-list"><li>
+                                
                                     <div class="action-icon">🥩</div>
                                     <div class="action-text">
                                         <strong>รักษาระดับธาตุเหล็ก (Iron)</strong>
                                         <p>ทานเนื้อแดงไขมันต่ำ เครื่องใน ตับ หรือผักโขม เพื่อเป็นวัตถุดิบในการสร้างฮีโมโกลบิน (Hb) อย่างต่อเนื่อง</p>
                                     </div>
-                                </li>
-                                <li>
-                                    <div class="action-icon">🍋</div>
+                                
+                                
+                                    </li><li><div class="action-icon">🍋</div>
                                     <div class="action-text">
                                         <strong>คู่หูวิตามิน C (Vitamin C)</strong>
                                         <p>ทานผลไม้รสเปรี้ยวคู่กับมื้ออาหาร จะช่วยเพิ่มการดูดซึมธาตุเหล็กจากพืช (Non-heme iron) ได้ดีขึ้นถึง 30%</p>
                                     </div>
-                                </li>
-                                <li>
-                                    <div class="action-icon">💧</div>
+                                
+                                
+                                    </li><li><div class="action-icon">💧</div>
                                     <div class="action-text">
                                         <strong>ควบคุมความหนืดของเลือด</strong>
                                         <p>ดื่มน้ำให้เพียงพอ 2-2.5 ลิตรต่อวัน ป้องกันไม่ให้ค่า Hematocrit ข้นเกินไป ซึ่งอาจทำให้หัวใจทำงานหนัก</p>
                                     </div>
-                                </li>
-                            </ul>
+                                
+                            </li></ul>
                         </div>
                     </div>
 
@@ -1045,22 +1235,22 @@
 
                         <!-- ACTION VIEW -->
                         <div class="tab-content content-action">
-                            <ul class="action-list">
-                                <li>
+                            <ul class="action-list"><li>
+                                
                                     <div class="action-icon">🧘‍♀️</div>
                                     <div class="action-text">
                                         <strong>ลดทอน Cortisol ทันที</strong>
                                         <p>ฝึกหายใจแบบ 4-7-8 (เข้า 4 กลั้น 7 ออก 8) วันละ 10 นาที เพื่อสับสวิตช์ระบบประสาทจากโหมดสู้รบ (Sympathetic) เป็นโหมดพักผ่อน (Parasympathetic)</p>
                                     </div>
-                                </li>
-                                <li>
-                                    <div class="action-icon">🍵</div>
+                                
+                                
+                                    </li><li><div class="action-icon">🍵</div>
                                     <div class="action-text">
                                         <strong>ปรับสมดุลด้วย Adaptogens</strong>
                                         <p>พิจารณาชาสมุนไพรอย่าง คาโมมายล์ หรือโสมอินเดีย (Ashwagandha) ที่มีงานวิจัยรองรับว่าช่วยลดระดับ Cortisol ในเลือดได้จริง</p>
                                     </div>
-                                </li>
-                            </ul>
+                                
+                            </li></ul>
                         </div>
                     </div>
 
@@ -1305,6 +1495,7 @@
                     </div>
                     <div class="chat-footer" style="padding: 20px; background: white; border-top: 1px solid var(--border); display: flex; gap: 12px; align-items: flex-end;">
                         <textarea placeholder="พิมพ์คำถามของคุณที่นี่..." class="chat-input" style="flex: 1; padding: 16px; border: 1px solid var(--border); border-radius: 12px; font-family: inherit; font-size: 1rem; resize: none; outline: none; box-shadow: inset 0 2px 4px rgba(0,0,0,0.02); height: 60px;"></textarea>
+                        <button class="btn-mic" id="btn-mic" title="พูดด้วยเสียง (Speech-to-Text)">🎤</button>
                         <button class="chat-send btn-primary" style="padding: 0; width: 60px; height: 60px; border-radius: 12px; display: flex; justify-content: center; align-items: center; font-size: 1.5rem; flex-shrink: 0;">➤</button>
                     </div>
                 </div>
@@ -1697,6 +1888,107 @@
                     <span style="color: var(--text-light);">เบอร์ติดต่อฉุกเฉิน:</span>
                     <strong>089-999-9999</strong>
                 </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Doctor Discussion Summary Modal -->
+    <div class="modal-overlay" id="modal-doctor-summary">
+        <div class="doctor-modal-content">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px;">
+                <h2 style="font-size: 1.5rem; display: flex; align-items: center; gap: 10px;">
+                    📋 ใบคุยกับแพทย์ <span style="font-size: 0.8rem; background: var(--primary); color: white; padding: 4px 10px; border-radius: 20px;">AI Generated</span>
+                </h2>
+                <button onclick="closeModal('modal-doctor-summary')" style="background: none; border: none; font-size: 1.5rem; cursor: pointer; color: var(--text-light);">✕</button>
+            </div>
+            <div id="doctor-summary-loading" style="display: none; text-align: center; padding: 40px 0;">
+                <div class="dna-scanner" style="width: 150px; margin: 0 auto 20px;">
+                    <div class="dna-matrix"></div>
+                    <div class="dna-laser"></div>
+                </div>
+                <p style="color: var(--primary); font-weight: 600;">Dr. LabLink กำลังวิเคราะห์ผลเลือดและเตรียมใบคุยกับแพทย์...</p>
+            </div>
+            <div id="doctor-summary-content" style="display: none;"></div>
+            <div style="margin-top: 24px; padding-top: 16px; border-top: 1px solid var(--border); text-align: center;">
+                <button class="btn-primary" onclick="window.print()" style="margin-right: 8px;">🖨️ พิมพ์ใบนี้</button>
+                <button class="btn-outline" onclick="closeModal('modal-doctor-summary')">ปิด</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 🔬 Biomarker Deep-Dive Modal (InsideTracker / Function Health style) -->
+    <div class="modal-overlay" id="modal-biomarker-detail">
+        <div class="biomarker-modal-content">
+            <!-- Header -->
+            <div class="biomarker-modal-header">
+                <div style="display: flex; align-items: center; gap: 14px;">
+                    <div class="biomarker-modal-icon" id="bio-modal-icon">🔬</div>
+                    <div>
+                        <div style="display: flex; align-items: center; gap: 8px;">
+                            <h2 id="bio-modal-name" style="font-size: 1.4rem; color: var(--text-main); margin: 0;">AST (SGOT)</h2>
+                            <span id="bio-modal-badge" class="status-badge badge-optimal">ปกติ</span>
+                        </div>
+                        <p id="bio-modal-subname" style="color: var(--text-light); font-size: 0.9rem; margin-top: 2px;">เอนไซม์การบาดเจ็บของเซลล์ตับ</p>
+                    </div>
+                </div>
+                <button onclick="closeModal('modal-biomarker-detail')" class="btn-close-bio-modal" aria-label="ปิด">✕</button>
+            </div>
+
+            <!-- Value / Reference Box -->
+            <div class="biomarker-value-card">
+                <div class="bio-val-col">
+                    <span class="bio-val-label">ผลตรวจของคุณ</span>
+                    <div class="bio-val-num" id="bio-modal-val">22 <span style="font-size: 0.9rem; font-weight: normal; color: var(--text-light);">U/L</span></div>
+                </div>
+                <div class="bio-val-divider"></div>
+                <div class="bio-val-col">
+                    <span class="bio-val-label">ค่าอ้างอิงมาตรฐาน</span>
+                    <div class="bio-val-ref" id="bio-modal-ref">< 40 U/L</div>
+                </div>
+                <div class="bio-val-divider"></div>
+                <div class="bio-val-col">
+                    <span class="bio-val-label">สถานะการประเมิน</span>
+                    <div class="bio-val-status" id="bio-modal-status-text">ปลอดภัย ดีเยี่ยม ✅</div>
+                </div>
+            </div>
+
+            <!-- What is this in plain language? -->
+            <div class="bio-section-box">
+                <h4 class="bio-section-title">💡 ค่านี้คืออะไร และบอกอะไรคุณ? (ภาษาเข้าใจง่าย)</h4>
+                <p class="bio-section-desc" id="bio-modal-meaning">คำอธิบายค่าแล็บ...</p>
+            </div>
+
+            <!-- Foods / Lifestyle Guidance -->
+            <div class="bio-action-columns">
+                <div class="bio-guidance-card guidance-eat">
+                    <h4 class="guidance-title">🥦 อาหารและพฤติกรรมที่แนะนำ</h4>
+                    <ul class="guidance-list" id="bio-modal-eat">
+                        <li>คำแนะนำ...</li>
+                    </ul>
+                </div>
+
+                <div class="bio-guidance-card guidance-avoid">
+                    <h4 class="guidance-title">🚫 สิ่งที่ควรระวังหรือหลีกเลี่ยง</h4>
+                    <ul class="guidance-list" id="bio-modal-avoid">
+                        <li>สิ่งที่ควรเลี่ยง...</li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Questions to ask doctor -->
+            <div class="bio-doctor-box">
+                <h4 class="bio-doctor-title">🩺 คำถามที่คุณควรถามคุณหมอในการนัดครั้งต่อไป:</h4>
+                <div class="bio-doctor-quote" id="bio-modal-doctor-q">
+                    "คำถามสำหรับแพทย์..."
+                </div>
+            </div>
+
+            <!-- Footer -->
+            <div class="biomarker-modal-footer">
+                <button class="btn-primary btn-ask-ai" onclick="askAiAboutBiomarker()">
+                    <span>💬</span> ถาม Dr. LabLink เพิ่มเติมเกี่ยวกับค่านี้
+                </button>
+                <button class="btn-outline" onclick="closeModal('modal-biomarker-detail')">ปิดหน้าต่าง</button>
             </div>
         </div>
     </div>

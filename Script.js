@@ -14,6 +14,9 @@ document.addEventListener('DOMContentLoaded', () => {
     initDragAndDrop();
     initAnatomyTooltips();
     initRiskScore();
+    initTrafficLightBarometer();
+    initDailyActionPlan();
+    initBiomarkerDeepDive();
 
     // Check if user was previously authenticated (persisted session)
     const savedAuth = localStorage.getItem('lablink_auth');
@@ -262,7 +265,7 @@ function initUploadSimulation() {
 
     if (btnVerifyId && idInput) {
         btnVerifyId.addEventListener('click', () => {
-            if (idInput.value === '0000000000000') {
+            if (/^\d{13}$/.test(idInput.value.trim())) {
                 if (verifyError) verifyError.style.display = 'none';
                 if (verifyState) verifyState.style.display = 'none';
 
@@ -415,6 +418,862 @@ function applyHealthDataToUI(eh) {
             svg.style.animation = null; 
         }
     }, 500);
+
+    // Update Traffic Light Barometer with new extracted data
+    if (window.updateBarometerData) {
+        window.updateBarometerData(eh);
+    }
+
+    // Update 3-Step Daily Action Plan with new extracted data
+    if (window.updateDailyActionPlan) {
+        window.updateDailyActionPlan(eh);
+    }
+}
+
+// ===================================================
+//  🚦 ITEM 1: TOP-TIER TRAFFIC LIGHT BAROMETER LOGIC
+// ===================================================
+let currentStatusFilter = 'all';
+
+function initTrafficLightBarometer() {
+    window.filterByStatus = function(status) {
+        // Toggle off back to 'all' if clicking the active chip again
+        if (currentStatusFilter === status && status !== 'all') {
+            status = 'all';
+        }
+        currentStatusFilter = status;
+
+        // 1. Update chip UI states
+        const chips = document.querySelectorAll('.barometer-chip');
+        chips.forEach(chip => chip.classList.remove('active'));
+
+        const resetBtn = document.getElementById('btn-reset-filter');
+        if (resetBtn) {
+            if (status === 'all') {
+                resetBtn.style.background = 'var(--primary)';
+                resetBtn.style.color = 'white';
+                resetBtn.style.borderColor = 'var(--primary)';
+            } else {
+                resetBtn.style.background = '';
+                resetBtn.style.color = '';
+                resetBtn.style.borderColor = '';
+            }
+        }
+
+        if (status !== 'all') {
+            const activeChip = document.getElementById(`chip-status-${status}`);
+            if (activeChip) activeChip.classList.add('active');
+        }
+
+        // 2. Filter Table Rows
+        const rows = document.querySelectorAll('.lab-table-row');
+        let visibleCount = 0;
+
+        rows.forEach(row => {
+            const rowStatus = row.getAttribute('data-status');
+            if (status === 'all' || rowStatus === status) {
+                row.style.display = '';
+                visibleCount++;
+            } else {
+                row.style.display = 'none';
+            }
+        });
+
+        // 3. Handle Empty State
+        const noDataRow = document.getElementById('tr-no-data');
+        if (noDataRow) {
+            noDataRow.style.display = (visibleCount === 0) ? '' : 'none';
+        }
+
+        // 4. Update Filter Notice Banner
+        const banner = document.getElementById('table-filter-banner');
+        const bannerLabel = document.getElementById('filter-banner-label');
+        const bannerCount = document.getElementById('filter-banner-count');
+        const bannerIcon = document.getElementById('filter-banner-icon');
+
+        if (banner && bannerLabel && bannerCount && bannerIcon) {
+            if (status === 'all') {
+                banner.style.display = 'none';
+            } else {
+                banner.style.display = 'flex';
+                let labelText = 'ปกติสมบูรณ์ (Optimal)';
+                let iconText = '🟢';
+                if (status === 'warning') { labelText = 'ควรเฝ้าระวัง (Watchlist)'; iconText = '🟡'; }
+                if (status === 'critical') { labelText = 'ต้องพบแพทย์ (Action Needed)'; iconText = '🔴'; }
+
+                bannerLabel.textContent = labelText;
+                bannerIcon.textContent = iconText;
+                bannerCount.textContent = `(${visibleCount} รายการ)`;
+
+                // Smooth scroll to table
+                const tableCard = document.getElementById('executive-summary-card');
+                if (tableCard) {
+                    tableCard.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                }
+            }
+        }
+    };
+
+    window.updateBarometerData = function(eh) {
+        let optimalList = [];
+        let warningList = [];
+        let criticalList = [];
+
+        // Data source (extracted from report or standard demo values)
+        const d = {
+            chol: eh?.chol || 210,
+            ldl: eh?.ldl || 130,
+            hdl: eh?.hdl || 55,
+            tri: eh?.triglycerides || 160,
+            fbs: eh?.fbs || 88,
+            alt: eh?.alt || 45,
+            ast: eh?.ast || 22,
+            alp: eh?.alp || 85,
+            wbc: 8.5,
+            hb: 13.5,
+            plt: 250,
+            tsh: eh?.tsh || 2.1,
+            cortisol: eh?.cortisol || 19.5
+        };
+
+        // Evaluate Liver (AST, ALT, ALP)
+        if (d.ast > 60) criticalList.push('AST'); else if (d.ast > 40) warningList.push('AST'); else optimalList.push('AST');
+        if (d.alt > 60) criticalList.push('ALT'); else if (d.alt > 40) warningList.push('ALT'); else optimalList.push('ALT');
+        if (d.alp > 160) criticalList.push('ALP'); else if (d.alp > 129) warningList.push('ALP'); else optimalList.push('ALP');
+
+        // Evaluate Glucose (FBS)
+        if (d.fbs >= 126) criticalList.push('FBS'); else if (d.fbs >= 100) warningList.push('FBS'); else optimalList.push('FBS');
+
+        // Evaluate Lipids (Total Chol, Triglyceride, HDL, LDL)
+        if (d.chol >= 240) criticalList.push('Total Chol'); else if (d.chol >= 200) warningList.push('Total Chol'); else optimalList.push('Total Chol');
+        if (d.tri >= 200) criticalList.push('Triglyceride'); else if (d.tri >= 150) warningList.push('Triglyceride'); else optimalList.push('Triglyceride');
+        if (d.hdl < 40) warningList.push('HDL'); else optimalList.push('HDL');
+        if (d.ldl >= 160) criticalList.push('LDL'); else if (d.ldl >= 130) warningList.push('LDL'); else optimalList.push('LDL');
+
+        // Evaluate CBC (WBC, Hb, Platelet)
+        optimalList.push('WBC');
+        optimalList.push('Hb');
+        optimalList.push('Platelet');
+
+        // Evaluate Hormones (TSH, Cortisol)
+        if (d.tsh > 4.0 || d.tsh < 0.4) warningList.push('TSH'); else optimalList.push('TSH');
+        if (d.cortisol > 23.0) criticalList.push('Cortisol'); else if (d.cortisol > 19.0) warningList.push('Cortisol'); else optimalList.push('Cortisol');
+
+        // Update counts
+        const optEl = document.getElementById('count-optimal');
+        const warnEl = document.getElementById('count-warning');
+        const critEl = document.getElementById('count-critical');
+        const totalEl = document.getElementById('count-total');
+
+        const optCount = optimalList.length;
+        const warnCount = warningList.length;
+        const critCount = criticalList.length;
+        const totalCount = optCount + warnCount + critCount;
+
+        if (optEl) optEl.textContent = optCount;
+        if (warnEl) warnEl.textContent = warnCount;
+        if (critEl) critEl.textContent = critCount;
+        if (totalEl) totalEl.textContent = totalCount;
+
+        // Update subtext on chips
+        const subWarn = document.getElementById('sub-warning');
+        if (subWarn) {
+            subWarn.textContent = (warnCount > 0) ? warningList.join(', ') : 'ไม่มีค่าที่ต้องเฝ้าระวัง';
+        }
+        const subCrit = document.getElementById('sub-critical');
+        if (subCrit) {
+            subCrit.textContent = (critCount > 0) ? criticalList.join(', ') : 'ไม่มีค่าในระดับอันตราย ✅';
+        }
+
+        // Update Overall Summary Headline
+        const overallText = document.getElementById('barometer-overall-text');
+        if (overallText) {
+            if (critCount > 0) {
+                overallText.textContent = `🔴 พบ ${critCount} ค่าที่ควรปรึกษาแพทย์เร่งด่วน`;
+                overallText.className = 'status-highlight-crit';
+            } else if (warnCount > 0) {
+                overallText.textContent = `🟡 สุขภาพโดยรวมดี แต่มี ${warnCount} จุดที่ควรเฝ้าระวัง`;
+                overallText.className = 'status-highlight-warn';
+            } else {
+                overallText.textContent = `🟢 อยู่ในเกณฑ์ดีเยี่ยม (Optimal ทั้งหมด)`;
+                overallText.className = 'status-highlight-good';
+            }
+        }
+
+        // Helper to update row status and badge in sync with barometer
+        function setRowStatus(cellId, status, label, color) {
+            const cell = document.getElementById(cellId);
+            if (!cell) return;
+            const row = cell.closest('.lab-table-row');
+            if (row) {
+                row.setAttribute('data-status', status);
+                const statusBadge = row.querySelector('.status-badge');
+                if (statusBadge) {
+                    statusBadge.className = `status-badge badge-${status}`;
+                    statusBadge.textContent = label;
+                }
+                if (color) cell.style.color = color;
+                else cell.style.color = '';
+            }
+        }
+
+        // Update Table Rows and their Status Badges dynamically
+        const tblAst = document.getElementById('tbl-ast');
+        if (tblAst) {
+            if (eh?.ast) tblAst.textContent = `${eh.ast} U/L`;
+            if (d.ast > 60) setRowStatus('tbl-ast', 'critical', 'อันตราย', '#ef4444');
+            else if (d.ast > 40) setRowStatus('tbl-ast', 'warning', 'สูงเล็กน้อย', '#854d0e');
+            else setRowStatus('tbl-ast', 'optimal', 'ปกติ', '#166534');
+        }
+
+        const tblAlt = document.getElementById('tbl-alt');
+        if (tblAlt) {
+            if (eh?.alt) tblAlt.textContent = `${eh.alt} U/L`;
+            if (d.alt > 60) setRowStatus('tbl-alt', 'critical', 'อันตราย', '#ef4444');
+            else if (d.alt > 40) setRowStatus('tbl-alt', 'warning', 'สูงเล็กน้อย', '#854d0e');
+            else setRowStatus('tbl-alt', 'optimal', 'ปกติ', '#166534');
+        }
+
+        const tblAlp = document.getElementById('tbl-alp');
+        if (tblAlp) {
+            if (eh?.alp) tblAlp.textContent = `${eh.alp} U/L`;
+            if (d.alp > 160) setRowStatus('tbl-alp', 'critical', 'อันตราย', '#ef4444');
+            else if (d.alp > 129) setRowStatus('tbl-alp', 'warning', 'สูงเล็กน้อย', '#854d0e');
+            else setRowStatus('tbl-alp', 'optimal', 'ปกติ', '#166534');
+        }
+
+        const tblFbs = document.getElementById('tbl-fbs');
+        if (tblFbs) {
+            if (eh?.fbs) tblFbs.textContent = `${eh.fbs} mg/dL`;
+            if (d.fbs >= 126) setRowStatus('tbl-fbs', 'critical', 'อันตราย', '#ef4444');
+            else if (d.fbs >= 100) setRowStatus('tbl-fbs', 'warning', 'ปริ่มเกณฑ์', '#854d0e');
+            else setRowStatus('tbl-fbs', 'optimal', 'ปกติ', '#166534');
+        }
+
+        const tblChol = document.getElementById('tbl-chol');
+        if (tblChol) {
+            if (eh?.chol) tblChol.textContent = `${eh.chol} mg/dL`;
+            if (d.chol >= 240) setRowStatus('tbl-chol', 'critical', 'อันตราย', '#ef4444');
+            else if (d.chol >= 200) setRowStatus('tbl-chol', 'warning', 'สูงเล็กน้อย', '#854d0e');
+            else setRowStatus('tbl-chol', 'optimal', 'ปกติ', '#166534');
+        }
+
+        const tblLdl = document.getElementById('tbl-ldl');
+        if (tblLdl) {
+            if (eh?.ldl) tblLdl.textContent = `${eh.ldl} mg/dL`;
+            if (d.ldl >= 160) setRowStatus('tbl-ldl', 'critical', 'อันตราย', '#ef4444');
+            else if (d.ldl >= 130) setRowStatus('tbl-ldl', 'warning', 'ปริ่มเกณฑ์', '#854d0e');
+            else setRowStatus('tbl-ldl', 'optimal', 'ปกติ', '#166534');
+        }
+
+        const tblHdl = document.getElementById('tbl-hdl');
+        if (tblHdl) {
+            if (eh?.hdl) tblHdl.textContent = `${eh.hdl} mg/dL`;
+            if (d.hdl < 40) setRowStatus('tbl-hdl', 'warning', 'ต่ำกว่าเกณฑ์', '#854d0e');
+            else setRowStatus('tbl-hdl', 'optimal', 'ดี', '#166534');
+        }
+
+        const tblTsh = document.getElementById('tbl-tsh');
+        if (tblTsh) {
+            if (eh?.tsh) tblTsh.textContent = `${eh.tsh} mIU/L`;
+            if (d.tsh > 4.0 || d.tsh < 0.4) setRowStatus('tbl-tsh', 'warning', 'ผิดปกติเล็กน้อย', '#854d0e');
+            else setRowStatus('tbl-tsh', 'optimal', 'ปกติ', '#166534');
+        }
+
+        const tblCor = document.getElementById('tbl-cor');
+        if (tblCor) {
+            if (eh?.cortisol) tblCor.textContent = `${eh.cortisol} ug/dL`;
+            if (d.cortisol > 23.0) setRowStatus('tbl-cor', 'critical', 'สูงผิดปกติ', '#ef4444');
+            else if (d.cortisol > 19.0) setRowStatus('tbl-cor', 'warning', 'ค่อนข้างสูง', '#854d0e');
+            else setRowStatus('tbl-cor', 'optimal', 'ปกติ', '#166534');
+        }
+    };
+
+    // Run once on load
+    window.updateBarometerData(window.extractedHealthData || null);
+}
+
+// ===================================================
+//  🎯 ITEM 2: 3-STEP DAILY ACTION PLAN LOGIC
+// ===================================================
+function initDailyActionPlan() {
+    const todayKey = new Date().toISOString().slice(0, 10);
+    const storageKey = 'lablink_daily_actions';
+
+    // Load or initialize state for today
+    let state = {
+        date: todayKey,
+        actions: [false, false, false],
+        bonusAwarded: false
+    };
+
+    try {
+        const saved = localStorage.getItem(storageKey);
+        if (saved) {
+            const parsed = JSON.parse(saved);
+            if (parsed.date === todayKey) {
+                state = parsed;
+            }
+        }
+    } catch (e) {
+        console.error("Failed to load daily actions:", e);
+    }
+
+    // Apply saved state to UI
+    function renderActionState() {
+        const checkboxes = [
+            document.getElementById('chk-action-1'),
+            document.getElementById('chk-action-2'),
+            document.getElementById('chk-action-3')
+        ];
+
+        let completedCount = 0;
+
+        checkboxes.forEach((chk, idx) => {
+            if (!chk) return;
+            const isDone = !!state.actions[idx];
+            chk.checked = isDone;
+
+            const card = document.getElementById(`action-card-${idx + 1}`);
+            const chkText = document.getElementById(`chk-text-${idx + 1}`);
+
+            if (card) {
+                if (isDone) card.classList.add('completed');
+                else card.classList.remove('completed');
+            }
+
+            if (chkText) {
+                chkText.textContent = isDone ? 'ทำสำเร็จแล้ว! 🎉' : 'ทำสำเร็จแล้ว (+10 EXP)';
+            }
+
+            if (isDone) completedCount++;
+        });
+
+        // Update progress bar
+        const counter = document.getElementById('daily-progress-counter');
+        const fill = document.getElementById('daily-progress-fill');
+        if (counter) counter.textContent = `${completedCount}/3 ข้อ`;
+        if (fill) fill.style.width = `${(completedCount / 3) * 100}%`;
+    }
+
+    // Toggle handler
+    window.toggleDailyAction = function(index) {
+        const idx = index - 1;
+        const chk = document.getElementById(`chk-action-${index}`);
+        if (!chk) return;
+
+        const isNowChecked = chk.checked;
+        state.actions[idx] = isNowChecked;
+
+        if (isNowChecked) {
+            if (typeof addExp === 'function') addExp(10);
+            if (typeof showToast === 'function') {
+                showToast(`🌟 ทำภารกิจสุขภาพสำเร็จ! +10 EXP`, 'success');
+            }
+        }
+
+        const completedCount = state.actions.filter(Boolean).length;
+
+        // Check for 3/3 completion bonus
+        if (completedCount === 3 && !state.bonusAwarded) {
+            state.bonusAwarded = true;
+            if (typeof addExp === 'function') addExp(30);
+            if (typeof showToast === 'function') {
+                setTimeout(() => {
+                    showToast(`🎉 ยินดีด้วย! ทำภารกิจครบ 3 ข้อวันนี้ (+30 EXP Bonus)`, 'success');
+                }, 400);
+            }
+        }
+
+        // Save state to localStorage
+        try {
+            localStorage.setItem(storageKey, JSON.stringify(state));
+        } catch (e) {}
+
+        renderActionState();
+    };
+
+    // Dynamic Plan Personalization based on Biomarkers
+    window.updateDailyActionPlan = function(eh) {
+        if (!eh) return;
+
+        const badge1 = document.getElementById('action-badge-1');
+        const title1 = document.getElementById('action-title-1');
+        const desc1 = document.getElementById('action-desc-1');
+
+        const badge3 = document.getElementById('action-badge-3');
+        const title3 = document.getElementById('action-title-3');
+        const desc3 = document.getElementById('action-desc-3');
+
+        // Check if blood sugar is elevated
+        if (eh.fbs && eh.fbs >= 100) {
+            if (badge1) {
+                badge1.textContent = `🔻 โฟกัส: ควบคุมน้ำตาล (FBS ${eh.fbs} mg/dL)`;
+                badge1.className = 'action-badge badge-impact-ldl';
+            }
+            if (title1) title1.textContent = 'ลดแป้งขัดขาว & ทานผักนำมื้ออาหาร';
+            if (desc1) desc1.textContent = 'ทานผักใบเขียวก่อนคาร์โบไฮเดรตในทุกมื้อ ช่วยชะลอการดูดซึมน้ำตาลเข้าสู่กระแสเลือดและป้องกันน้ำตาลพุ่ง (Spikes)';
+        } else if (eh.ldl && eh.ldl >= 130) {
+            if (badge1) {
+                badge1.textContent = `🔻 โฟกัส: ลด LDL (${eh.ldl} mg/dL)`;
+                badge1.className = 'action-badge badge-impact-ldl';
+            }
+            if (title1) title1.textContent = 'เพิ่มใยอาหารละลายน้ำในมื้อกลางวัน';
+            if (desc1) desc1.textContent = 'ทานผักใบเขียวครึ่งจาน + ถั่วหรือข้าวกล้อง และหลีกเลี่ยงของทอด เพื่อช่วยดักจับคอเลสเตอรอลในทางเดินอาหาร';
+        }
+
+        // Check if Liver enzyme is elevated
+        if ((eh.alt && eh.alt > 40) || (eh.ast && eh.ast > 40)) {
+            if (badge3) {
+                badge3.textContent = `🛡️ โฟกัส: พักฟื้นเซลล์ตับ (ALT ${eh.alt || 45} U/L)`;
+                badge3.className = 'action-badge badge-impact-cortisol';
+            }
+            if (title3) title3.textContent = 'งดแอลกอฮอล์ ดื่มน้ำ 2.5L & นอนก่อนเที่ยงคืน';
+            if (desc3) desc3.textContent = 'ตับซ่อมแซมตัวเองได้ดีที่สุดช่วงหลับลึก 22:00 - 02:00 น. การดื่มน้ำเพียงพอช่วยลดภาระการขจัดสารพิษของตับ';
+        }
+    };
+
+    // Initial render
+    renderActionState();
+    window.updateDailyActionPlan(window.extractedHealthData || null);
+}
+
+// ===================================================
+//  🔬 ITEM 3: BIOMARKER DEEP-DIVE MODAL SYSTEM
+// ===================================================
+let activeBiomarkerKey = 'ast';
+
+const BIOMARKER_DATA = {
+    ast: {
+        icon: '🫁',
+        name: 'AST (SGOT)',
+        subname: 'เอนไซม์การบาดเจ็บของเซลล์ตับและกล้ามเนื้อหัวใจ',
+        defaultVal: '22 U/L',
+        ref: '< 40 U/L',
+        statusBadge: 'ปกติ',
+        badgeClass: 'badge-optimal',
+        statusText: 'ปลอดภัย อยู่ในเกณฑ์มาตรฐาน ✅',
+        meaning: 'AST (Aspartate Aminotransferase) คือเอนไซม์ที่พบมากในตับและกล้ามเนื้อหัวใจ หากเซลล์ตับหรือกล้ามเนื้อได้รับความเสียหาย เอนไซม์นี้จะรั่วไหลเข้าสู่กระแสเลือด ค่าของคุณอยู่ในเกณฑ์ปกติ แปลว่าเซลล์ตับยังแข็งแรงดี ไม่มีการอักเสบเฉียบพลัน',
+        eat: [
+            'ผักตระกูลกะหล่ำ เช่น บรอกโคลี กะหล่ำปลี ช่วยกระตุ้นเอนไซม์ดีท็อกซ์ของตับ',
+            'ชาเขียว อุดมด้วยสาร EGCG ต้านอนุมูลอิสระ ปกป้องเซลล์ตับ',
+            'กระเทียมและหัวหอม มีสารอัลลิซินช่วยลดภาระการทำงานของตับ'
+        ],
+        avoid: [
+            'เครื่องดื่มแอลกอฮอล์ทุกชนิดที่เป็นพิษต่อเซลล์ตับโดยตรง',
+            'การรับประทานยาพาราเซตามอลเกินขนาด หรือสมุนไพรที่ไม่ผ่านการรับรอง',
+            'อาหารทอดน้ำมันซ้ำ และอาหารที่มีไขมันอิ่มตัวสูง'
+        ],
+        doctorQ: 'ค่า AST ของผมอยู่ในเกณฑ์ปกติแล้ว มีค่าตับตัวอื่น เช่น GGT หรือการตรวจอัลตราซาวด์ตับที่แนะนำเพิ่มเติมไหมครับ?'
+    },
+    alt: {
+        icon: '🫁',
+        name: 'ALT (SGPT)',
+        subname: 'เอนไซม์บ่งชี้ภาวะตับอักเสบและไขมันพอกตับ',
+        defaultVal: '45 U/L',
+        ref: '< 40 U/L',
+        statusBadge: 'สูงเล็กน้อย',
+        badgeClass: 'badge-warning',
+        statusText: 'เฝ้าระวัง ตับเริ่มมีภาวะอักเสบเล็กน้อย ⚠️',
+        meaning: 'ALT (Alanine Aminotransferase) มีความจำเพาะต่อตับสูงมาก ค่าที่สูงเกินเกณฑ์ 40 เล็กน้อย สะท้อนว่าเซลล์ตับกำลังเผชิญภาวะอักเสบ สาเหตุยอดฮิตในปัจจุบันคือ "ภาวะไขมันพอกตับ (Fatty Liver)", การดื่มแอลกอฮอล์ หรือน้ำหนักตัวเกินเกณฑ์',
+        eat: [
+            'กาแฟดำไม่ใส่น้ำตาลวันละ 1-2 แก้ว มีงานวิจัยยืนยันว่าช่วยลดเอนไซม์ ALT และชะลอพังผืดตับ',
+            'ผักใบเขียวเข้ม ผักเคล ผักโขม เสริมกลูตาไธโอนธรรมชาติ',
+            'ปลาแซลมอน ปลาซาร์ดีน แหล่งโอเมก้า 3 ลดการอักเสบของเซลล์ตับ'
+        ],
+        avoid: [
+            'น้ำตาลฟรุกโตสสูง เช่น ชานม น้ำอัดลม น้ำผลไม้กล่อง (เปลี่ยนเป็นไขมันพอกตับเร็วที่สุด)',
+            'แอลกอฮอล์ ของมึนเมาทุกรูปแบบ ควรงดอย่างน้อย 4-8 สัปดาห์',
+            'อาหารมื้อดึกใกล้เวลานอน ขัดขวางกระบวนการฟื้นฟูและสลายไขมันในตับ'
+        ],
+        doctorQ: 'ค่า ALT 45 U/L สูงกว่าเกณฑ์เล็กน้อย น่าจะเกิดจากไขมันพอกตับหรือไม่ และควรตรวจ FibroScan หรืออัลตราซาวด์ช่องท้องส่วนบนไหมครับ?'
+    },
+    alp: {
+        icon: '🫁',
+        name: 'ALP (Alkaline Phosphatase)',
+        subname: 'เอนไซม์ท่อน้ำดี ตับ และเนื้อเยื่อกระดูก',
+        defaultVal: '85 U/L',
+        ref: '40 - 129 U/L',
+        statusBadge: 'ปกติ',
+        badgeClass: 'badge-optimal',
+        statusText: 'ระบบทางเดินน้ำดีและกระดูกทำงานปกติ ✅',
+        meaning: 'ALP คือเอนไซม์ที่เกี่ยวข้องกับระบบท่อน้ำดีและเนื้อเยื่อกระดูก หากท่อน้ำดีอุดตัน (เช่น นิ่วในถุงน้ำดี) ค่านี้จะพุ่งสูง ค่าของคุณถือว่าสมดุลดีมาก ไม่พบภาวะท่อน้ำดีคั่งหรือปัญหาการสลายตัวของกระดูก',
+        eat: [
+            'อาหารอุดมด้วยแคลเซียมและวิตามินดี เช่น โยเกิร์ตไขมันต่ำ ปลาตัวเล็ก เต้าหู้',
+            'ผักใบเขียวเพื่อรักษาสมดุลแร่ธาตุในกระดูก',
+            'ดื่มน้ำเปล่าสะอาดสม่ำเสมอ ป้องกันการตกผลึกของตะกอนน้ำดี'
+        ],
+        avoid: [
+            'อาหารไขมันอิ่มตัวสูงเกินไปที่อาจเร่งให้เกิดนิ่วในถุงน้ำดี',
+            'การสูบบุหรี่และเครื่องดื่มแอลกอฮอล์ที่มีผลต่อสุขภาพตับและกระดูก',
+            'การใช้ยาสเตียรอยด์ต่อเนื่องโดยไม่ได้รับการดูแลจากแพทย์'
+        ],
+        doctorQ: 'ค่า ALP อยู่ในเกณฑ์ดี สุขภาพกระดูกและทางเดินน้ำดีสัมพันธ์กับอายุไหม มีอะไรต้องตรวจเพิ่มในวัยนี้ไหมครับ?'
+    },
+    fbs: {
+        icon: '🍎',
+        name: 'FBS (Fasting Blood Sugar)',
+        subname: 'ระดับน้ำตาลกลูโคสในเลือดหลังอดอาหาร 8 ชั่วโมง',
+        defaultVal: '88 mg/dL',
+        ref: '70 - 99 mg/dL',
+        statusBadge: 'ปกติ',
+        badgeClass: 'badge-optimal',
+        statusText: 'การควบคุมน้ำตาลยอดเยี่ยม ความไวต่ออินซูลินดี ✅',
+        meaning: 'FBS ตรวจวัดระดับพลังงานน้ำตาลหมุนเวียนในเลือดหลังจากร่างกายอดอาหารมาข้ามคืน ค่าของคุณอยู่ในช่วง Optimal (ต่ำกว่า 100 mg/dL) แสดงว่าตับอ่อนหลั่งอินซูลินได้อย่างมีประสิทธิภาพ เซลล์ดึงน้ำตาลไปใช้ได้ดีเยี่ยม ไม่มีความเสี่ยงเบาหวานขณะนี้',
+        eat: [
+            'คาร์โบไฮเดรตเชิงซ้อน เช่น ข้าวกล้อง ข้าวโอ๊ต ถั่วเมล็ดแห้ง (ดัชนีน้ำตาลต่ำ GI ต่ำ)',
+            'กินโปรตีนและผักใยอาหารนำหน้าคาร์โบไฮเดรตในแต่ละมื้อ (Food Sequencing)',
+            'อบเชย (Cinnamon) เล็กน้อยในอาหาร ช่วยเพิ่มความไวต่ออินซูลิน'
+        ],
+        avoid: [
+            'น้ำตาลทรายขาว น้ำหวาน น้ำอัดลม ชานม ขนมหวาน ข้าวขัดขาวปริมาณมาก',
+            'การกินจุกจิกตลอดทั้งวัน (ควรเว้นช่วงมื้ออาหาร 4-5 ชม. ให้อินซูลินลดระดับ)',
+            'ของหวานก่อนนอน เพราะทำให้น้ำตาลสะสมข้ามคืน'
+        ],
+        doctorQ: 'น้ำตาล FBS อยู่ในเกณฑ์ดี มีความจำเป็นต้องตรวจค่าน้ำตาลสะสม HbA1c เพื่อดูค่าย้อนหลัง 3 เดือนเพิ่มเติมไหมครับ?'
+    },
+    chol: {
+        icon: '🛡️',
+        name: 'Total Cholesterol (คอเลสเตอรอลรวม)',
+        subname: 'ผลรวมของไขมันทุกชนิดในกระแสเลือด',
+        defaultVal: '210 mg/dL',
+        ref: '< 200 mg/dL',
+        statusBadge: 'สูงเล็กน้อย',
+        badgeClass: 'badge-warning',
+        statusText: 'สูงกว่าเกณฑ์เล็กน้อย เฝ้าระวังไขมันสะสมในหลอดเลือด ⚠️',
+        meaning: 'Total Cholesterol คือผลรวมของ LDL, HDL และ Triglycerides ค่าที่สูงกว่า 200 mg/dL เล็กน้อย เกิดได้จากทั้งอาหารที่มีไขมันอิ่มตัวสูง หรือตับสังเคราะห์ขึ้นเอง การประเมินค่านี้ควรดูร่วมกับสัดส่วนของไขมันเลว (LDL) และไขมันดี (HDL) ควบคู่กัน',
+        eat: [
+            'น้ำมันมะกอก อะโวคาโด ถั่วเปลือกแข็ง (อัลมอนด์ วอลนัท) อุดมด้วยไขมันไม่อิ่มตัว',
+            'ไฟเบอร์ชนิดละลายน้ำ เช่น ข้าวโอ๊ต ถั่วดำ ถั่วแดง แอปเปิ้ล ช่วยขับคอเลสเตอรอลส่วนเกิน',
+            'กระเทียมสด และมะเขือเทศสุก (ไลโคปีน)'
+        ],
+        avoid: [
+            'ไขมันทรานส์ เช่น เบเกอรี่ คุกกี้ พาย ครีมเทียม เนยขาว',
+            'เนื้อสัตว์แปรรูป ไส้กรอก กุนเชียง หมูกรอบ แคบหมู',
+            'อาหารผัดทอดที่ใช้น้ำมันปาล์มหรือน้ำมันหมูปริมาณมาก'
+        ],
+        doctorQ: 'คอเลสเตอรอลรวม 210 mg/dL ถือว่าอันตรายไหมในสภาวะสุขภาพของผม และต้องเริ่มทานยาลดไขมัน Statin หรือยังสามารถปรับพฤติกรรม 3 เดือนก่อนได้ครับ?'
+    },
+    tri: {
+        icon: '🫀',
+        name: 'Triglycerides (ไตรกลีเซอไรด์)',
+        subname: 'ไขมันที่เปลี่ยนรูปมาจากพลังงานแป้งและน้ำตาลส่วนเกิน',
+        defaultVal: '160 mg/dL',
+        ref: '< 150 mg/dL',
+        statusBadge: 'สูงเล็กน้อย',
+        badgeClass: 'badge-warning',
+        statusText: 'มีพลังงานน้ำตาลสะสมเกินความต้องการของร่างกาย ⚠️',
+        meaning: 'ไตรกลีเซอไรด์คือไขมันที่สร้างขึ้นเมื่อเรากินพลังงาน แป้ง ข้าว น้ำตาล หรือแอลกอฮอล์ มากกว่าที่ร่างกายเผาผลาญหมด ตับจะเปลี่ยนพลังงานส่วนเกินนี้เป็นไตรกลีเซอไรด์เก็บไว้ ค่าที่เกิน 150 mg/dL บ่งชี้ว่าควรลดของหวานและเพิ่มการออกกำลังกายแบบคาร์ดิโอ',
+        eat: [
+            'ปลาแซลมอน ปลาทู ปลาซาบะ (EPA & DHA ช่วยลดไตรกลีเซอไรด์ได้โดยตรง 20-30%)',
+            'ออกกำลังกายแบบแอโรบิก เช่น วิ่งเหยาะๆ เดินเร็ว ว่ายน้ำ สัปดาห์ละ 150 นาที',
+            'แอปเปิ้ลไซเดอร์หรือน้ำส้มสายชูหมักเจือจางน้ำดื่มก่อนมื้ออาหาร'
+        ],
+        avoid: [
+            'เครื่องดื่มแอลกอฮอล์ทุกชนิด เบียร์ ไวน์ เหล้า (ตัวการเร่งไตรกลีเซอไรด์พุ่งเร็วที่สุด)',
+            'น้ำหวาน น้ำอัดลม ชานม ชาเขียวหวาน ผลไม้รสหวานจัด เช่น ทุเรียน ลำไย',
+            'เบเกอรี่ แป้งขัดขาว และการกินแป้งมื้อดึก'
+        ],
+        doctorQ: 'ไตรกลีเซอไรด์ที่เกินเกณฑ์นี้สัมพันธ์กับภาวะดื้ออินซูลินไหม และถ้าควบคุมอาหาร 8 สัปดาห์จะลดลงได้ทันทีเลยใช่ไหมครับ?'
+    },
+    hdl: {
+        icon: '🥑',
+        name: 'HDL Cholesterol (ไขมันดี)',
+        subname: 'เรือกู้ภัยหลอดเลือด ดักจับไขมันเลวกลับไปทำลายที่ตับ',
+        defaultVal: '55 mg/dL',
+        ref: '> 40 mg/dL (ชาย) / > 50 mg/dL (หญิง)',
+        statusBadge: 'ดี',
+        badgeClass: 'badge-optimal',
+        statusText: 'เกราะป้องกันหลอดเลือดหัวใจแข็งแรง ดีเยี่ยม 🌟',
+        meaning: 'HDL ทำหน้าที่เป็น "เทศบาลเก็บขยะ" ในหลอดเลือด ช่วยดูดซับคอเลสเตอรอลส่วนเกินที่เกาะตามผนังหลอดเลือดแดงแล้วส่งกลับไปทำลายที่ตับ ค่าของคุณถือว่าสูงอยู่ในเกณฑ์ดีมาก ช่วยลดความเสี่ยงกล้ามเนื้อหัวใจขาดเลือดได้อย่างมีนัยสำคัญ',
+        eat: [
+            'น้ำมันมะกอกบริสุทธิ์ (Extra Virgin Olive Oil) ทานสดวันละ 1-2 ช้อนโต๊ะ',
+            'ไขมันดีจากอะโวคาโด ถั่วเปลือกแข็ง เมล็ดแฟลกซ์ และเมล็ดเจีย',
+            'ออกกำลังกายแบบเวทเทรนนิ่งร่วมกับแอโรบิกช่วยเพิ่มระดับ HDL อย่างต่อเนื่อง'
+        ],
+        avoid: [
+            'การนั่งนิ่งๆ เป็นเวลานาน (Sedentary lifestyle)',
+            'ควันบุหรี่และการสูบบุหรี่ (สารในบุหรี่ทำลายโมเลกุล HDL โดยตรง)',
+            'การอดอาหารแบบผิดวิธีที่ขาดแคลนกรดไขมันจำเป็น'
+        ],
+        doctorQ: 'ค่า HDL 55 mg/dL ของผมเพียงพอที่จะชดเชยค่า LDL ที่ปริ่มเกณฑ์ได้หรือไม่ครับ?'
+    },
+    ldl: {
+        icon: '🍔',
+        name: 'LDL Cholesterol (ไขมันเลว)',
+        subname: 'ไขมันนำพาคอเลสเตอรอลไปเกาะผนังหลอดเลือดแดง',
+        defaultVal: '130 mg/dL',
+        ref: '< 100 mg/dL (กลุ่มเสี่ยง) / < 130 mg/dL (ทั่วไป)',
+        statusBadge: 'ปริ่มเกณฑ์',
+        badgeClass: 'badge-warning',
+        statusText: 'แตะเพดานเกณฑ์มาตรฐาน แนะนำควบคุมอาหารและลดไขมันอิ่มตัว ⚠️',
+        meaning: 'LDL คือไขมันตัวร้าย หากมีปริมาณมากเกินไปจะเกิดปฏิกิริยาออกซิเดชันและแทรกตัวเข้าไปสะสมใต้เยื่อบุผนังหลอดเลือด ทำให้หลอดเลือดแข็งตัวและตีบตัน ค่า 130 mg/dL อยู่ที่เส้นแบ่งบนของเกณฑ์ปลอดภัย ควรเร่งปรับพฤติกรรมเพื่อกดให้ต่ำลง',
+        eat: [
+            'กระเทียมดำ หอมหัวใหญ่ และพืชตระกูลถั่ว',
+            'ผักผลไม้ที่มีไฟเบอร์สูง ช่วยดูดซับเกลือน้ำดีในลำไส้ ทำให้ตับดึง LDL มาใช้สร้างน้ำดีใหม่',
+            'ดื่มน้ำแร่ธรรมชาติ และเสริมสารสกัด CoQ10 หรือเบต้ากลูแคน'
+        ],
+        avoid: [
+            'ไขมันอิ่มตัวจากสัตว์ เช่น เนื้อวัวติดมัน มันหมู เนย นมข้นหวาน ชีสเข้มข้น',
+            'ของทอดใช้น้ำมันซ้ำ ปาท่องโก๋ ไก่ทอด กล้วยทอด',
+            'ขนมอบเบเกอรี่ที่มีมาการีนและเนยขาว'
+        ],
+        doctorQ: 'ด้วยประวัติครอบครัวและอายุของผม เป้าหมาย LDL ที่เหมาะสมควรเป็นเท่าไหร่ และจำเป็นต้องตรวจ ApoB เพิ่มเติมไหมครับ?'
+    },
+    wbc: {
+        icon: '🛡️',
+        name: 'WBC (เม็ดเลือดขาว)',
+        subname: 'กองทัพภูมิคุ้มกัน ต่อสู้เชื้อโรคและการติดเชื้อ',
+        defaultVal: '8.5 x10^3/uL',
+        ref: '4.0 - 10.0 x10^3/uL',
+        statusBadge: 'ปกติ',
+        badgeClass: 'badge-optimal',
+        statusText: 'ระบบภูมิคุ้มกันพร้อมรับมือ ไม่พบการติดเชื้อเฉียบพลัน ✅',
+        meaning: 'เม็ดเลือดขาวเป็นด่านหน้าของภูมิคุ้มกันในการกำจัดไวรัส แบคทีเรีย และสิ่งแปลกปลอม หากมีการติดเชื้ออักเสบรุนแรงค่านี้จะพุ่งสูง ค่าของคุณอยู่ในช่วงสมดุล ร่างกายไม่มีการอักเสบเฉียบพลัน และไม่มีภาวะภูมิต้านทานบกพร่อง',
+        eat: [
+            'ผลไม้ตระกูลส้ม ฝรั่ง กีวี เบอร์รี่ อุดมด้วยวิตามินซี เสริมการทำงานของเม็ดเลือดขาว',
+            'โยเกิร์ต โพรไบโอติกส์ กิมจิ เสริมจุลินทรีย์ลำไส้ (70% ของภูมิคุ้มกันอยู่ที่ลำไส้)',
+            'เห็ดหอม เห็ดชิตาเกะ อุดมด้วยเบต้ากลูแคนกระตุ้นเม็ดเลือดขาว'
+        ],
+        avoid: [
+            'การนอนดึก อดนอนเรื้อรัง (ลดประสิทธิภาพการสร้างเซลล์เม็ดเลือดขาว)',
+            'น้ำตาลทรายปริมาณสูง (น้ำตาลทำให้เม็ดเลือดขาวกลืนกินเชื้อโรคลดลงชั่วคราว)',
+            'ความเครียดสะสมต่อเนื่องที่หลั่งคอร์ติซอลกดภูมิคุ้มกัน'
+        ],
+        doctorQ: 'ผลตรวจเม็ดเลือดขาวอยู่ในเกณฑ์สมดุล สัดส่วนชนิดของเม็ดเลือดขาว (Differential) มีตัวไหนที่บ่งบอกภูมิแพ้หรือการอักเสบแฝงไหมครับ?'
+    },
+    hb: {
+        icon: '🩸',
+        name: 'Hemoglobin (ฮีโมโกลบิน)',
+        subname: 'โปรตีนขนส่งออกซิเจนในเม็ดเลือดแดงไปเลี้ยงอวัยวะทั่วร่าง',
+        defaultVal: '13.5 g/dL',
+        ref: '12.0 - 16.0 g/dL',
+        statusBadge: 'ปกติ',
+        badgeClass: 'badge-optimal',
+        statusText: 'ความเข้มข้นเลือดสมบูรณ์ ไม่อ่อนเพลีย ไม่มีภาวะโลหิตจาง ✅',
+        meaning: 'ฮีโมโกลบินคือสารสีแดงในเม็ดเลือดแดง ทำหน้าที่รับออกซิเจนจากปอดแล้วขนส่งไปเลี้ยงสมอง กล้ามเนื้อ และอวัยวะทุกส่วน ค่าของคุณแสดงว่าร่างกายผลิตเม็ดเลือดแดงได้เพียงพอ ไม่เสี่ยงต่อภาวะหน้ามืด เวียนศีรษะ หรือเหนื่อยง่ายจากโลหิตจาง',
+        eat: [
+            'ตับ เลือด เนื้อแดงไม่ติดมัน แหล่งธาตุเหล็กฮีม (Heme iron) ดูดซึมดีที่สุด',
+            'ผักใบเขียวเข้ม งาดำ ธัญพืช เมล็ดฟักทอง',
+            'ทานคู่กับวิตามินซี (เช่น มะนาว ฝรั่ง) ช่วยเพิ่มการดูดซึมธาตุเหล็กขึ้น 3-4 เท่า'
+        ],
+        avoid: [
+            'ดื่มชา กาแฟ นม พร้อมมื้ออาหาร (แทนนินและแคลเซียมจะยับยั้งการดูดซึมธาตุเหล็ก)',
+            'ยาลดกรดในกระเพาะอาหารที่ทานพร่ำเพรื่อ',
+            'การบริโภคแอลกอฮอล์ที่ขัดขวางการสังเคราะห์เม็ดเลือดแดง'
+        ],
+        doctorQ: 'ระดับความเข้มข้นของเลือดอยู่ในเกณฑ์ปกติ มีความจำเป็นต้องตรวจหาพาหะธาลัสซีเมียหรือระดับเฟอร์ริติน (Ferritin) สะสมไหมครับ?'
+    },
+    plt: {
+        icon: '🩹',
+        name: 'Platelet Count (เกล็ดเลือด)',
+        subname: 'ตัวช่วยหยุดเลือดและซ่อมแซมบาดแผลของหลอดเลือด',
+        defaultVal: '250 x10^3/uL',
+        ref: '150 - 400 x10^3/uL',
+        statusBadge: 'ปกติ',
+        badgeClass: 'badge-optimal',
+        statusText: 'การแข็งตัวของเลือดปกติ สมานแผลได้สมบูรณ์ ✅',
+        meaning: 'เกล็ดเลือดทำหน้าที่จับกลุ่มอุดรอยรั่วเวลาเส้นเลือดเกิดบาดแผล เพื่อห้ามเลือดไม่ให้ไหลออกไม่หยุด ค่าของคุณอยู่ในเกณฑ์เหมาะสมมาก ไม่น้อยเกินไปจนเสี่ยงเลือดออกง่าย และไม่มากเกินไปจนเสี่ยงลิ่มเลือดอุดตัน',
+        eat: [
+            'อาหารที่มีวิตามินเค เช่น ผักโขม เคล บรอกโคลี ช่วยระบบแข็งตัวของเลือด',
+            'โปรตีนคุณภาพสูง เนื้อปลา ไข่ขาว เสริมการสร้างเกล็ดเลือดจากไขกระดูก',
+            'ดื่มน้ำเปล่าให้พอเพียงเพื่อรักษาความหนืดของเลือดให้อยู่ในเกณฑ์เหมาะสม'
+        ],
+        avoid: [
+            'ยาแอสไพรินหรือยาต้านการแข็งตัวของเลือดโดยไม่มีใบสั่งแพทย์',
+            'การดื่มแอลกอฮอล์หนักที่กดไขกระดูกในการผลิตเกล็ดเลือด',
+            'กิจกรรมเสี่ยงกระทบกระแทกรุนแรง'
+        ],
+        doctorQ: 'ปริมาณเกล็ดเลือดของผมมีแนวโน้มคงที่จากการตรวจในปีก่อนๆ ไหมครับ?'
+    },
+    tsh: {
+        icon: '⚡',
+        name: 'TSH (Thyroid Stimulating Hormone)',
+        subname: 'ฮอร์โมนสั่งการต่อมไทรอยด์ ควบคุมระบบเผาผลาญทั้งร่างกาย',
+        defaultVal: '2.1 mIU/L',
+        ref: '0.4 - 4.0 mIU/L',
+        statusBadge: 'ปกติ',
+        badgeClass: 'badge-optimal',
+        statusText: 'ต่อมไทรอยด์สมดุล การเผาผลาญพลังงานทำงานปกติ ✅',
+        meaning: 'TSH หลั่งมาจากต่อมใต้สมองเพื่อควบคุมให้ต่อมไทรอยด์ผลิตฮอร์โมนเผาผลาญพลังงาน (T3, T4) หากต่อมไทรอยด์ทำงานต่ำ TSH จะพุ่งสูง ค่า 2.1 mIU/L อยู่ในจุด Sweet Spot ที่ดีเยี่ยม บ่งบอกว่าอุณหภูมิร่างกายและอัตราการเผาผลาญสมดุล',
+        eat: [
+            'อาหารทะเล สาหร่ายทะเล ปรุงด้วยเกลือเสริมไอโอดีนตามความเหมาะสม',
+            'ถั่วบราซิล (Brazil nuts) 1-2 เมล็ดต่อวัน แหล่งซีลีเนียมชั้นยอดสำหรับไทรอยด์',
+            'อาหารอุดมด้วยสังกะสี (Zinc) เช่น เมล็ดฟักทอง หอยนางรม ไข่ไก่'
+        ],
+        avoid: [
+            'การกินกะหล่ำปลีดิบ บรอกโคลีดิบในปริมาณมหาศาลทุกวัน (Goitrogens ขัดขวางไอโอดีน ควรทำให้สุก)',
+            'ความเครียดและอดนอนเรื้อรังที่รบกวนแกนฮอร์โมน HPA Axis',
+            'อาหารแปรรูปสูงที่กระตุ้นภูมิต้านทานทำลายต่อมไทรอยด์ตนเอง'
+        ],
+        doctorQ: 'ค่า TSH 2.1 mIU/L สะท้อนการเผาผลาญที่เป็นปกติ หากมีอาการเพลียหรือน้ำหนักลดยาก ควรตรวจ Free T3 และ Free T4 เพิ่มไหมครับ?'
+    },
+    cor: {
+        icon: '🧠',
+        name: 'Cortisol (ฮอร์โมนคอร์ติซอล)',
+        subname: 'ฮอร์โมนความเครียดและจังหวะนาฬิกาชีวิต (Circadian Rhythm)',
+        defaultVal: '19.5 ug/dL',
+        ref: '5.0 - 23.0 ug/dL (เช้า)',
+        statusBadge: 'ค่อนข้างสูง',
+        badgeClass: 'badge-warning',
+        statusText: 'ระดับความเครียดสะสมสูง ร่างกายตื่นตัวตลอดเวลา ⚠️',
+        meaning: 'Cortisol หลั่งจากต่อมหมวกไตเพื่อเตรียมร่างกายรับมือกับความกดดัน ค่า 19.5 ug/dL ในช่วงเช้าจัดว่าค่อนข้างสูงแตะขอบบน อาจเกิดจากงานหนัก นอนดึก อดนอน หรือวิตกกังวลสะสม หากคอร์ติซอลสูงนานๆ จะทำให้สะสมไขมันหน้าท้อง และภูมิคุ้มกันลดลง',
+        eat: [
+            'ชาคาโมมายล์ หรือสารสกัดชาเขียว L-Theanine ช่วยผ่อนคลายสมอง',
+            'อาหารเสริมแมกนีเซียม (Magnesium Glycinate) ทานก่อนนอนช่วยคลายกล้ามเนื้อ',
+            'ผลไม้ตระกูลเบอร์รี่ วิตามินซี ช่วยลดการหลั่งฮอร์โมนคอร์ติซอลจากต่อมหมวกไต'
+        ],
+        avoid: [
+            'งดดื่มกาแฟ คาเฟอีน หลัง 14:00 น. เพราะจะกระตุ้นการหลั่งคอร์ติซอลช่วงค่ำ',
+            'เล่นมือถือหรือจ้องแสงสีฟ้าก่อนนอน 1 ชั่วโมง',
+            'การออกกำลังกายหนักหน่วงตอนดึก (HIIT) ที่ทำให้ร่างกายไม่ยอมหลับ'
+        ],
+        doctorQ: 'คอร์ติซอลที่ค่อนข้างสูงนี้ มีผลต่อน้ำหนักตัวและการนอนหลับของผมไหม และควรตรวจ Adrenal Fatigue Profile หรือไม่ครับ?'
+    },
+    bp: {
+        icon: '🫀',
+        name: 'Blood Pressure (ความดันโลหิต)',
+        subname: 'แรงดันเลือดที่กระทำต่อผนังหลอดเลือดแดงขณะหัวใจบีบและคลายตัว',
+        defaultVal: '125/82 mmHg',
+        ref: '< 120/80 mmHg',
+        statusBadge: 'ค่อนข้างสูง',
+        badgeClass: 'badge-warning',
+        statusText: 'ระยะก่อนความดันสูง (Pre-hypertension) ควรเริ่มดูแลตนเอง ⚠️',
+        meaning: 'ความดันโลหิต 125/82 mmHg อยู่ในระยะเริ่มแรก (Prehypertension) หลอดเลือดเริ่มมีความตึงตัวและแรงต้านทาน หากปล่อยทิ้งไว้โดยไม่ปรับพฤติกรรม จะเสี่ยงพัฒนาเป็นโรคความดันโลหิตสูงเรื้อรัง ซึ่งเป็นบ่อเกิดของโรคหัวใจและหลอดเลือดสมอง',
+        eat: [
+            'แนวทางอาหาร DASH Diet: เน้นผัก ผลไม้ ธัญพืชไม่ขัดสี',
+            'อาหารอุดมด้วยโพแทสเซียม เช่น กล้วย ผักโขม อะโวคาโด ช่วยขับโซเดียมทางปัสสาวะ',
+            'กระเทียม ขึ้นฉ่าย และบีทรูท (มีไนเตรตธรรมชาติ ช่วยขยายหลอดเลือด)'
+        ],
+        avoid: [
+            'ลดโซเดียม: น้ำปลา ซีอิ๊ว ผงชูรส บะหมี่กึ่งสำเร็จรูป อาหารหมักดอง (ไม่เกิน 2,000 mg/วัน)',
+            'แอลกอฮอล์และการสูบบุหรี่ที่ทำให้หลอดเลือดหดเกร็งและแข็งตัว',
+            'ความเครียดและการอดนอนที่ทำให้หัวใจเต้นเร็วและความดันพุ่ง'
+        ],
+        doctorQ: 'ความดันระดับ 125/82 mmHg จำเป็นต้องทานยาลดความดันหรือยัง หรือควรวัดความดันเองที่บ้าน (Home BP Monitoring) เช้า-เย็นต่อเนื่อง 1 สัปดาห์ก่อนครับ?'
+    }
+};
+
+function initBiomarkerDeepDive() {
+    window.openBiomarkerModal = function(key) {
+        if (!key) return;
+        const normKey = key.toLowerCase().trim();
+        const data = BIOMARKER_DATA[normKey];
+        if (!data) {
+            console.warn(`Biomarker data for key '${normKey}' not found.`);
+            return;
+        }
+
+        activeBiomarkerKey = normKey;
+
+        const iconEl = document.getElementById('bio-modal-icon');
+        const nameEl = document.getElementById('bio-modal-name');
+        const badgeEl = document.getElementById('bio-modal-badge');
+        const subnameEl = document.getElementById('bio-modal-subname');
+        const valEl = document.getElementById('bio-modal-val');
+        const refEl = document.getElementById('bio-modal-ref');
+        const statusTextEl = document.getElementById('bio-modal-status-text');
+        const meaningEl = document.getElementById('bio-modal-meaning');
+        const eatEl = document.getElementById('bio-modal-eat');
+        const avoidEl = document.getElementById('bio-modal-avoid');
+        const doctorQEl = document.getElementById('bio-modal-doctor-q');
+
+        if (iconEl) iconEl.textContent = data.icon;
+        if (nameEl) nameEl.textContent = data.name;
+        if (subnameEl) subnameEl.textContent = data.subname;
+        if (refEl) refEl.textContent = data.ref;
+        if (meaningEl) meaningEl.textContent = data.meaning;
+        if (doctorQEl) doctorQEl.textContent = `"${data.doctorQ}"`;
+
+        // Dynamic value from table or metric card if available
+        let currentVal = data.defaultVal;
+        let badgeText = data.statusBadge;
+        let badgeClass = data.badgeClass;
+        let statusText = data.statusText;
+
+        const tblEl = document.getElementById(`tbl-${normKey}`);
+        if (tblEl && tblEl.textContent.trim()) {
+            currentVal = tblEl.textContent.trim();
+            const row = tblEl.closest('tr');
+            if (row) {
+                const rowBadge = row.querySelector('.status-badge');
+                if (rowBadge) {
+                    badgeText = rowBadge.textContent.trim();
+                    badgeClass = rowBadge.className;
+                }
+            }
+        } else if (normKey === 'bp') {
+            const bpCardVal = document.querySelector('.metric-card[onclick*="bp"] .metric-value');
+            if (bpCardVal) {
+                currentVal = bpCardVal.textContent.replace('(อัปเดตจากไฟล์)', '').trim();
+            }
+        }
+
+        if (valEl) valEl.innerHTML = currentVal;
+        if (badgeEl) {
+            badgeEl.className = badgeClass.includes('status-badge') ? badgeClass : `status-badge ${badgeClass}`;
+            badgeEl.textContent = badgeText;
+        }
+        if (statusTextEl) statusTextEl.textContent = statusText;
+
+        // Populate Recommended Foods / Lifestyle list
+        if (eatEl) {
+            eatEl.innerHTML = '';
+            data.eat.forEach(item => {
+                const li = document.createElement('li');
+                li.textContent = item;
+                eatEl.appendChild(li);
+            });
+        }
+
+        // Populate Things to Avoid list
+        if (avoidEl) {
+            avoidEl.innerHTML = '';
+            data.avoid.forEach(item => {
+                const li = document.createElement('li');
+                li.textContent = item;
+                avoidEl.appendChild(li);
+            });
+        }
+
+        // Open modal
+        if (window.openModal) {
+            window.openModal('modal-biomarker-detail');
+        } else {
+            const modal = document.getElementById('modal-biomarker-detail');
+            if (modal) modal.classList.add('active');
+        }
+    };
+
+    window.askAiAboutBiomarker = function() {
+        if (window.closeModal) {
+            window.closeModal('modal-biomarker-detail');
+        } else {
+            const modal = document.getElementById('modal-biomarker-detail');
+            if (modal) modal.classList.remove('active');
+        }
+
+        const data = BIOMARKER_DATA[activeBiomarkerKey];
+        const biomarkerName = data ? data.name : 'ค่าแล็บนี้';
+        const doctorQuestion = data ? data.doctorQ : 'ขอคำแนะนำเพิ่มเติม';
+
+        // Switch to AI tab
+        const navAi = document.getElementById('nav-ai');
+        if (navAi) {
+            navAi.click();
+        }
+
+        setTimeout(() => {
+            const chatInput = document.querySelector('.chat-input');
+            const chatSendBtn = document.querySelector('.chat-send');
+            if (chatInput) {
+                chatInput.value = `คุณหมอครับ ช่วยอธิบายเกี่ยวกับ ${biomarkerName} เพิ่มเติมหน่อยครับ: "${doctorQuestion}"`;
+                if (chatSendBtn) {
+                    chatSendBtn.click();
+                }
+            }
+        }, 450);
+    };
 }
 
 function setAuthenticatedState(isAuth) {
@@ -432,9 +1291,9 @@ function setAuthenticatedState(isAuth) {
         const navUpload = document.getElementById('nav-upload');
         const navHomeBottom = document.getElementById('nav-home-bottom');
         const navSettings = document.getElementById('nav-settings');
-        if (navUpload) navUpload.closest('li').style.display = 'none';
+        if (navUpload) navUpload.style.display = 'none';
         if (navHomeBottom) navHomeBottom.style.display = 'flex';
-        if (navSettings) navSettings.closest('li').style.display = '';
+        if (navSettings) navSettings.style.display = '';
 
         const uploadSuccess = document.getElementById('upload-success-state');
         if (uploadSuccess) uploadSuccess.style.display = 'block';
@@ -457,7 +1316,6 @@ function setAuthenticatedState(isAuth) {
         const navUpload = document.getElementById('nav-upload');
         const navHomeBottom = document.getElementById('nav-home-bottom');
         if (navUpload) {
-            navUpload.closest('li').style.display = '';
             navUpload.style.display = 'flex';
             navUpload.click();
         }
@@ -495,10 +1353,70 @@ function animateHealthScore() {
 }
 
 // 4. Interactive Chatbot Logic
+const chatHistory = []; // Multi-turn memory
+
 function initChatbot() {
     const chatInput = document.querySelector('.chat-input');
     const chatSendBtn = document.querySelector('.chat-send');
     const chatBody = document.querySelector('.chat-body');
+    const micBtn = document.getElementById('btn-mic');
+
+    // Speech-to-Text setup
+    if (micBtn && ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window)) {
+        const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+        const recognition = new SpeechRecognition();
+        recognition.lang = 'th-TH';
+        recognition.interimResults = true;
+        recognition.continuous = false;
+
+        let isRecording = false;
+
+        micBtn.addEventListener('click', () => {
+            if (isRecording) {
+                recognition.stop();
+                micBtn.classList.remove('recording');
+                micBtn.innerHTML = '🎤';
+                isRecording = false;
+            } else {
+                recognition.start();
+                micBtn.classList.add('recording');
+                micBtn.innerHTML = '⏹️';
+                isRecording = true;
+                if (chatInput) chatInput.placeholder = '🎤 กำลังฟัง... พูดได้เลยครับ';
+            }
+        });
+
+        recognition.onresult = (event) => {
+            let transcript = '';
+            for (let i = event.resultIndex; i < event.results.length; i++) {
+                transcript += event.results[i][0].transcript;
+            }
+            if (chatInput) chatInput.value = transcript;
+        };
+
+        recognition.onend = () => {
+            micBtn.classList.remove('recording');
+            micBtn.innerHTML = '🎤';
+            isRecording = false;
+            if (chatInput) chatInput.placeholder = 'พิมพ์คำถามของคุณที่นี่...';
+            // Auto-send if we got text
+            if (chatInput && chatInput.value.trim()) {
+                setTimeout(() => {
+                    if (chatSendBtn) chatSendBtn.click();
+                }, 300);
+            }
+        };
+
+        recognition.onerror = () => {
+            micBtn.classList.remove('recording');
+            micBtn.innerHTML = '🎤';
+            isRecording = false;
+            if (chatInput) chatInput.placeholder = 'พิมพ์คำถามของคุณที่นี่...';
+        };
+    } else if (micBtn) {
+        // Browser doesn't support Speech Recognition
+        micBtn.style.display = 'none';
+    }
 
     if (chatInput && chatSendBtn && chatBody) {
         const sendMessage = () => {
@@ -547,7 +1465,7 @@ function initChatbot() {
 
 
             if (geminiKey) {
-                // Use Real Gemini AI with Auto Discovery & Smart Fallback
+                // Use Real Gemini AI with Multi-turn Memory
                 const promptCtx = window.extractedHealthData ? JSON.stringify(window.extractedHealthData) : "No health data yet.";
                 
                 let profileCtx = "";
@@ -559,25 +1477,39 @@ function initChatbot() {
                     }
                 } catch(e) {}
 
-                const sysPrompt = `คุณคือ Dr. LabLink แพทย์ AI ผู้เชี่ยวชาญการอ่านผลเลือด 
-กรุณาตอบคำถามผู้ป่วยเป็นภาษาไทยแบบเป็นกันเอง สั้นกระชับ เข้าใจง่าย 
+                const systemContext = `คุณคือ Dr. LabLink แพทย์ AI ผู้เชี่ยวชาญการอ่านผลเลือด 
+กรุณาตอบคำถามผู้ป่วยเป็นภาษาไทยแบบเป็นกันเอง สั้นกระชับ เข้าใจง่าย ใช้อีโมจิเพื่อเสริมความน่าสนใจ
 ${profileCtx}
-นี่คือผลเลือดปัจจุบันของผู้ป่วย: ${promptCtx}
+นี่คือผลเลือดปัจจุบันของผู้ป่วย: ${promptCtx}`;
 
-คำถามจากผู้ป่วย: ${text}`;
+                // Add user message to chat history
+                chatHistory.push({ role: "user", parts: [{ text: text }] });
+                // Keep only last 6 messages for context window
+                while (chatHistory.length > 6) chatHistory.shift();
 
-                requestGeminiGenerate(geminiKey, sysPrompt).then(res => {
+                // Build multi-turn contents with system context as first message
+                const contents = [
+                    { role: "user", parts: [{ text: systemContext }] },
+                    { role: "model", parts: [{ text: "เข้าใจครับ ผมคือ Dr. LabLink พร้อมช่วยวิเคราะห์ผลเลือดและให้คำแนะนำด้านสุขภาพแบบเฉพาะบุคคลให้คุณครับ 🩺" }] },
+                    ...chatHistory
+                ];
+
+                requestGeminiMultiturn(geminiKey, contents).then(res => {
                     if (res.error) {
-                        // Fallback to Mock if API fails (so no annoying errors)
                         console.warn("API Failed, falling back to mock:", res.error);
+                        chatHistory.pop();
                         fallbackToMock(text);
                     } else if (res.text) {
+                        chatHistory.push({ role: "model", parts: [{ text: res.text }] });
+                        while (chatHistory.length > 6) chatHistory.shift();
                         handleAIResponse(res.text);
                     } else {
+                        chatHistory.pop();
                         fallbackToMock(text);
                     }
                 }).catch(err => {
                     console.error("Gemini Error:", err);
+                    chatHistory.pop();
                     fallbackToMock(text);
                 });
             } else {
@@ -1074,6 +2006,130 @@ async function requestGeminiGenerate(geminiKey, promptText) {
 
     return { error: 'ไม่พบโมเดล AI ที่ใช้งานได้' };
 }
+
+
+// --- Gemini Multi-turn Chat Helper ---
+async function requestGeminiMultiturn(geminiKey, contentsArray) {
+    const cleanKey = geminiKey.trim();
+    const candidateModels = [
+        'gemini-3.5-flash',
+        'gemini-3.5-flash-lite',
+        'gemini-3.6-flash',
+        'gemini-2.0-flash',
+        'gemini-1.5-flash'
+    ];
+
+    for (const modelName of candidateModels) {
+        try {
+            const url = `https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent?key=${encodeURIComponent(cleanKey)}`;
+            const res = await fetch(url, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ contents: contentsArray })
+            });
+            const data = await res.json();
+            if (data.error) {
+                if (data.error.code === 400 && data.error.message && data.error.message.toLowerCase().includes('api key not valid')) {
+                    return { error: 'API Key ไม่ถูกต้อง' };
+                }
+                if (data.error.code === 429) return { error: 'API โควต้าเต็ม' };
+                continue;
+            }
+            if (data.candidates && data.candidates.length > 0) {
+                const candidate = data.candidates[0];
+                if (candidate.content && candidate.content.parts && candidate.content.parts.length > 0) {
+                    return { text: candidate.content.parts[0].text, model: modelName };
+                }
+            }
+        } catch (err) {
+            return { error: 'เชื่อมต่อไม่ได้ (Network Error)' };
+        }
+    }
+    return { error: 'ไม่พบโมเดล AI ที่ใช้งานได้' };
+}
+
+// --- Doctor Discussion One-Pager Generator ---
+window.generateDoctorSummary = async function() {
+    const eh = window.extractedHealthData;
+    const modal = document.getElementById('modal-doctor-summary');
+    const content = document.getElementById('doctor-summary-content');
+    const loading = document.getElementById('doctor-summary-loading');
+    
+    if (!modal || !content) return;
+    
+    modal.classList.add('active');
+    if (loading) loading.style.display = 'block';
+    if (content) content.style.display = 'none';
+
+    let profileText = "";
+    try {
+        const savedProf = localStorage.getItem('lablink_profile');
+        if (savedProf) {
+            const p = JSON.parse(savedProf);
+            profileText = `ข้อมูลผู้ป่วย: น้ำหนัก ${p.weight || '-'} kg, ส่วนสูง ${p.height || '-'} cm, โรคประจำตัว: ${p.disease || '-'}, ประวัติแพ้ยา: ${p.allergy || '-'}`;
+        }
+    } catch(e) {}
+
+    const prompt = `คุณคือ Dr. LabLink แพทย์ AI ผู้เชี่ยวชาญ
+${profileText}
+ข้อมูลผลเลือดคนไข้: BP: ${eh?.bp || '-'}, Total Chol: ${eh?.chol || '-'}, HDL: ${eh?.hdl || '-'}, LDL: ${eh?.ldl || '-'}, FBS: ${eh?.fbs || '-'}, AST: ${eh?.ast || '-'}, ALT: ${eh?.alt || '-'}, Cortisol: ${eh?.cortisol || '-'}, TSH: ${eh?.tsh || '-'}
+
+จงสร้าง "ใบคุยกับแพทย์" เขียนเป็น HTML ล้วนๆ มี 3 หัวข้อ: 1) สรุปผลตรวจที่สำคัญ 2) 3 คำถามที่ควรถามแพทย์ในการนัดครั้งต่อไป 3) เป้าหมายสุขภาพ 3 เดือนข้างหน้า`;
+
+    const geminiKey = localStorage.getItem('gemini_api_key');
+    let resultHTML = '';
+
+    if (geminiKey) {
+        const res = await requestGeminiGenerate(geminiKey, prompt);
+        if (!res.error && res.text) {
+            resultHTML = res.text.replace(/```html/g, '').replace(/```/g, '');
+        }
+    }
+
+    if (!resultHTML) {
+        resultHTML = `
+        <div style="margin-bottom: 20px;">
+            <h3 style="color: #3b82f6; margin-bottom: 12px;">📋 สรุปผลตรวจที่สำคัญ</h3>
+            <ul style="list-style: none; padding: 0;">
+                <li style="padding: 8px 0; border-bottom: 1px solid #f1f5f9;">⚠️ <strong>LDL Cholesterol: ${eh?.ldl || 130} mg/dL</strong> — ปริ่มเกณฑ์สูง ควรเฝ้าระวัง</li>
+                <li style="padding: 8px 0; border-bottom: 1px solid #f1f5f9;">⚠️ <strong>Total Cholesterol: ${eh?.chol || 195} mg/dL</strong> — ค่อนข้างสูง</li>
+                <li style="padding: 8px 0;">✅ <strong>FBS: ${eh?.fbs || 92} mg/dL</strong> — ปกติดี</li>
+            </ul>
+        </div>
+        <div style="margin-bottom: 20px;">
+            <h3 style="color: #8b5cf6; margin-bottom: 12px;">❓ 3 คำถามที่ควรถามแพทย์</h3>
+            <div style="background: #f8fafc; padding: 16px; border-radius: 12px; margin-bottom: 8px; border-left: 3px solid #8b5cf6;">
+                <strong>1.</strong> "คุณหมอครับ/คะ ค่า LDL ${eh?.ldl || 130} ผมควรเริ่มปรับพฤติกรรมก่อนกี่เดือน ก่อนจะพิจารณาใช้ยาลดไขมัน?"
+            </div>
+            <div style="background: #f8fafc; padding: 16px; border-radius: 12px; margin-bottom: 8px; border-left: 3px solid #8b5cf6;">
+                <strong>2.</strong> "ถ้าผมออกกำลังกายแบบคาร์ดิโอ สัปดาห์ละ 3-4 วัน มีโอกาสลด LDL ลงได้กี่ mg/dL ภายใน 3 เดือน?"
+            </div>
+            <div style="background: #f8fafc; padding: 16px; border-radius: 12px; border-left: 3px solid #8b5cf6;">
+                <strong>3.</strong> "ค่าตับ ALT ${eh?.alt || 22} ปกติ แต่ถ้าเริ่มทานยาลดไขมัน จะต้องตรวจค่าตับซ้ำบ่อยแค่ไหน?"
+            </div>
+        </div>
+        <div>
+            <h3 style="color: #10b981; margin-bottom: 12px;">🎯 เป้าหมายสุขภาพ 3 เดือนข้างหน้า</h3>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+                <div style="background: linear-gradient(135deg, #ecfdf5, #d1fae5); padding: 16px; border-radius: 12px; text-align: center;">
+                    <div style="font-size: 2rem;">🎯</div>
+                    <strong>LDL ≤ 100</strong><br><span style="font-size: 0.85rem; color: #6b7280;">จาก ${eh?.ldl || 130} → ลด 30 mg/dL</span>
+                </div>
+                <div style="background: linear-gradient(135deg, #eff6ff, #dbeafe); padding: 16px; border-radius: 12px; text-align: center;">
+                    <div style="font-size: 2rem;">🏃</div>
+                    <strong>ออกกำลังกาย 150 นาที/สัปดาห์</strong><br><span style="font-size: 0.85rem; color: #6b7280;">คาร์ดิโอ 30 นาที x 5 วัน</span>
+                </div>
+            </div>
+        </div>
+        <p style="text-align: center; color: var(--warning); margin-top: 16px; font-size: 0.85rem;">(⚠️ ข้อมูลจำลอง - ใส่ API Key ในหน้าตั้งค่าเพื่อใช้ AI จริง)</p>`;
+    }
+
+    if (loading) loading.style.display = 'none';
+    content.innerHTML = resultHTML;
+    content.style.display = 'block';
+    showToast('📋 สร้างใบคุยกับแพทย์สำเร็จ!', 'success');
+    addExp(30);
+};
 
 // --- Gemini API Key Logic ---
 document.addEventListener('DOMContentLoaded', () => {
