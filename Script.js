@@ -2,21 +2,31 @@
 
 let isAuthenticated = false;
 
-document.addEventListener('DOMContentLoaded', () => {
-    initParticles();
-    initNavigation();
-    initUploadSimulation();
-    initChatbot();
-    initThemeToggle();
-    init3DTilt();
-    initTrendsChart();
-    initRealtimeClock();
-    initDragAndDrop();
-    initAnatomyTooltips();
-    initRiskScore();
-    initTrafficLightBarometer();
-    initDailyActionPlan();
-    initBiomarkerDeepDive();
+function bootApp() {
+    const safeCall = (fn, name) => {
+        try {
+            if (typeof fn === 'function') fn();
+        } catch (err) {
+            if (typeof console !== 'undefined' && console.warn) {
+                console.warn(`[LabLink] Error initializing ${name}:`, err);
+            }
+        }
+    };
+
+    safeCall(initParticles, 'Particles');
+    safeCall(initNavigation, 'Navigation');
+    safeCall(initUploadSimulation, 'UploadSimulation');
+    safeCall(initChatbot, 'Chatbot');
+    safeCall(initThemeToggle, 'ThemeToggle');
+    safeCall(init3DTilt, '3DTilt');
+    safeCall(initTrendsChart, 'TrendsChart');
+    safeCall(initRealtimeClock, 'RealtimeClock');
+    safeCall(initDragAndDrop, 'DragAndDrop');
+    safeCall(initAnatomyTooltips, 'AnatomyTooltips');
+    safeCall(initRiskScore, 'RiskScore');
+    safeCall(initTrafficLightBarometer, 'TrafficLightBarometer');
+    safeCall(initDailyActionPlan, 'DailyActionPlan');
+    safeCall(initBiomarkerDeepDive, 'BiomarkerDeepDive');
 
     // Check if user was previously authenticated (persisted session)
     const savedAuth = localStorage.getItem('lablink_auth');
@@ -30,27 +40,35 @@ document.addEventListener('DOMContentLoaded', () => {
                 console.error("Failed to parse saved health data:", e);
             }
         }
-        
+
         setAuthenticatedState(true);
-        
+
         // Restore last active view or default to Dashboard
         const lastViewId = localStorage.getItem('lablink_last_view') || 'view-dashboard';
         const targetNav = document.querySelector(`.nav-menu .nav-item[data-target="${lastViewId}"]`) || document.getElementById('nav-dashboard');
         if (targetNav) {
             targetNav.click();
         }
-        animateHealthScore();
+        if (typeof animateHealthScore === 'function') {
+            animateHealthScore();
+        }
     } else {
         // Set initial view for pre-auth
         const uploadNav = document.getElementById('nav-upload');
         if (uploadNav) uploadNav.click();
     }
-});
+}
+
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', bootApp);
+} else {
+    bootApp();
+}
 
 // 1. Navigation System (Upgraded with GSAP)
 function initNavigation() {
     const navItems = document.querySelectorAll('.nav-menu .nav-item[data-target]');
-    let currentViewId = null;
+    let currentViewId = 'view-upload';
 
     navItems.forEach(item => {
         item.addEventListener('click', (e) => {
@@ -76,6 +94,13 @@ function initNavigation() {
             const newView = document.getElementById(targetId);
 
             const showNewView = () => {
+                document.querySelectorAll('.view-section').forEach(view => {
+                    if (view !== newView) {
+                        view.style.display = 'none';
+                        view.classList.remove('active');
+                    }
+                });
+
                 if (newView) {
                     newView.style.display = 'block';
                     newView.classList.add('active');
@@ -100,11 +125,20 @@ function initNavigation() {
                             }
                         }, 100);
                     }
-                    
+
                     // Show/hide the nutrition detail view
                     const nutritionDetail = document.getElementById('nutrition-detail-view');
                     if (nutritionDetail) {
                         nutritionDetail.style.display = (targetId === 'view-nutrition') ? 'block' : 'none';
+                    }
+
+                    if (targetId === 'view-upload') {
+                        const uploadInitial = document.getElementById('upload-initial-state');
+                        const loadingState = document.getElementById('loadingState');
+                        const verifyState = document.getElementById('upload-verify-state');
+                        if (uploadInitial) uploadInitial.style.display = 'block';
+                        if (loadingState) loadingState.style.display = 'none';
+                        if (verifyState) verifyState.style.display = 'none';
                     }
                 }
                 currentViewId = targetId;
@@ -147,7 +181,14 @@ function initUploadSimulation() {
     const realFileUpload = document.getElementById('real-file-upload');
     if (!realFileUpload) return;
 
-    realFileUpload.addEventListener('change', async (e) => {
+    if (uploadBtn) {
+        uploadBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            realFileUpload.click();
+        });
+    }
+
+    realFileUpload.addEventListener('change', async(e) => {
         const file = e.target.files[0];
         if (!file) return;
 
@@ -159,34 +200,34 @@ function initUploadSimulation() {
         if (uploadInitial) uploadInitial.style.display = 'none';
         if (loadingState) loadingState.style.display = 'block';
         if (verifyState) verifyState.style.display = 'none';
-        
+
         if (scanningText) scanningText.textContent = "AI กำลังอ่านไฟล์: " + file.name + "...";
 
         try {
             let extractedText = "";
-            
+
             // 1. PDF Parsing
             if (file.type === 'application/pdf' && window.pdfjsLib) {
                 const arrayBuffer = await file.arrayBuffer();
-                const pdf = await pdfjsLib.getDocument({data: new Uint8Array(arrayBuffer)}).promise;
+                const pdf = await pdfjsLib.getDocument({ data: new Uint8Array(arrayBuffer) }).promise;
                 for (let i = 1; i <= pdf.numPages; i++) {
                     const page = await pdf.getPage(i);
                     const content = await page.getTextContent();
                     extractedText += content.items.map(item => item.str).join(' ') + " ";
                 }
-            } 
+            }
             // 2. Image OCR Parsing
             else if (file.type.startsWith('image/') && window.Tesseract) {
                 if (scanningText) scanningText.textContent = "AI กำลังสแกนรูปภาพ (OCR) อาจใช้เวลาสักครู่...";
                 const result = await Tesseract.recognize(file, 'eng+tha', {
                     logger: m => {
-                        if(m.status === 'recognizing text' && scanningText) {
+                        if (m.status === 'recognizing text' && scanningText) {
                             scanningText.textContent = "AI กำลังสแกนรูปภาพ: " + Math.round(m.progress * 100) + "%";
                         }
                     }
                 });
                 extractedText = result.data.text;
-            } 
+            }
             // 3. Plain Text fallback
             else {
                 extractedText = await file.text();
@@ -194,20 +235,20 @@ function initUploadSimulation() {
 
             console.log("Extracted Raw Text:", extractedText);
             window.extractedHealthData = {};
-            
+
             // Regex to find health markers
             const bpMatch = extractedText.match(/(?:BP|Blood Pressure|ความดัน).*?(\d{2,3}\s*\/\s*\d{2,3})/i);
             if (bpMatch) window.extractedHealthData.bp = bpMatch[1].replace(/\s/g, '');
-            
+
             const cholMatch = extractedText.match(/(?:Total Chol|Cholesterol|คอเลสเตอรอล).*?(\d{2,3})/i);
             if (cholMatch) window.extractedHealthData.chol = parseInt(cholMatch[1]);
-            
+
             const hdlMatch = extractedText.match(/HDL.*?(\d{2,3})/i);
             if (hdlMatch) window.extractedHealthData.hdl = parseInt(hdlMatch[1]);
 
             const ldlMatch = extractedText.match(/LDL.*?(\d{2,3})/i);
             if (ldlMatch) window.extractedHealthData.ldl = parseInt(ldlMatch[1]);
-            
+
             const fbsMatch = extractedText.match(/(?:FBS|Glucose|น้ำตาล).*?(\d{2,3})/i);
             if (fbsMatch) window.extractedHealthData.fbs = parseInt(fbsMatch[1]);
 
@@ -227,6 +268,26 @@ function initUploadSimulation() {
             const eosMatch = extractedText.match(/Eosinophil.*?(\d{1,2})/i);
             if (eosMatch) window.extractedHealthData.eos = parseInt(eosMatch[1]);
 
+            // Triglycerides
+            const triMatch = extractedText.match(/Triglyceride[s]?.*?(\d{2,3})/i);
+            if (triMatch) window.extractedHealthData.tri = parseInt(triMatch[1]);
+
+            // HbA1c
+            const hba1cMatch = extractedText.match(/HbA1c.*?(\d{1,2}(?:\.\d)?)/i);
+            if (hba1cMatch) window.extractedHealthData.hba1c = parseFloat(hba1cMatch[1]);
+
+            // ALP
+            const alpMatch = extractedText.match(/ALP.*?(\d{2,3})/i);
+            if (alpMatch) window.extractedHealthData.alp = parseInt(alpMatch[1]);
+
+            // Heart Rate
+            const hrMatch = extractedText.match(/(?:Heart Rate|HR|อัตราการเต้นของหัวใจ).*?(\d{2,3})/i);
+            if (hrMatch) window.extractedHealthData.hr = parseInt(hrMatch[1]);
+
+            // WBC Count
+            const wbcMatch = extractedText.match(/WBC.*?(\d{1,2}(?:\.\d)?)/i);
+            if (wbcMatch) window.extractedHealthData.wbc = parseFloat(wbcMatch[1]);
+
             // Hormones
             const corMatch = extractedText.match(/Cortisol.*?(\d{1,3}(?:\.\d)?)/i);
             if (corMatch) window.extractedHealthData.cortisol = parseFloat(corMatch[1]);
@@ -243,7 +304,7 @@ function initUploadSimulation() {
                 scanningText.textContent = "สกัดข้อมูลสำเร็จ! เตรียมเข้าสู่ระบบ...";
             }
             await new Promise(r => setTimeout(r, 1500));
-            
+
         } catch (err) {
             console.error("Extraction error:", err);
             if (scanningText) scanningText.textContent = "AI อ่านไฟล์ไม่สำเร็จ แต่จะใช้ค่าจำลองแทน...";
@@ -259,7 +320,7 @@ function initUploadSimulation() {
                 idInput.focus();
             }
         }
-        
+
         realFileUpload.value = '';
     });
 
@@ -308,12 +369,37 @@ function initUploadSimulation() {
     }
 
     const resetToHomeFlow = () => {
+        // Clear stored session and health data
+        localStorage.removeItem('lablink_auth');
+        localStorage.removeItem('lablink_health_data');
+        localStorage.removeItem('lablink_last_view');
+        window.extractedHealthData = null;
+
         const uploadInitial = document.getElementById('upload-initial-state');
         const uploadSuccess = document.getElementById('upload-success-state');
+        const uploadVerify = document.getElementById('upload-verify-state');
+        const loadingState = document.getElementById('loadingState');
+        const idInput = document.getElementById('id-card-input');
+        const fileInput = document.getElementById('file-input');
+
         if (uploadSuccess) uploadSuccess.style.display = 'none';
+        if (uploadVerify) uploadVerify.style.display = 'none';
+        if (loadingState) loadingState.style.display = 'none';
         if (uploadInitial) uploadInitial.style.display = 'block';
+        if (idInput) idInput.value = '';
+        if (fileInput) fileInput.value = '';
+
+        // Close mobile/iPad sidebar if open
+        const sidebar = document.querySelector('.sidebar');
+        if (sidebar && sidebar.classList.contains('active')) {
+            sidebar.classList.remove('active');
+        }
 
         setAuthenticatedState(false);
+
+        if (typeof showToast === 'function') {
+            showToast('🚪 ออกจากระบบเรียบร้อยแล้ว', 'info');
+        }
     };
 
     if (btnUploadNew) {
@@ -333,7 +419,7 @@ function initUploadSimulation() {
 function applyHealthDataToUI(eh) {
     if (!eh) return;
     const metricValues = document.querySelectorAll('.metric-value');
-    
+
     if (eh.bp && metricValues.length > 0) {
         metricValues[0].innerHTML = `${eh.bp} <span style="font-size: 0.8rem;">mmHg</span> <br><span style="font-size: 0.7rem; color: var(--success);">(อัปเดตจากไฟล์)</span>`;
     }
@@ -353,15 +439,19 @@ function applyHealthDataToUI(eh) {
     // 1. Calculate Health Age
     let baseAge = 35;
     let ageOffset = 0;
-    if (eh.ldl) { if (eh.ldl > 130) ageOffset += 2; else if (eh.ldl < 100) ageOffset -= 2; }
-    if (eh.fbs) { if (eh.fbs > 100) ageOffset += 3; else if (eh.fbs < 90) ageOffset -= 2; }
-    if (eh.alt) { if (eh.alt > 40) ageOffset += 2; else if (eh.alt < 20) ageOffset -= 1; }
-    
+    if (eh.ldl) { if (eh.ldl > 130) ageOffset += 2;
+        else if (eh.ldl < 100) ageOffset -= 2; }
+    if (eh.fbs) { if (eh.fbs > 100) ageOffset += 3;
+        else if (eh.fbs < 90) ageOffset -= 2; }
+    if (eh.alt) { if (eh.alt > 40) ageOffset += 2;
+        else if (eh.alt < 20) ageOffset -= 1; }
+
     let finalAge = baseAge + ageOffset;
     const healthAgeNum = document.getElementById('health-age-number');
     const healthAgeText = document.getElementById('health-age-text');
-    
+
     if (healthAgeNum && healthAgeText) {
+        healthAgeNum.dataset.targetAge = finalAge;
         healthAgeNum.textContent = finalAge;
         if (ageOffset < 0) {
             healthAgeText.textContent = `อ่อนเยาว์กว่าอายุจริง ${Math.abs(ageOffset)} ปี!`;
@@ -380,7 +470,7 @@ function applyHealthDataToUI(eh) {
     const organHeart = document.getElementById('organ-heart');
     const organLiver = document.getElementById('organ-liver');
     const organPancreas = document.getElementById('organ-pancreas');
-    
+
     const colorSafe = "#10b981";
     const colorWarn = "#f59e0b";
     const colorDanger = "#ef4444";
@@ -393,7 +483,7 @@ function applyHealthDataToUI(eh) {
             organHeart.style.fill = heartStatus;
             if (heartStatus === colorDanger) organHeart.style.filter = "drop-shadow(0 0 10px #ef4444)";
         }
-        
+
         if (organLiver) {
             let liverStatus = colorSafe;
             if (eh.alt > 60 || eh.ast > 60) liverStatus = colorDanger;
@@ -401,7 +491,7 @@ function applyHealthDataToUI(eh) {
             organLiver.style.fill = liverStatus;
             if (liverStatus === colorDanger) organLiver.style.filter = "drop-shadow(0 0 10px #ef4444)";
         }
-        
+
         if (organPancreas) {
             let pancStatus = colorSafe;
             if (eh.fbs > 125) pancStatus = colorDanger;
@@ -409,15 +499,103 @@ function applyHealthDataToUI(eh) {
             organPancreas.style.fill = pancStatus;
             if (pancStatus === colorDanger) organPancreas.style.filter = "drop-shadow(0 0 10px #ef4444)";
         }
-        
+
         // Retrigger SVG draw animation
         const svg = document.querySelector('.draw-svg');
         if (svg) {
             svg.style.animation = 'none';
             svg.offsetHeight; /* trigger reflow */
-            svg.style.animation = null; 
+            svg.style.animation = null;
         }
     }, 500);
+
+    // 3. Update Organ Panels (Lipid & Liver)
+    if (eh.chol) {
+        const cholEl = document.getElementById('lipid-val-chol');
+        const cholRange = document.getElementById('lipid-range-chol');
+        if (cholEl) {
+            const statusColor = eh.chol > 240 ? 'var(--danger)' : (eh.chol > 200 ? 'var(--warning)' : 'var(--success)');
+            cholEl.style.color = statusColor;
+            cholEl.innerHTML = `${eh.chol} <span style="font-size: 1rem; color: var(--text-light);">mg/dL</span>`;
+        }
+        if (cholRange) {
+            let left = 50;
+            if (eh.chol <= 200) left = (eh.chol / 200) * 50;
+            else if (eh.chol <= 240) left = 50 + ((eh.chol - 200) / 40) * 25;
+            else left = Math.min(96, 75 + ((eh.chol - 240) / 60) * 21);
+            cholRange.style.left = `${Math.max(4, Math.round(left))}%`;
+            cholRange.setAttribute('data-value', eh.chol);
+        }
+    }
+
+    if (eh.ldl) {
+        const ldlEl = document.getElementById('lipid-val-ldl');
+        const ldlRange = document.getElementById('lipid-range-ldl');
+        const ldlSci = document.getElementById('lipid-science-ldl');
+        if (ldlEl) {
+            const statusColor = eh.ldl > 160 ? 'var(--danger)' : (eh.ldl > 100 ? 'var(--warning)' : 'var(--success)');
+            ldlEl.style.color = statusColor;
+            ldlEl.innerHTML = `${eh.ldl} <span style="font-size: 1rem; color: var(--text-light);">mg/dL</span>`;
+        }
+        if (ldlRange) {
+            let left = 50;
+            if (eh.ldl <= 100) left = (eh.ldl / 100) * 50;
+            else if (eh.ldl <= 160) left = 50 + ((eh.ldl - 100) / 60) * 25;
+            else left = Math.min(96, 75 + ((eh.ldl - 160) / 60) * 21);
+            ldlRange.style.left = `${Math.max(4, Math.round(left))}%`;
+            ldlRange.setAttribute('data-value', eh.ldl);
+        }
+        if (ldlSci) {
+            ldlSci.textContent = eh.ldl;
+        }
+    }
+
+    if (eh.hdl) {
+        const hdlEl = document.getElementById('lipid-val-hdl');
+        const hdlRange = document.getElementById('lipid-range-hdl');
+        if (hdlEl) {
+            const statusColor = eh.hdl < 40 ? 'var(--danger)' : 'var(--success)';
+            hdlEl.style.color = statusColor;
+            hdlEl.innerHTML = `${eh.hdl} <span style="font-size: 1rem; color: var(--text-light);">mg/dL</span>`;
+        }
+        if (hdlRange) {
+            let left = 50;
+            if (eh.hdl <= 40) left = (eh.hdl / 40) * 40;
+            else left = Math.min(96, 40 + ((eh.hdl - 40) / 40) * 55);
+            hdlRange.style.left = `${Math.max(4, Math.round(left))}%`;
+            hdlRange.setAttribute('data-value', eh.hdl);
+        }
+    }
+
+    if (eh.ast) {
+        const astEl = document.getElementById('liver-val-ast');
+        const astRange = document.getElementById('liver-range-ast');
+        if (astEl) {
+            const statusColor = eh.ast > 40 ? 'var(--danger)' : 'var(--success)';
+            astEl.style.color = statusColor;
+            astEl.innerHTML = `${eh.ast} <span style="font-size: 1rem; color: var(--text-light);">U/L</span>`;
+        }
+        if (astRange) {
+            let left = Math.min(96, Math.max(4, (eh.ast / 80) * 100));
+            astRange.style.left = `${Math.round(left)}%`;
+            astRange.setAttribute('data-value', eh.ast);
+        }
+    }
+
+    if (eh.alt) {
+        const altEl = document.getElementById('liver-val-alt');
+        const altRange = document.getElementById('liver-range-alt');
+        if (altEl) {
+            const statusColor = eh.alt > 41 ? 'var(--danger)' : 'var(--success)';
+            altEl.style.color = statusColor;
+            altEl.innerHTML = `${eh.alt} <span style="font-size: 1rem; color: var(--text-light);">U/L</span>`;
+        }
+        if (altRange) {
+            let left = Math.min(96, Math.max(4, (eh.alt / 82) * 100));
+            altRange.style.left = `${Math.round(left)}%`;
+            altRange.setAttribute('data-value', eh.alt);
+        }
+    }
 
     // Update Traffic Light Barometer with new extracted data
     if (window.updateBarometerData) {
@@ -498,8 +676,10 @@ function initTrafficLightBarometer() {
                 banner.style.display = 'flex';
                 let labelText = 'ปกติสมบูรณ์ (Optimal)';
                 let iconText = '🟢';
-                if (status === 'warning') { labelText = 'ควรเฝ้าระวัง (Watchlist)'; iconText = '🟡'; }
-                if (status === 'critical') { labelText = 'ต้องพบแพทย์ (Action Needed)'; iconText = '🔴'; }
+                if (status === 'warning') { labelText = 'ควรเฝ้าระวัง (Watchlist)';
+                    iconText = '🟡'; }
+                if (status === 'critical') { labelText = 'ต้องพบแพทย์ (Action Needed)';
+                    iconText = '🔴'; }
 
                 bannerLabel.textContent = labelText;
                 bannerIcon.textContent = iconText;
@@ -524,7 +704,7 @@ function initTrafficLightBarometer() {
             chol: eh?.chol || 210,
             ldl: eh?.ldl || 130,
             hdl: eh?.hdl || 55,
-            tri: eh?.triglycerides || 160,
+            tri: eh?.tri || 160,
             fbs: eh?.fbs || 88,
             alt: eh?.alt || 45,
             ast: eh?.ast || 22,
@@ -537,18 +717,33 @@ function initTrafficLightBarometer() {
         };
 
         // Evaluate Liver (AST, ALT, ALP)
-        if (d.ast > 60) criticalList.push('AST'); else if (d.ast > 40) warningList.push('AST'); else optimalList.push('AST');
-        if (d.alt > 60) criticalList.push('ALT'); else if (d.alt > 40) warningList.push('ALT'); else optimalList.push('ALT');
-        if (d.alp > 160) criticalList.push('ALP'); else if (d.alp > 129) warningList.push('ALP'); else optimalList.push('ALP');
+        if (d.ast > 60) criticalList.push('AST');
+        else if (d.ast > 40) warningList.push('AST');
+        else optimalList.push('AST');
+        if (d.alt > 60) criticalList.push('ALT');
+        else if (d.alt > 40) warningList.push('ALT');
+        else optimalList.push('ALT');
+        if (d.alp > 160) criticalList.push('ALP');
+        else if (d.alp > 129) warningList.push('ALP');
+        else optimalList.push('ALP');
 
         // Evaluate Glucose (FBS)
-        if (d.fbs >= 126) criticalList.push('FBS'); else if (d.fbs >= 100) warningList.push('FBS'); else optimalList.push('FBS');
+        if (d.fbs >= 126) criticalList.push('FBS');
+        else if (d.fbs >= 100) warningList.push('FBS');
+        else optimalList.push('FBS');
 
         // Evaluate Lipids (Total Chol, Triglyceride, HDL, LDL)
-        if (d.chol >= 240) criticalList.push('Total Chol'); else if (d.chol >= 200) warningList.push('Total Chol'); else optimalList.push('Total Chol');
-        if (d.tri >= 200) criticalList.push('Triglyceride'); else if (d.tri >= 150) warningList.push('Triglyceride'); else optimalList.push('Triglyceride');
-        if (d.hdl < 40) warningList.push('HDL'); else optimalList.push('HDL');
-        if (d.ldl >= 160) criticalList.push('LDL'); else if (d.ldl >= 130) warningList.push('LDL'); else optimalList.push('LDL');
+        if (d.chol >= 240) criticalList.push('Total Chol');
+        else if (d.chol >= 200) warningList.push('Total Chol');
+        else optimalList.push('Total Chol');
+        if (d.tri >= 200) criticalList.push('Triglyceride');
+        else if (d.tri >= 150) warningList.push('Triglyceride');
+        else optimalList.push('Triglyceride');
+        if (d.hdl < 40) warningList.push('HDL');
+        else optimalList.push('HDL');
+        if (d.ldl >= 160) criticalList.push('LDL');
+        else if (d.ldl >= 130) warningList.push('LDL');
+        else optimalList.push('LDL');
 
         // Evaluate CBC (WBC, Hb, Platelet)
         optimalList.push('WBC');
@@ -556,8 +751,11 @@ function initTrafficLightBarometer() {
         optimalList.push('Platelet');
 
         // Evaluate Hormones (TSH, Cortisol)
-        if (d.tsh > 4.0 || d.tsh < 0.4) warningList.push('TSH'); else optimalList.push('TSH');
-        if (d.cortisol > 23.0) criticalList.push('Cortisol'); else if (d.cortisol > 19.0) warningList.push('Cortisol'); else optimalList.push('Cortisol');
+        if (d.tsh > 4.0 || d.tsh < 0.4) warningList.push('TSH');
+        else optimalList.push('TSH');
+        if (d.cortisol > 23.0) criticalList.push('Cortisol');
+        else if (d.cortisol > 19.0) warningList.push('Cortisol');
+        else optimalList.push('Cortisol');
 
         // Update counts
         const optEl = document.getElementById('count-optimal');
@@ -621,71 +819,79 @@ function initTrafficLightBarometer() {
         const tblAst = document.getElementById('tbl-ast');
         if (tblAst) {
             if (eh?.ast) tblAst.textContent = `${eh.ast} U/L`;
-            if (d.ast > 60) setRowStatus('tbl-ast', 'critical', 'อันตราย', '#ef4444');
-            else if (d.ast > 40) setRowStatus('tbl-ast', 'warning', 'สูงเล็กน้อย', '#854d0e');
-            else setRowStatus('tbl-ast', 'optimal', 'ปกติ', '#166534');
+            if (d.ast > 60) setRowStatus('tbl-ast', 'critical', 'อันตราย', 'var(--danger)');
+            else if (d.ast > 40) setRowStatus('tbl-ast', 'warning', 'สูงเล็กน้อย', 'var(--warning)');
+            else setRowStatus('tbl-ast', 'optimal', 'ปกติ', 'var(--success)');
         }
 
         const tblAlt = document.getElementById('tbl-alt');
         if (tblAlt) {
             if (eh?.alt) tblAlt.textContent = `${eh.alt} U/L`;
-            if (d.alt > 60) setRowStatus('tbl-alt', 'critical', 'อันตราย', '#ef4444');
-            else if (d.alt > 40) setRowStatus('tbl-alt', 'warning', 'สูงเล็กน้อย', '#854d0e');
-            else setRowStatus('tbl-alt', 'optimal', 'ปกติ', '#166534');
+            if (d.alt > 60) setRowStatus('tbl-alt', 'critical', 'อันตราย', 'var(--danger)');
+            else if (d.alt > 40) setRowStatus('tbl-alt', 'warning', 'สูงเล็กน้อย', 'var(--warning)');
+            else setRowStatus('tbl-alt', 'optimal', 'ปกติ', 'var(--success)');
         }
 
         const tblAlp = document.getElementById('tbl-alp');
         if (tblAlp) {
             if (eh?.alp) tblAlp.textContent = `${eh.alp} U/L`;
-            if (d.alp > 160) setRowStatus('tbl-alp', 'critical', 'อันตราย', '#ef4444');
-            else if (d.alp > 129) setRowStatus('tbl-alp', 'warning', 'สูงเล็กน้อย', '#854d0e');
-            else setRowStatus('tbl-alp', 'optimal', 'ปกติ', '#166534');
+            if (d.alp > 160) setRowStatus('tbl-alp', 'critical', 'อันตราย', 'var(--danger)');
+            else if (d.alp > 129) setRowStatus('tbl-alp', 'warning', 'สูงเล็กน้อย', 'var(--warning)');
+            else setRowStatus('tbl-alp', 'optimal', 'ปกติ', 'var(--success)');
         }
 
         const tblFbs = document.getElementById('tbl-fbs');
         if (tblFbs) {
             if (eh?.fbs) tblFbs.textContent = `${eh.fbs} mg/dL`;
-            if (d.fbs >= 126) setRowStatus('tbl-fbs', 'critical', 'อันตราย', '#ef4444');
-            else if (d.fbs >= 100) setRowStatus('tbl-fbs', 'warning', 'ปริ่มเกณฑ์', '#854d0e');
-            else setRowStatus('tbl-fbs', 'optimal', 'ปกติ', '#166534');
+            if (d.fbs >= 126) setRowStatus('tbl-fbs', 'critical', 'อันตราย', 'var(--danger)');
+            else if (d.fbs >= 100) setRowStatus('tbl-fbs', 'warning', 'ปริ่มเกณฑ์', 'var(--warning)');
+            else setRowStatus('tbl-fbs', 'optimal', 'ปกติ', 'var(--success)');
         }
 
         const tblChol = document.getElementById('tbl-chol');
         if (tblChol) {
             if (eh?.chol) tblChol.textContent = `${eh.chol} mg/dL`;
-            if (d.chol >= 240) setRowStatus('tbl-chol', 'critical', 'อันตราย', '#ef4444');
-            else if (d.chol >= 200) setRowStatus('tbl-chol', 'warning', 'สูงเล็กน้อย', '#854d0e');
-            else setRowStatus('tbl-chol', 'optimal', 'ปกติ', '#166534');
+            if (d.chol >= 240) setRowStatus('tbl-chol', 'critical', 'อันตราย', 'var(--danger)');
+            else if (d.chol >= 200) setRowStatus('tbl-chol', 'warning', 'สูงเล็กน้อย', 'var(--warning)');
+            else setRowStatus('tbl-chol', 'optimal', 'ปกติ', 'var(--success)');
         }
 
         const tblLdl = document.getElementById('tbl-ldl');
         if (tblLdl) {
             if (eh?.ldl) tblLdl.textContent = `${eh.ldl} mg/dL`;
-            if (d.ldl >= 160) setRowStatus('tbl-ldl', 'critical', 'อันตราย', '#ef4444');
-            else if (d.ldl >= 130) setRowStatus('tbl-ldl', 'warning', 'ปริ่มเกณฑ์', '#854d0e');
-            else setRowStatus('tbl-ldl', 'optimal', 'ปกติ', '#166534');
+            if (d.ldl >= 160) setRowStatus('tbl-ldl', 'critical', 'อันตราย', 'var(--danger)');
+            else if (d.ldl >= 130) setRowStatus('tbl-ldl', 'warning', 'ปริ่มเกณฑ์', 'var(--warning)');
+            else setRowStatus('tbl-ldl', 'optimal', 'ปกติ', 'var(--success)');
         }
 
         const tblHdl = document.getElementById('tbl-hdl');
         if (tblHdl) {
             if (eh?.hdl) tblHdl.textContent = `${eh.hdl} mg/dL`;
-            if (d.hdl < 40) setRowStatus('tbl-hdl', 'warning', 'ต่ำกว่าเกณฑ์', '#854d0e');
-            else setRowStatus('tbl-hdl', 'optimal', 'ดี', '#166534');
+            if (d.hdl < 40) setRowStatus('tbl-hdl', 'warning', 'ต่ำกว่าเกณฑ์', 'var(--warning)');
+            else setRowStatus('tbl-hdl', 'optimal', 'ดี', 'var(--success)');
         }
 
         const tblTsh = document.getElementById('tbl-tsh');
         if (tblTsh) {
             if (eh?.tsh) tblTsh.textContent = `${eh.tsh} mIU/L`;
-            if (d.tsh > 4.0 || d.tsh < 0.4) setRowStatus('tbl-tsh', 'warning', 'ผิดปกติเล็กน้อย', '#854d0e');
-            else setRowStatus('tbl-tsh', 'optimal', 'ปกติ', '#166534');
+            if (d.tsh > 4.0 || d.tsh < 0.4) setRowStatus('tbl-tsh', 'warning', 'ผิดปกติเล็กน้อย', 'var(--warning)');
+            else setRowStatus('tbl-tsh', 'optimal', 'ปกติ', 'var(--success)');
         }
 
         const tblCor = document.getElementById('tbl-cor');
         if (tblCor) {
             if (eh?.cortisol) tblCor.textContent = `${eh.cortisol} ug/dL`;
-            if (d.cortisol > 23.0) setRowStatus('tbl-cor', 'critical', 'สูงผิดปกติ', '#ef4444');
-            else if (d.cortisol > 19.0) setRowStatus('tbl-cor', 'warning', 'ค่อนข้างสูง', '#854d0e');
-            else setRowStatus('tbl-cor', 'optimal', 'ปกติ', '#166534');
+            if (d.cortisol > 23.0) setRowStatus('tbl-cor', 'critical', 'สูงผิดปกติ', 'var(--danger)');
+            else if (d.cortisol > 19.0) setRowStatus('tbl-cor', 'warning', 'ค่อนข้างสูง', 'var(--warning)');
+            else setRowStatus('tbl-cor', 'optimal', 'ปกติ', 'var(--success)');
+        }
+
+        const tblTri = document.getElementById('tbl-tri');
+        if (tblTri) {
+            if (eh?.tri) tblTri.textContent = `${eh.tri} mg/dL`;
+            if (d.tri >= 200) setRowStatus('tbl-tri', 'critical', 'อันตราย', 'var(--danger)');
+            else if (d.tri >= 150) setRowStatus('tbl-tri', 'warning', 'สูงเล็กน้อย', 'var(--warning)');
+            else setRowStatus('tbl-tri', 'optimal', 'ปกติ', 'var(--success)');
         }
     };
 
@@ -1284,7 +1490,7 @@ function setAuthenticatedState(isAuth) {
 
         const lockedNavs = document.querySelectorAll('.locked-nav');
         lockedNavs.forEach(nav => nav.classList.remove('locked-nav'));
-        
+
         const chatbotFab = document.getElementById('chatbot-fab');
         if (chatbotFab) chatbotFab.style.display = 'flex';
 
@@ -1309,7 +1515,7 @@ function setAuthenticatedState(isAuth) {
                 nav.classList.add('locked-nav');
             }
         });
-        
+
         const chatbotFab = document.getElementById('chatbot-fab');
         if (chatbotFab) chatbotFab.style.display = 'none';
 
@@ -1328,32 +1534,69 @@ function animateHealthScore() {
     const progressCircle = document.querySelector('.circular-progress');
     if (!progressCircle) return;
 
-    progressCircle.style.background = `conic-gradient(var(--success) 0deg, var(--border) 0deg)`;
-
-    const targetScore = parseInt(progressCircle.getAttribute('data-progress')) || 85;
+    const targetScore = parseInt(progressCircle.getAttribute('data-progress')) || 82;
     const scoreElement = document.querySelector('.score-number');
+    const targetAge = scoreElement ? (parseInt((scoreElement.dataset && scoreElement.dataset.targetAge) || scoreElement.textContent) || 28) : 28;
 
     let currentScore = 0;
-    const duration = 1500;
+    let currentAge = 0;
+    const duration = 1200;
     const intervalTime = 20;
-    const step = targetScore / (duration / intervalTime);
+    const totalSteps = duration / intervalTime;
+    const stepScore = targetScore / totalSteps;
+    const stepAge = targetAge / totalSteps;
 
-    const timer = setInterval(() => {
-        currentScore += step;
+    if (window._healthScoreTimer) clearInterval(window._healthScoreTimer);
+
+    window._healthScoreTimer = setInterval(() => {
+        currentScore += stepScore;
+        currentAge += stepAge;
         if (currentScore >= targetScore) {
             currentScore = targetScore;
-            clearInterval(timer);
+            currentAge = targetAge;
+            clearInterval(window._healthScoreTimer);
         }
 
-        if (scoreElement) scoreElement.textContent = Math.round(currentScore);
+        if (scoreElement) scoreElement.textContent = Math.round(currentAge);
 
         const degrees = (currentScore / 100) * 360;
-        progressCircle.style.background = `conic-gradient(var(--success) ${degrees}deg, var(--border) 0deg)`;
+        const color = targetScore >= 80 ? 'var(--success)' : (targetScore >= 60 ? 'var(--warning)' : 'var(--danger)');
+        progressCircle.style.background = `conic-gradient(${color} ${degrees}deg, var(--border) 0deg)`;
     }, intervalTime);
 }
 
 // 4. Interactive Chatbot Logic
 const chatHistory = []; // Multi-turn memory
+
+window._isChatTTSActive = false;
+
+window.toggleChatTTS = function() {
+    window._isChatTTSActive = !window._isChatTTSActive;
+    const ttsIcon = document.getElementById('tts-icon');
+    const ttsLabel = document.getElementById('tts-label');
+    const btn = document.getElementById('btn-chat-tts-toggle');
+
+    if (window._isChatTTSActive) {
+        if (ttsIcon) ttsIcon.textContent = '🔊';
+        if (ttsLabel) ttsLabel.textContent = 'เสียงอ่าน: เปิด';
+        if (btn) {
+            btn.style.background = 'rgba(16, 185, 129, 0.4)';
+            btn.style.borderColor = 'rgba(16, 185, 129, 0.7)';
+        }
+        if (typeof showToast === 'function') showToast('🔊 เปิดระบบเสียงอ่านข้อความ (TTS)', 'success');
+    } else {
+        if (ttsIcon) ttsIcon.textContent = '🔇';
+        if (ttsLabel) ttsLabel.textContent = 'เสียงอ่าน: ปิด';
+        if (btn) {
+            btn.style.background = 'rgba(255, 255, 255, 0.18)';
+            btn.style.borderColor = 'rgba(255, 255, 255, 0.3)';
+        }
+        if ('speechSynthesis' in window) {
+            window.speechSynthesis.cancel();
+        }
+        if (typeof showToast === 'function') showToast('🔇 ปิดเสียงอ่านข้อความ', 'info');
+    }
+};
 
 function initChatbot() {
     const chatInput = document.querySelector('.chat-input');
@@ -1425,7 +1668,9 @@ function initChatbot() {
 
             const userMsg = document.createElement('div');
             userMsg.className = 'message user-message';
-            userMsg.innerHTML = `<p>${text}</p>`;
+            const userP = document.createElement('p');
+            userP.textContent = text;
+            userMsg.appendChild(userP);
             chatBody.appendChild(userMsg);
 
             chatInput.value = '';
@@ -1437,7 +1682,7 @@ function initChatbot() {
             chatBody.appendChild(typingMsg);
             chatBody.scrollTop = chatBody.scrollHeight;
 
-            
+
             const handleAIResponse = (textResponse) => {
                 if (chatBody.contains(typingMsg)) chatBody.removeChild(typingMsg);
 
@@ -1448,7 +1693,7 @@ function initChatbot() {
                 chatBody.appendChild(aiMsg);
                 chatBody.scrollTop = chatBody.scrollHeight;
 
-                if ('speechSynthesis' in window) {
+                if (window._isChatTTSActive && 'speechSynthesis' in window) {
                     window.speechSynthesis.cancel();
                     const plainText = aiMsg.textContent;
                     const utterance = new SpeechSynthesisUtterance(plainText);
@@ -1459,15 +1704,15 @@ function initChatbot() {
                 }
             };
 
-            
-            
+
+
             const geminiKey = localStorage.getItem('gemini_api_key');
 
 
             if (geminiKey) {
                 // Use Real Gemini AI with Multi-turn Memory
                 const promptCtx = window.extractedHealthData ? JSON.stringify(window.extractedHealthData) : "No health data yet.";
-                
+
                 let profileCtx = "";
                 try {
                     const savedProf = localStorage.getItem('lablink_profile');
@@ -1475,7 +1720,7 @@ function initChatbot() {
                         const p = JSON.parse(savedProf);
                         profileCtx = `ข้อมูลผู้ป่วย: น้ำหนัก ${p.weight || '-'} kg, ส่วนสูง ${p.height || '-'} cm, โรคประจำตัว: ${p.disease || '-'}, ประวัติแพ้ยา: ${p.allergy || '-'}`;
                     }
-                } catch(e) {}
+                } catch (e) {}
 
                 const systemContext = `คุณคือ Dr. LabLink แพทย์ AI ผู้เชี่ยวชาญการอ่านผลเลือด 
 กรุณาตอบคำถามผู้ป่วยเป็นภาษาไทยแบบเป็นกันเอง สั้นกระชับ เข้าใจง่าย ใช้อีโมจิเพื่อเสริมความน่าสนใจ
@@ -1548,26 +1793,27 @@ ${profileCtx}
             '🏃 ควรออกกำลังกายแบบไหน?',
             '💊 ค่าไขมัน LDL สูงไหม?'
         ];
-        
+
         const quickContainer = document.createElement('div');
-        quickContainer.style.cssText = 'display: flex; flex-wrap: wrap; gap: 8px; padding: 8px 20px; background: #f8fafc; border-top: 1px solid var(--border);';
+        quickContainer.style.cssText = 'display: flex; flex-wrap: nowrap; overflow-x: auto; -webkit-overflow-scrolling: touch; gap: 8px; padding: 8px 16px; background: var(--bg-main); border-top: 1px solid var(--border); scrollbar-width: none;';
         quickReplies.forEach(text => {
             const btn = document.createElement('button');
             btn.textContent = text;
-            btn.style.cssText = 'background: white; border: 1px solid var(--border); border-radius: 20px; padding: 6px 14px; font-size: 0.82rem; cursor: pointer; color: var(--primary); font-family: inherit; transition: all 0.2s; white-space: nowrap;';
-            btn.onmouseenter = () => { btn.style.background = 'var(--primary)'; btn.style.color = 'white'; };
-            btn.onmouseleave = () => { btn.style.background = 'white'; btn.style.color = 'var(--primary)'; };
+            btn.style.cssText = 'flex-shrink: 0; background: var(--bg-card); border: 1px solid var(--border); border-radius: 20px; padding: 6px 14px; font-size: 0.82rem; cursor: pointer; color: var(--primary); font-family: inherit; transition: all 0.2s; white-space: nowrap;';
+            btn.onmouseenter = () => { btn.style.background = 'var(--primary)';
+                btn.style.color = 'white'; };
+            btn.onmouseleave = () => { btn.style.background = 'var(--bg-card)';
+                btn.style.color = 'var(--primary)'; };
             btn.onclick = () => {
                 chatInput.value = text;
                 sendMessage();
-                quickContainer.style.display = 'none'; // Hide after first use
             };
             quickContainer.appendChild(btn);
         });
-        
+
         // Insert quick replies before chat footer
         const chatFooter = document.querySelector('.chat-footer');
-        if (chatFooter) {
+        if (chatFooter && chatFooter.parentNode) {
             chatFooter.parentNode.insertBefore(quickContainer, chatFooter);
         }
 
@@ -1608,6 +1854,10 @@ function initThemeToggle() {
 
 // 6. 3D Tilt Effect Initialization
 function init3DTilt() {
+    // Disable on touch devices and screens <= 1024px to prevent tap interception and save CPU/battery
+    const isTouch = ('ontouchstart' in window) || (navigator.maxTouchPoints > 0) || (window.innerWidth <= 1024);
+    if (isTouch) return;
+
     if (typeof VanillaTilt !== 'undefined') {
         VanillaTilt.init(document.querySelectorAll(".score-card, .metric-card, .plan-column, .action-plan-card, .meal-card"), {
             max: 3,
@@ -1646,37 +1896,39 @@ function initTrendsChart() {
             }
         };
 
-        
+
         const labels = ['ม.ค.', 'ก.พ.', 'มี.ค.', 'เม.ย.', 'พ.ค.', 'มิ.ย.'];
-        
+
         // --- Merge Extracted Data ---
         let dataLdl = [155, 150, 145, 140, 135, 130];
         let dataHdl = [42, 45, 47, 50, 52, 55];
         let dataFbs = [95, 93, 91, 90, 89, 88];
         let dataAlt = [55, 52, 50, 48, 46, 45];
         let dataAst = [35, 30, 28, 25, 23, 22];
+        let dataTri = [160, 155, 150, 148, 145, 140];
         let dataWbc = [60, 30, 7, 3];
         let dataHor = [65, 80, 50, 70, 90];
-        
+
         if (window.extractedHealthData) {
             const eh = window.extractedHealthData;
             if (eh.ldl) dataLdl[5] = eh.ldl;
             if (eh.hdl) dataHdl[5] = eh.hdl;
+            if (eh.tri) dataTri[5] = eh.tri;
             if (eh.fbs) dataFbs[5] = eh.fbs;
             if (eh.alt) dataAlt[5] = eh.alt;
             if (eh.ast) dataAst[5] = eh.ast;
-            
+
             if (eh.neu && eh.lym) {
                 dataWbc = [eh.neu, eh.lym, eh.mon || 7, eh.eos || 3];
             }
             if (eh.cortisol || eh.tsh) {
                 // Approximate normalize for radar chart (0-100 score)
                 dataHor = [
-                    eh.cortisol ? 100 - (eh.cortisol*2) : 65, 
-                    eh.tsh ? 80 : 80, 
-                    eh.dhea ? 70 : 50, 
-                    eh.testosterone ? 75 : 70, 
-                    eh.insulin ? 100 - (eh.insulin*2) : 90
+                    eh.cortisol ? 100 - (eh.cortisol * 2) : 65,
+                    eh.tsh ? 80 : 80,
+                    eh.dhea ? 70 : 50,
+                    eh.testosterone ? 75 : 70,
+                    eh.insulin ? 100 - (eh.insulin * 2) : 90
                 ];
             }
         }
@@ -1691,7 +1943,7 @@ function initTrendsChart() {
                     datasets: [
                         { label: 'LDL (ไขมันเลว)', data: dataLdl, borderColor: '#ef4444', backgroundColor: 'rgba(239, 68, 68, 0.1)', tension: 0.4, fill: true },
                         { label: 'HDL (ไขมันดี)', data: dataHdl, borderColor: '#10b981', tension: 0.4 },
-                        { label: 'Triglycerides', data: [160, 155, 150, 148, 145, 140], borderColor: '#f59e0b', tension: 0.4, borderDash: [5, 5] }
+                        { label: 'Triglycerides', data: dataTri, borderColor: '#f59e0b', tension: 0.4, borderDash: [5, 5] }
                     ]
                 },
                 options: commonOptions
@@ -1810,11 +2062,14 @@ function initTrendsChart() {
 function initParticles() {
     if (typeof tsParticles === 'undefined') return;
 
+    const isMobileOrTablet = window.innerWidth <= 1024 || ('ontouchstart' in window);
+    const particleCount = isMobileOrTablet ? 15 : 45;
+
     tsParticles.load("tsparticles", {
-        fpsLimit: 60,
+        fpsLimit: isMobileOrTablet ? 30 : 60,
         particles: {
             number: {
-                value: 60,
+                value: particleCount,
                 density: {
                     enable: true,
                     value_area: 800
@@ -1827,51 +2082,39 @@ function initParticles() {
                 type: "circle"
             },
             opacity: {
-                value: 0.3,
-                random: true,
-                anim: {
-                    enable: true,
-                    speed: 1,
-                    opacity_min: 0.1,
-                    sync: false
-                }
+                value: 0.25,
+                random: true
             },
             size: {
-                value: 3,
-                random: true,
-                anim: {
-                    enable: true,
-                    speed: 2,
-                    size_min: 0.1,
-                    sync: false
-                }
+                value: 2.5,
+                random: true
             },
             line_linked: {
-                enable: true,
-                distance: 150,
+                enable: !isMobileOrTablet,
+                distance: 130,
                 color: "#94a3b8",
-                opacity: 0.2,
+                opacity: 0.15,
                 width: 1
             },
             move: {
                 enable: true,
-                speed: 1.5,
+                speed: isMobileOrTablet ? 0.6 : 1.2,
                 direction: "none",
                 random: true,
                 straight: false,
                 out_mode: "out",
-                bounce: false,
+                bounce: false
             }
         },
         interactivity: {
             detect_on: "canvas",
             events: {
                 onhover: {
-                    enable: true,
+                    enable: !isMobileOrTablet,
                     mode: "grab"
                 },
                 onclick: {
-                    enable: true,
+                    enable: !isMobileOrTablet,
                     mode: "push"
                 },
                 resize: true
@@ -1880,66 +2123,66 @@ function initParticles() {
                 grab: {
                     distance: 140,
                     line_linked: {
-                        opacity: 0.5
+                        opacity: 0.4
                     }
                 },
                 push: {
-                    particles_nb: 3
+                    particles_nb: 2
                 }
             }
         },
-        retina_detect: true
+        retina_detect: !isMobileOrTablet
     });
 }
 // --- Medical Standard PDF Export ---
 
 document.addEventListener('DOMContentLoaded', () => {
     const btnsExport = document.querySelectorAll('#btn-export-pdf, #btn-export-pdf-settings');
-    
+
     btnsExport.forEach(btnExport => {
-        btnExport.addEventListener('click', async () => {
+        btnExport.addEventListener('click', async() => {
 
             const originalText = btnExport.innerHTML;
             btnExport.innerHTML = '<span class="icon animate-pulse">⏳</span> Generating...';
-            
+
             try {
                 const { jsPDF } = window.jspdf;
                 const doc = new jsPDF('p', 'mm', 'a4');
-                
+
                 const dashboard = document.querySelector('.main-content');
 
                 const isDark = document.body.classList.contains('dark-mode');
                 if (isDark) document.body.classList.remove('dark-mode');
-                
+
                 // Hide things we don't want in PDF
                 const toggle = document.getElementById('theme-toggle');
                 if (toggle) toggle.style.display = 'none';
-                
+
                 const canvas = await html2canvas(dashboard, {
                     scale: 2,
                     useCORS: true,
                     backgroundColor: '#ffffff'
                 });
-                
+
                 // Reset styles
                 if (isDark) document.body.classList.add('dark-mode');
                 if (toggle) toggle.style.display = '';
 
-                
+
                 const imgData = canvas.toDataURL('image/jpeg', 0.95);
                 const pdfWidth = doc.internal.pageSize.getWidth();
                 const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
-                
+
                 doc.addImage(imgData, 'JPEG', 0, 0, pdfWidth, pdfHeight);
-                
+
                 // Add Medical Metadata
                 doc.setFontSize(8);
                 doc.setTextColor(150);
                 doc.text(`Generated by LabLink Medical AI - ${new Date().toLocaleString()}`, 10, doc.internal.pageSize.getHeight() - 10);
                 doc.text("ASCVD Standard: AHA/ACC Protocol 2013/2018", 10, doc.internal.pageSize.getHeight() - 5);
-                
+
                 doc.save('LabLink-Medical-Report.pdf');
-                
+
                 btnExport.innerHTML = '<span class="icon">✅</span> Success!';
                 setTimeout(() => { btnExport.innerHTML = originalText; }, 3000);
             } catch (err) {
@@ -1955,7 +2198,7 @@ document.addEventListener('DOMContentLoaded', () => {
 // --- Gemini AI Request Helper (Updated Aug 2026) ---
 async function requestGeminiGenerate(geminiKey, promptText) {
     const cleanKey = geminiKey.trim();
-    
+
     // Current Gemini model names (Aug 2026)
     const candidateModels = [
         'gemini-3.5-flash',
@@ -1968,7 +2211,7 @@ async function requestGeminiGenerate(geminiKey, promptText) {
     for (const modelName of candidateModels) {
         try {
             const url = `https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent?key=${encodeURIComponent(cleanKey)}`;
-            
+
             const res = await fetch(url, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -2054,9 +2297,9 @@ window.generateDoctorSummary = async function() {
     const modal = document.getElementById('modal-doctor-summary');
     const content = document.getElementById('doctor-summary-content');
     const loading = document.getElementById('doctor-summary-loading');
-    
+
     if (!modal || !content) return;
-    
+
     modal.classList.add('active');
     if (loading) loading.style.display = 'block';
     if (content) content.style.display = 'none';
@@ -2068,7 +2311,7 @@ window.generateDoctorSummary = async function() {
             const p = JSON.parse(savedProf);
             profileText = `ข้อมูลผู้ป่วย: น้ำหนัก ${p.weight || '-'} kg, ส่วนสูง ${p.height || '-'} cm, โรคประจำตัว: ${p.disease || '-'}, ประวัติแพ้ยา: ${p.allergy || '-'}`;
         }
-    } catch(e) {}
+    } catch (e) {}
 
     const prompt = `คุณคือ Dr. LabLink แพทย์ AI ผู้เชี่ยวชาญ
 ${profileText}
@@ -2136,7 +2379,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const btnSaveGemini = document.getElementById('btn-save-gemini');
     const inputGemini = document.getElementById('gemini-api-key');
     const statusGemini = document.getElementById('gemini-status');
-    
+
     if (btnSaveGemini && inputGemini) {
         // Load existing key
         const existingKey = localStorage.getItem('gemini_api_key');
@@ -2193,7 +2436,7 @@ function initRealtimeClock() {
 //  UPGRADE: Drag & Drop Upload
 // =========================================
 function initDragAndDrop() {
-    const uploadBox = document.querySelector('.upload-box');
+    const uploadBox = document.getElementById('drop-zone') || document.querySelector('.upload-box');
     const realFileUpload = document.getElementById('real-file-upload');
     if (!uploadBox || !realFileUpload) return;
 
@@ -2215,7 +2458,7 @@ function initDragAndDrop() {
 
     uploadBox.addEventListener('drop', (e) => {
         const files = e.dataTransfer.files;
-        if (files.length > 0) {
+        if (files && files.length > 0) {
             // Create a new DataTransfer and assign to file input
             const dt = new DataTransfer();
             dt.items.add(files[0]);
@@ -2224,6 +2467,91 @@ function initDragAndDrop() {
         }
     });
 }
+
+// =========================================
+//  UPGRADE: Landing Showcase & Instant Demo
+// =========================================
+function switchLandingPreview(view) {
+    const previewAfter = document.getElementById('preview-after');
+    const previewBefore = document.getElementById('preview-before');
+    const tabAfter = document.getElementById('tab-show-after');
+    const tabBefore = document.getElementById('tab-show-before');
+
+    if (view === 'before') {
+        if (previewAfter) previewAfter.style.display = 'none';
+        if (previewBefore) previewBefore.style.display = 'block';
+        if (tabAfter) tabAfter.classList.remove('active');
+        if (tabBefore) tabBefore.classList.add('active');
+    } else {
+        if (previewAfter) previewAfter.style.display = 'block';
+        if (previewBefore) previewBefore.style.display = 'none';
+        if (tabAfter) tabAfter.classList.add('active');
+        if (tabBefore) tabBefore.classList.remove('active');
+    }
+}
+window.switchLandingPreview = switchLandingPreview;
+
+function instantDemoLogin() {
+    // 1-Click Instant Demo dataset
+    const demoData = {
+        wbc: 6.5,
+        fbs: 88,
+        chol: 210,
+        tri: 120,
+        hdl: 52,
+        ldl: 130,
+        ast: 24,
+        alt: 45,
+        alp: 65,
+        bun: 14,
+        cr: 0.95,
+        egfr: 92,
+        tsh: 2.1,
+        cor: 14.2,
+        hr: 72,
+        hba1c: 5.4,
+        eos: 3
+    };
+
+    window.extractedHealthData = demoData;
+    localStorage.setItem('lablink_health_data', JSON.stringify(demoData));
+
+    // Reset upload UI states
+    const uploadInitial = document.getElementById('upload-initial-state');
+    const verifyState = document.getElementById('upload-verify-state');
+    const loadingState = document.getElementById('loadingState');
+    if (uploadInitial) uploadInitial.style.display = 'block';
+    if (verifyState) verifyState.style.display = 'none';
+    if (loadingState) loadingState.style.display = 'none';
+
+    // Apply health data to all UI cards
+    if (typeof applyHealthDataToUI === 'function') {
+        applyHealthDataToUI(demoData);
+    }
+
+    // Unlock UI & persist session
+    if (typeof setAuthenticatedState === 'function') {
+        setAuthenticatedState(true);
+    }
+
+    if (typeof updateUploadDate === 'function') updateUploadDate();
+    if (typeof calculateRiskScore === 'function') calculateRiskScore();
+
+    // Navigate to Dashboard
+    const dashboardNav = document.getElementById('nav-dashboard');
+    if (dashboardNav) {
+        dashboardNav.click();
+    }
+
+    if (typeof animateHealthScore === 'function') {
+        setTimeout(animateHealthScore, 250);
+    }
+
+    if (typeof showToast === 'function') {
+        showToast('เข้าสู่โหมด Demo สำเร็จ! ข้อมูลสุขภาพตัวอย่างพร้อมใช้งานแล้ว', 'success');
+    }
+}
+window.instantDemoLogin = instantDemoLogin;
 
 // =========================================
 //  UPGRADE: Demo File Loader
@@ -2265,10 +2593,27 @@ function initAnatomyTooltips() {
     ];
 
     // Create tooltip element
-    const tooltip = document.createElement('div');
-    tooltip.className = 'organ-tooltip';
-    tooltip.id = 'anatomy-tooltip';
-    document.body.appendChild(tooltip);
+    let tooltip = document.getElementById('anatomy-tooltip');
+    if (!tooltip) {
+        tooltip = document.createElement('div');
+        tooltip.className = 'organ-tooltip';
+        tooltip.id = 'anatomy-tooltip';
+        document.body.appendChild(tooltip);
+    }
+
+    let hideTimer = null;
+
+    const showTooltip = (organ, clientX, clientY) => {
+        if (hideTimer) clearTimeout(hideTimer);
+        tooltip.innerHTML = `<strong>${organ.name}</strong><br>${organ.detail}`;
+        tooltip.style.left = (clientX + 12) + 'px';
+        tooltip.style.top = (clientY - 40) + 'px';
+        tooltip.classList.add('visible');
+    };
+
+    const hideTooltip = () => {
+        tooltip.classList.remove('visible');
+    };
 
     organs.forEach(organ => {
         const el = document.getElementById(organ.id);
@@ -2277,20 +2622,34 @@ function initAnatomyTooltips() {
         el.style.cursor = 'pointer';
 
         el.addEventListener('mouseenter', (e) => {
-            tooltip.innerHTML = `<strong>${organ.name}</strong><br>${organ.detail}`;
-            tooltip.classList.add('visible');
+            showTooltip(organ, e.clientX, e.clientY);
         });
 
         el.addEventListener('mousemove', (e) => {
-            const svgRect = el.closest('svg').getBoundingClientRect();
             tooltip.style.left = (e.clientX + 12) + 'px';
             tooltip.style.top = (e.clientY - 40) + 'px';
         });
 
-        el.addEventListener('mouseleave', () => {
-            tooltip.classList.remove('visible');
+        el.addEventListener('mouseleave', hideTooltip);
+
+        // Touch / Click handling for iPad & mobile
+        el.addEventListener('click', (e) => {
+            e.stopPropagation();
+            const rect = el.getBoundingClientRect();
+            const posX = e.clientX || (rect.left + rect.width / 2);
+            const posY = e.clientY || rect.top;
+            showTooltip(organ, posX, posY);
+            if (hideTimer) clearTimeout(hideTimer);
+            hideTimer = setTimeout(hideTooltip, 3500);
         });
     });
+
+    // Dismiss when tapping outside on touch devices
+    document.addEventListener('touchstart', (e) => {
+        if (!e.target.closest('svg') && !e.target.closest('#anatomy-tooltip')) {
+            hideTooltip();
+        }
+    }, { passive: true });
 }
 
 // =========================================
@@ -2305,10 +2664,10 @@ function initRiskScore() {
 
 function calculateRiskScore() {
     const eh = window.extractedHealthData || {};
-    
+
     // Simple risk estimation (0-100)
     let risk = 5; // base risk
-    
+
     if (eh.ldl) {
         if (eh.ldl > 190) risk += 30;
         else if (eh.ldl > 160) risk += 20;
@@ -2326,18 +2685,18 @@ function calculateRiskScore() {
         if (eh.hdl < 40) risk += 15;
         else if (eh.hdl > 60) risk -= 5;
     }
-    
+
     risk = Math.max(0, Math.min(100, risk));
-    
+
     // Update gauge needle (-90deg = 0%, 90deg = 100%)
     const needle = document.getElementById('risk-needle');
     const scoreEl = document.getElementById('risk-score-value');
-    
+
     if (needle) {
         const angle = -90 + (risk / 100 * 180);
         needle.style.transform = `translateX(-50%) rotate(${angle}deg)`;
     }
-    
+
     if (scoreEl) {
         scoreEl.textContent = risk + '%';
         if (risk < 20) {
@@ -2346,6 +2705,15 @@ function calculateRiskScore() {
             scoreEl.style.color = 'var(--warning)';
         } else {
             scoreEl.style.color = 'var(--danger)';
+        }
+    }
+
+    const progressCircle = document.querySelector('.circular-progress');
+    if (progressCircle) {
+        const computedHealthScore = Math.max(35, Math.min(98, 100 - Math.round(risk * 0.8)));
+        progressCircle.setAttribute('data-progress', computedHealthScore);
+        if (typeof animateHealthScore === 'function') {
+            animateHealthScore();
         }
     }
 }
@@ -2357,7 +2725,7 @@ function updateUploadDate() {
     const now = new Date();
     const dateDisplay = document.getElementById('upload-date-display');
     const dateDetail = document.getElementById('upload-date-detail');
-    
+
     if (dateDisplay) {
         const opts = { day: 'numeric', month: 'short', year: 'numeric' };
         dateDisplay.textContent = now.toLocaleDateString('th-TH', opts);
@@ -2366,7 +2734,7 @@ function updateUploadDate() {
         const timeStr = now.toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit' });
         dateDetail.textContent = `อัปโหลดเมื่อ ${timeStr} น.`;
     }
-    
+
     localStorage.setItem('lablink_upload_date', now.toISOString());
 }
 
@@ -2379,7 +2747,7 @@ function showToast(message, type = 'success') {
 
     const toast = document.createElement('div');
     toast.className = `toast ${type}`;
-    
+
     let icon = '✅';
     if (type === 'warning') icon = '⚠️';
     if (type === 'danger') icon = '❌';
@@ -2428,14 +2796,14 @@ function updateLevelUI() {
     const fill = document.getElementById('user-exp-fill');
     const text = document.getElementById('user-exp-text');
     const badge = document.getElementById('user-level-badge');
-    
+
     if (fill) fill.style.width = `${userExp}%`;
     if (text) text.textContent = `${userExp} / 100 EXP`;
-    
+
     let title = "Beginner";
     if (userLevel === 2) title = "Health Seeker";
     if (userLevel >= 3) title = "Wellness Master";
-    
+
     if (badge) badge.textContent = `LV. ${userLevel} ${title}`;
 }
 
@@ -2469,22 +2837,22 @@ window.syncWearable = function() {
     const stepsEl = document.getElementById('wearable-steps');
     const sleepEl = document.getElementById('wearable-sleep');
     const insightEl = document.getElementById('wearable-ai-insight');
-    
+
     if (!btn) return;
-    
+
     btn.innerHTML = '<span class="animate-pulse">🔄 Syncing...</span>';
     btn.disabled = true;
-    
+
     setTimeout(() => {
         // Simulate pulling data
         const steps = Math.floor(Math.random() * 5000) + 3000;
         const sleep = (Math.random() * 3 + 4).toFixed(1); // 4.0 - 7.0 hours
-        
+
         if (placeholder) placeholder.style.display = 'none';
         if (container) container.style.display = 'block';
-        
+
         animateValue(stepsEl, 0, steps, 1500);
-        
+
         // Float animation for sleep (handle decimal manually)
         let s = 0;
         const intv = setInterval(() => {
@@ -2496,7 +2864,7 @@ window.syncWearable = function() {
                 sleepEl.textContent = s.toFixed(1);
             }
         }, 30);
-        
+
         // AI Insight based on random data
         setTimeout(() => {
             if (sleep < 6) {
@@ -2509,7 +2877,7 @@ window.syncWearable = function() {
             showToast('⌚ ซิงค์ข้อมูล Smart Watch สำเร็จ!');
             btn.innerHTML = 'Synced ✅';
         }, 1500);
-        
+
     }, 2000);
 };
 
@@ -2527,7 +2895,7 @@ window.generateNutritionPlan = async function() {
     const loading = document.getElementById('nutrition-loading');
     const content = document.getElementById('nutrition-content');
     const exportBtn = document.getElementById('btn-export-plan');
-    
+
     btn.style.display = 'none';
     loading.style.display = 'block';
     content.style.display = 'none';
@@ -2541,7 +2909,7 @@ window.generateNutritionPlan = async function() {
             const p = JSON.parse(savedProf);
             profileText = `ข้อมูลผู้ป่วย: น้ำหนัก ${p.weight || '-'} kg, ส่วนสูง ${p.height || '-'} cm, โรคประจำตัว: ${p.disease || '-'}, ประวัติแพ้ยา: ${p.allergy || '-'}`;
         }
-    } catch(e) {}
+    } catch (e) {}
 
     // Build prompt based on real health data
     const prompt = `คุณคือ Dr. LabLink แพทย์และนักโภชนาการผู้เชี่ยวชาญ 
@@ -2641,7 +3009,7 @@ AST: ${eh.ast || '-'}, ALT: ${eh.alt || '-'}
         <p style="text-align: center; color: var(--warning); margin-top: 16px;">
           (⚠️ ข้อมูลจำลอง - หากต้องการให้ AI วางแผนแบบเฉพาะบุคคล กรุณาใส่ API Key ในหน้าตั้งค่า)
         </p>`;
-        
+
         content.innerHTML = mockHTML;
         content.style.display = 'block';
         exportBtn.style.display = 'inline-block';
@@ -2660,7 +3028,7 @@ AST: ${eh.ast || '-'}, ALT: ${eh.alt || '-'}
 
 window.exportPlanPDF = function() {
     showToast('กำลังเตรียมไฟล์ PDF...', 'success');
-    
+
     // Check if html2pdf is available
     if (typeof html2pdf === 'undefined') {
         showToast('ไม่พบไลบรารี PDF, กรุณาใช้ Ctrl+P เพื่อพิมพ์หน้าจอนี้', 'error');
@@ -2675,17 +3043,17 @@ window.exportPlanPDF = function() {
     // Temporarily hide UI elements for clean PDF
     if (btnGen) btnGen.style.display = 'none';
     if (btnExp) btnExp.style.display = 'none';
-    
+
     // Optional: Switch to light mode for PDF clarity if dark mode is active
     const wasDark = document.body.classList.contains('dark-mode');
     if (wasDark) document.body.classList.remove('dark-mode');
 
     const opt = {
-        margin:       10,
-        filename:     'LabLink-7-Day-Plan.pdf',
-        image:        { type: 'jpeg', quality: 0.98 },
-        html2canvas:  { scale: 2, useCORS: true, windowWidth: 1200 }, // Force desktop width for grid stability
-        jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
+        margin: 10,
+        filename: 'LabLink-7-Day-Plan.pdf',
+        image: { type: 'jpeg', quality: 0.98 },
+        html2canvas: { scale: 2, useCORS: true, windowWidth: 1200 }, // Force desktop width for grid stability
+        jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
     };
 
     html2pdf().set(opt).from(content).save().then(() => {
@@ -2693,22 +3061,42 @@ window.exportPlanPDF = function() {
         if (btnGen) btnGen.style.display = '';
         if (btnExp) btnExp.style.display = 'inline-block';
         if (wasDark) document.body.classList.add('dark-mode');
-        
+
         showToast('📄 ดาวน์โหลด PDF สำเร็จ!', 'success');
+    }).catch(err => {
+        console.error('PDF Export Error:', err);
+        // Restore UI even on failure
+        if (btnGen) btnGen.style.display = '';
+        if (btnExp) btnExp.style.display = 'inline-block';
+        if (wasDark) document.body.classList.add('dark-mode');
+
+        showToast('⚠️ เกิดข้อผิดพลาดในการสร้างไฟล์ PDF กรุณาลองใหม่อีกครั้ง', 'danger');
     });
 };
 
 // =========================================
 //  8 Basic Functions: Modals & PDPA
 // =========================================
-window.openModal = function(id) {
+function openModal(id) {
     const modal = document.getElementById(id);
-    if (modal) modal.classList.add('active');
-};
-window.closeModal = function(id) {
+    if (modal) {
+        modal.classList.add('active');
+        document.body.classList.add('modal-open');
+    }
+}
+window.openModal = openModal;
+
+function closeModal(id) {
     const modal = document.getElementById(id);
-    if (modal) modal.classList.remove('active');
-};
+    if (modal) {
+        modal.classList.remove('active');
+        const remaining = document.querySelectorAll('.modal-overlay.active');
+        if (remaining.length === 0) {
+            document.body.classList.remove('modal-open');
+        }
+    }
+}
+window.closeModal = closeModal;
 window.copyShareLink = function() {
     navigator.clipboard.writeText(window.location.href).then(() => {
         showToast('คัดลอกลิงก์สำเร็จแล้ว!', 'success');
@@ -2741,7 +3129,7 @@ window.saveProfile = function() {
         allergy: document.getElementById('prof-allergy')?.value || ''
     };
     localStorage.setItem('lablink_profile', JSON.stringify(profile));
-    
+
     // Sync to SOS modal
     document.getElementById('sos-blood').textContent = profile.blood || 'ยังไม่ระบุ';
     document.getElementById('sos-disease').textContent = profile.disease || 'ไม่มี/ไม่ระบุ';
@@ -2756,16 +3144,16 @@ document.addEventListener('DOMContentLoaded', () => {
     const saved = localStorage.getItem('lablink_profile');
     if (saved) {
         const p = JSON.parse(saved);
-        if(document.getElementById('prof-weight')) document.getElementById('prof-weight').value = p.weight;
-        if(document.getElementById('prof-height')) document.getElementById('prof-height').value = p.height;
-        if(document.getElementById('prof-blood')) document.getElementById('prof-blood').value = p.blood;
-        if(document.getElementById('prof-disease')) document.getElementById('prof-disease').value = p.disease;
-        if(document.getElementById('prof-allergy')) document.getElementById('prof-allergy').value = p.allergy;
-        
+        if (document.getElementById('prof-weight')) document.getElementById('prof-weight').value = p.weight;
+        if (document.getElementById('prof-height')) document.getElementById('prof-height').value = p.height;
+        if (document.getElementById('prof-blood')) document.getElementById('prof-blood').value = p.blood;
+        if (document.getElementById('prof-disease')) document.getElementById('prof-disease').value = p.disease;
+        if (document.getElementById('prof-allergy')) document.getElementById('prof-allergy').value = p.allergy;
+
         // Sync SOS
-        if(document.getElementById('sos-blood')) document.getElementById('sos-blood').textContent = p.blood || 'ยังไม่ระบุ';
-        if(document.getElementById('sos-disease')) document.getElementById('sos-disease').textContent = p.disease || 'ไม่มี/ไม่ระบุ';
-        if(document.getElementById('sos-allergy')) document.getElementById('sos-allergy').textContent = p.allergy || 'ไม่มี/ไม่ระบุ';
+        if (document.getElementById('sos-blood')) document.getElementById('sos-blood').textContent = p.blood || 'ยังไม่ระบุ';
+        if (document.getElementById('sos-disease')) document.getElementById('sos-disease').textContent = p.disease || 'ไม่มี/ไม่ระบุ';
+        if (document.getElementById('sos-allergy')) document.getElementById('sos-allergy').textContent = p.allergy || 'ไม่มี/ไม่ระบุ';
     }
 });
 
@@ -2775,6 +3163,7 @@ document.addEventListener('DOMContentLoaded', () => {
 const translations = {
     th: {
         header_title: "LabLink Dashboard",
+        btn_toggle_ui: "👁️ ซ่อน UI",
         btn_share: "📤 แชร์",
         btn_print: "🖨️ พิมพ์",
         nav_upload: "อัปโหลดผลตรวจ",
@@ -2783,6 +3172,7 @@ const translations = {
         nav_nutrition: "โภชนาการบำบัด",
         nav_settings: "โปรไฟล์ & ตั้งค่า",
         nav_logout: "ออกจากระบบ (หน้าแรก)",
+        nav_hide_ui: "ซ่อน UI",
         trends_title: "📈 กราฟเปรียบเทียบผลเลือดย้อนหลัง",
         trends_desc: "เปรียบเทียบผลตรวจสุขภาพของปีนี้กับข้อมูลประวัติย้อนหลัง (2024-2025)",
         profile_title: "📝 จัดการข้อมูลส่วนตัว & การตั้งค่า",
@@ -2802,7 +3192,7 @@ const translations = {
         nutri_fat: "ไขมันดี (Fats)",
         nutri_3day: "📅 แผนอาหาร 3 วัน (AI Generated Meal Plan)",
         nutri_superfood: "🌟 Superfoods แนะนำสำหรับคุณ",
-        academy_title: "🎓 คลังความรู้เชิงลึกสำหรับคุณ (Deep-Dive Academy)",
+        academy_title: "🎓 คลังความรู้เชิงลึกสำหรับคุณs",
         academy_desc: "บทความวิทยาศาสตร์การแพทย์ที่คัดสรรและเขียนขึ้นมาให้เชื่อมโยงกับผลแล็บของคุณโดยเฉพาะ",
         academy_filter_all: "หมวดหมู่ทั้งหมด",
         academy_filter_mol: "🧬 ชีววิทยาโมเลกุล",
@@ -2815,10 +3205,11 @@ const translations = {
         set_allergy: "ประวัติแพ้ยา",
         set_save: "💾 บันทึกข้อมูลสุขภาพ",
         set_vaccine: "💉 สมุดบันทึกวัคซีนพื้นฐาน",
-        set_ai: "⚙️ การตั้งค่า AI (Gemini)"
+        set_ai: "⚙️ การตั้งค่า"
     },
     en: {
         header_title: "LabLink Dashboard",
+        btn_toggle_ui: "",
         btn_share: "📤 Share",
         btn_print: "🖨️ Print",
         nav_upload: "Upload Lab",
@@ -2827,6 +3218,7 @@ const translations = {
         nav_nutrition: "Nutrition Plan",
         nav_settings: "Profile & Settings",
         nav_logout: "Logout (Home)",
+        nav_hide_ui: "Focus",
         trends_title: "📈 Historical Lab Result Trends",
         trends_desc: "Compare your current health data with historical records (2024-2025)",
         profile_title: "📝 Profile Management & Settings",
@@ -2846,7 +3238,7 @@ const translations = {
         nutri_fat: "Healthy Fats",
         nutri_3day: "📅 3-Day Meal Plan (AI Generated)",
         nutri_superfood: "🌟 Recommended Superfoods for You",
-        academy_title: "🎓 Deep-Dive Academy",
+        academy_title: "🎓 Deep-Dive",
         academy_desc: "Curated medical science articles specifically linked to your lab results.",
         academy_filter_all: "All Categories",
         academy_filter_mol: "🧬 Molecular Biology",
@@ -2859,14 +3251,14 @@ const translations = {
         set_allergy: "Allergies",
         set_save: "💾 Save Health Profile",
         set_vaccine: "💉 Vaccine Records",
-        set_ai: "⚙️ AI Settings (Gemini)"
+        set_ai: "⚙️ AI Settings"
     }
 };
 
 let currentLang = 'th';
 window.toggleLanguage = function() {
     currentLang = currentLang === 'th' ? 'en' : 'th';
-    
+
     // Update active UI toggle
     document.getElementById('lang-th').classList.toggle('active', currentLang === 'th');
     document.getElementById('lang-en').classList.toggle('active', currentLang === 'en');
@@ -2886,6 +3278,43 @@ window.toggleLanguage = function() {
 };
 
 // =========================================
+//  Focus Mode / Hide UI (for iPad & Tablets)
+// =========================================
+window.toggleHideUI = function() {
+    const isHidden = document.body.classList.toggle('hide-ui');
+
+    // Automatically close mobile/tablet sidebar if it was open
+    const sidebar = document.querySelector('.sidebar');
+    const backdrop = document.getElementById('sidebar-backdrop');
+    if (sidebar) sidebar.classList.remove('sidebar-open');
+    if (backdrop) backdrop.classList.remove('active');
+
+    // Trigger window resize so Chart.js charts adapt to full width
+    setTimeout(() => {
+        window.dispatchEvent(new Event('resize'));
+    }, 150);
+
+    if (isHidden) {
+        if (typeof showToast === 'function') {
+            showToast(currentLang === 'th' ?
+                '👁️ ซ่อน UI แล้ว — แตะปุ่ม "แสดง UI" มุมขวาบนเพื่อเรียกคืน' :
+                '👁️ UI Hidden — Tap "Show UI" at top right to restore', 'success');
+        }
+    } else {
+        if (typeof showToast === 'function') {
+            showToast(currentLang === 'th' ? '👁️ แสดง UI ตามปกติแล้ว' : '👁️ UI Restored', 'success');
+        }
+    }
+};
+
+// Press Escape key on iPad keyboard folio or physical keyboard to exit Hide UI mode
+document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && document.body.classList.contains('hide-ui')) {
+        window.toggleHideUI();
+    }
+});
+
+// =========================================
 //  8 Basic Functions: Historical Trends Chart
 // =========================================
 let chartLDL = null;
@@ -2896,7 +3325,7 @@ window.updateTrendsChart = function() {
     const ctxLDL = document.getElementById('chart-ldl');
     const ctxFBS = document.getElementById('chart-fbs');
     const ctxWeight = document.getElementById('chart-weight');
-    
+
     if (!ctxLDL || !ctxFBS || !ctxWeight) return;
 
     if (chartLDL) chartLDL.destroy();
@@ -2919,7 +3348,10 @@ window.updateTrendsChart = function() {
                 data: [180, 165, window.extractedHealthData?.ldl || 130],
                 borderColor: '#ef4444',
                 backgroundColor: '#ef444433',
-                borderWidth: 3, pointRadius: 5, fill: true, tension: 0.3
+                borderWidth: 3,
+                pointRadius: 5,
+                fill: true,
+                tension: 0.3
             }]
         },
         options: commonOptions
@@ -2934,7 +3366,10 @@ window.updateTrendsChart = function() {
                 data: [110, 105, window.extractedHealthData?.fbs || 88],
                 borderColor: '#3b82f6',
                 backgroundColor: '#3b82f633',
-                borderWidth: 3, pointRadius: 5, fill: true, tension: 0.3
+                borderWidth: 3,
+                pointRadius: 5,
+                fill: true,
+                tension: 0.3
             }]
         },
         options: commonOptions
@@ -2949,7 +3384,7 @@ window.updateTrendsChart = function() {
             const p = JSON.parse(savedProf);
             if (p.weight) currWeight = parseFloat(p.weight);
         }
-    } catch(e) {}
+    } catch (e) {}
 
     chartWeight = new Chart(ctxWeight.getContext('2d'), {
         type: 'line',
@@ -2959,7 +3394,10 @@ window.updateTrendsChart = function() {
                 data: [70, 68, currWeight],
                 borderColor: '#10b981',
                 backgroundColor: '#10b98133',
-                borderWidth: 3, pointRadius: 5, fill: true, tension: 0.3
+                borderWidth: 3,
+                pointRadius: 5,
+                fill: true,
+                tension: 0.3
             }]
         },
         options: commonOptions
@@ -2972,7 +3410,8 @@ window.updateTrendsChart = function() {
 document.addEventListener('keydown', (e) => {
     // Escape = close any open modal
     if (e.key === 'Escape') {
-        document.querySelectorAll('.modal-overlay.active').forEach(m => m.classList.remove('active'));
+        document.querySelectorAll('.modal-overlay.active').forEach(m => window.closeModal(m.id));
+        document.body.classList.remove('modal-open');
     }
     // Ctrl+P = Print (override browser default to use our clean print)
     if ((e.ctrlKey || e.metaKey) && e.key === 'p') {
@@ -2982,15 +3421,17 @@ document.addEventListener('keydown', (e) => {
 });
 
 // =========================================
-//  QOL: Click outside modal to close
+//  QOL: Click / Touch outside modal to close
 // =========================================
-document.addEventListener('click', (e) => {
+const handleBackdropDismiss = (e) => {
     if (e.target.classList.contains('modal-overlay') && e.target.classList.contains('active')) {
         // Don't close PDPA modal by clicking outside (must accept)
         if (e.target.id === 'modal-pdpa') return;
-        e.target.classList.remove('active');
+        window.closeModal(e.target.id);
     }
-});
+};
+document.addEventListener('click', handleBackdropDismiss);
+document.addEventListener('touchend', handleBackdropDismiss);
 
 // =========================================
 //  QOL: Scroll to top on view switch
@@ -3011,19 +3452,20 @@ document.addEventListener('click', (e) => {
 document.addEventListener('DOMContentLoaded', () => {
     const wInput = document.getElementById('prof-weight');
     const hInput = document.getElementById('prof-height');
-    
+
     function showBMI() {
         const w = parseFloat(wInput?.value);
         const h = parseFloat(hInput?.value);
         if (!w || !h || h <= 0) return;
-        
+
         const bmi = (w / ((h / 100) ** 2)).toFixed(1);
         let status = '';
         let color = 'var(--success)';
-        if (bmi < 18.5) { status = 'น้ำหนักต่ำกว่าเกณฑ์'; color = 'var(--warning)'; }
-        else if (bmi < 25) { status = 'น้ำหนักปกติ'; color = 'var(--success)'; }
-        else if (bmi < 30) { status = 'น้ำหนักเกิน'; color = 'var(--warning)'; }
-        else { status = 'โรคอ้วน'; color = 'var(--danger)'; }
+        if (bmi < 18.5) { status = 'น้ำหนักต่ำกว่าเกณฑ์';
+            color = 'var(--warning)'; } else if (bmi < 25) { status = 'น้ำหนักปกติ';
+            color = 'var(--success)'; } else if (bmi < 30) { status = 'น้ำหนักเกิน';
+            color = 'var(--warning)'; } else { status = 'โรคอ้วน';
+            color = 'var(--danger)'; }
 
         let bmiDisplay = document.getElementById('bmi-display');
         if (!bmiDisplay) {
@@ -3038,52 +3480,62 @@ document.addEventListener('DOMContentLoaded', () => {
 
     if (wInput) wInput.addEventListener('input', showBMI);
     if (hInput) hInput.addEventListener('input', showBMI);
-    
+
     // Show on load if data exists
     setTimeout(showBMI, 500);
 });
 
 // =========================================
-//  QOL: Mobile sidebar toggle
+//  QOL: Mobile & Tablet sidebar toggle
 // =========================================
 document.addEventListener('DOMContentLoaded', () => {
     const sidebar = document.querySelector('.sidebar');
     if (!sidebar) return;
-    
-    // Create hamburger button
-    const burger = document.createElement('button');
-    burger.id = 'mobile-menu-btn';
-    burger.innerHTML = '☰';
-    burger.style.cssText = 'display: none; position: fixed; top: 12px; left: 12px; z-index: 9999; background: var(--primary); color: white; border: none; border-radius: 8px; width: 40px; height: 40px; font-size: 1.3rem; cursor: pointer; box-shadow: 0 2px 8px rgba(0,0,0,0.2);';
-    document.body.appendChild(burger);
+
+    let burger = document.getElementById('mobile-menu-btn');
+    if (!burger) {
+        burger = document.createElement('button');
+        burger.id = 'mobile-menu-btn';
+        burger.setAttribute('aria-label', 'เปิดเมนูนำทาง');
+        burger.type = 'button';
+        burger.innerHTML = '☰';
+        document.body.appendChild(burger);
+    }
 
     const backdrop = document.getElementById('sidebar-backdrop');
 
-    burger.addEventListener('click', () => {
+    const toggleSidebar = (e) => {
+        if (e) e.preventDefault();
         const isOpen = sidebar.classList.toggle('sidebar-open');
         if (backdrop) backdrop.classList.toggle('active', isOpen);
-    });
+    };
+
+    const closeSidebar = () => {
+        sidebar.classList.remove('sidebar-open');
+        if (backdrop) backdrop.classList.remove('active');
+    };
+
+    burger.addEventListener('click', toggleSidebar);
 
     if (backdrop) {
-        backdrop.addEventListener('click', () => {
-            sidebar.classList.remove('sidebar-open');
-            backdrop.classList.remove('active');
-        });
+        backdrop.addEventListener('click', closeSidebar);
+        backdrop.addEventListener('touchstart', closeSidebar, { passive: true });
     }
 
-    // Close sidebar when clicking a nav item on mobile
+    // Close sidebar when clicking a nav item on mobile or tablet
     sidebar.addEventListener('click', (e) => {
-        if (e.target.closest('.nav-item') && window.innerWidth <= 768) {
-            sidebar.classList.remove('sidebar-open');
-            if (backdrop) backdrop.classList.remove('active');
+        if (e.target.closest('.nav-item') && window.innerWidth <= 1024) {
+            closeSidebar();
         }
     });
 });
 
 // =========================================
-//  QOL: Double-click metric card to copy value
+//  QOL: Double-click metric card to copy value (Desktop only)
 // =========================================
 document.addEventListener('dblclick', (e) => {
+    // Skip on touch devices to avoid tap delays and gesture conflicts
+    if (window.matchMedia && window.matchMedia('(hover: none)').matches) return;
     const card = e.target.closest('.metric-card');
     if (!card) return;
     const val = card.querySelector('.metric-value');
@@ -3103,10 +3555,9 @@ document.addEventListener('DOMContentLoaded', () => {
     if (h >= 12 && h < 17) greeting = '☀️ สวัสดีตอนบ่าย';
     else if (h >= 17 && h < 21) greeting = '🌇 สวัสดีตอนเย็น';
     else if (h >= 21 || h < 5) greeting = '🌙 สวัสดียามค่ำคืน';
-    
+
     const headerTitle = document.querySelector('[data-i18n="header_title"]');
     if (headerTitle && currentLang === 'th') {
         headerTitle.textContent = `${greeting} — LabLink`;
     }
 });
-

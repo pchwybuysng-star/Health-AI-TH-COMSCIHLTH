@@ -324,5 +324,262 @@ body.dark-mode .lab-table-row:hover {
     background-color: rgba(59, 130, 246, 0.12);
 }
 
+/* Dark Mode: Status color variable overrides */
+body.dark-mode {
+    --color-optimal: #34d399;
+    --color-warning: #fbbf24;
+    --color-critical: #f87171;
+    --bg-optimal: rgba(6, 78, 59, 0.3);
+    --bg-optimal-text: #6ee7b7;
+    --bg-optimal-border: #10b981;
+    --bg-warning: rgba(120, 53, 15, 0.3);
+    --bg-warning-text: #fcd34d;
+    --bg-warning-border: #f59e0b;
+    --bg-critical: rgba(127, 29, 29, 0.3);
+    --bg-critical-text: #fca5a5;
+    --bg-critical-border: #ef4444;
+}
 
+/* Dark Mode: Lab table value colors */
+body.dark-mode .lab-table-row td[style*="color: var(--color-warning)"],
+body.dark-mode .lab-value-warning {
+    color: #fbbf24 !important;
+}
+body.dark-mode .lab-table-row td[style*="color: var(--color-optimal)"],
+body.dark-mode .lab-value-optimal {
+    color: #34d399 !important;
+}
+body.dark-mode .lab-table-row td[style*="color: var(--color-critical)"],
+body.dark-mode .lab-value-critical {
+    color: #f87171 !important;
+}
+
+/* Dark Mode: Chat quick reply container */
+body.dark-mode .chat-quick-replies,
+body.dark-mode [style*="background: var(--bg-main)"] {
+    background: var(--bg-main) !important;
+}
+
+/* Dark Mode: Academy article tags */
+body.dark-mode .course-tag {
+    background: rgba(99, 102, 241, 0.15) !important;
+    color: #a5b4fc !important;
+    border: 1px solid rgba(99, 102, 241, 0.3) !important;
+}
+body.dark-mode .course-badge {
+    background: rgba(245, 158, 11, 0.15) !important;
+    color: #fcd34d !important;
+    border-color: rgba(245, 158, 11, 0.3) !important;
+}
+
+/* Dark Mode: Academy article cards */
+body.dark-mode .article-card,
+body.dark-mode .academy-card {
+    background: var(--bg-card);
+    border-color: var(--border);
+}
+
+/* Dark Mode: Medical summary boxes (optimal/warning/critical) */
+body.dark-mode [style*="background: #d1fae5"] {
+    background: var(--bg-optimal) !important;
+    color: var(--bg-optimal-text) !important;
+    border-left-color: var(--bg-optimal-border) !important;
+}
+body.dark-mode [style*="background: #fef3c7"] {
+    background: var(--bg-warning) !important;
+    color: var(--bg-warning-text) !important;
+    border-left-color: var(--bg-warning-border) !important;
+}
+body.dark-mode [style*="background: #fee2e2"] {
+    background: var(--bg-critical) !important;
+    color: var(--bg-critical-text) !important;
+    border-left-color: var(--bg-critical-border) !important;
+}
+
+/* Dark Mode: Section headers with hardcoded colors */
+body.dark-mode [style*="color: #e11d48"] {
+    color: #fb7185 !important;
+}
+body.dark-mode [style*="color: #6366f1"] {
+    color: #a5b4fc !important;
+}
+body.dark-mode [style*="color: #db2777"] {
+    color: #f472b6 !important;
+}
+
+/* Dark Mode: Modal overlay */
+body.dark-mode .modal-overlay {
+    background: rgba(0, 0, 0, 0.7);
+}
+body.dark-mode .modal-box {
+    background: var(--bg-card);
+    color: var(--text-main);
+    border: 1px solid var(--border);
+}
+
+/* Dark Mode: Settings form inputs */
+body.dark-mode .settings-form input,
+body.dark-mode .settings-form select,
+body.dark-mode .settings-form textarea {
+    background: #0f172a;
+    color: var(--text-main);
+    border-color: var(--border);
+}
+
+/* Dark Mode: Upload box states */
+body.dark-mode .upload-success-card {
+    background: rgba(6, 78, 59, 0.2);
+    border-color: rgba(16, 185, 129, 0.3);
+}
+
+/* Dark Mode: Mobile menu button */
+body.dark-mode #mobile-menu-btn {
+    background: #1e293b;
+    color: var(--primary);
+    border: 1px solid var(--border);
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.4);
+}
+body.dark-mode #mobile-menu-btn:active {
+    background: #334155;
+}
+
+/* Dark Mode: Focus Mode / Hide UI buttons */
+body.dark-mode .btn-restore-ui {
+    background: rgba(30, 41, 59, 0.9);
+    color: #93c5fd;
+    border-color: rgba(255, 255, 255, 0.15);
+    box-shadow: 0 6px 22px rgba(0, 0, 0, 0.5);
+}
+body.dark-mode .btn-restore-ui:hover {
+    background: var(--primary);
+    color: white;
+}
+body.dark-mode .btn-toggle-ui {
+    background: rgba(59, 130, 246, 0.15);
+    color: #93c5fd;
+    border-color: rgba(59, 130, 246, 0.3);
+}
+
+/* =========================================
+   Dark Mode: Landing Hero Showcase
+   ========================================= */
+
+body.dark-mode .landing-action-card,
+body.dark-mode .landing-showcase-card {
+    background: rgba(30, 41, 59, 0.88);
+    border-color: rgba(255, 255, 255, 0.12);
+    box-shadow: 0 20px 45px -10px rgba(0, 0, 0, 0.5);
+}
+
+body.dark-mode .landing-badge {
+    background: rgba(96, 165, 250, 0.12);
+    border-color: rgba(96, 165, 250, 0.3);
+    color: #60a5fa;
+}
+
+body.dark-mode .drop-zone {
+    border-color: #3b82f6;
+    background: rgba(15, 23, 42, 0.6);
+}
+
+body.dark-mode .drop-zone:hover,
+body.dark-mode .drop-zone.drag-over {
+    border-color: #60a5fa;
+    background: rgba(30, 58, 138, 0.25);
+    box-shadow: 0 8px 25px rgba(37, 99, 235, 0.3);
+}
+
+body.dark-mode .btn-demo-file {
+    background: #1e293b;
+    color: var(--text-main);
+    border-color: var(--border);
+}
+
+body.dark-mode .btn-demo-file:hover {
+    background: #334155;
+    border-color: #60a5fa;
+    color: #60a5fa;
+}
+
+body.dark-mode .showcase-preview-box {
+    background: #0f172a;
+    border-color: var(--border);
+}
+
+body.dark-mode .before-after-switch {
+    background: rgba(255, 255, 255, 0.08);
+}
+
+body.dark-mode .switch-tab {
+    color: var(--text-light);
+}
+
+body.dark-mode .switch-tab.active {
+    background: #1e293b;
+    color: #60a5fa;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+}
+
+body.dark-mode .mini-dashboard-card {
+    background: #1e293b;
+    border-color: var(--border);
+}
+
+body.dark-mode .mini-status-chip.warning {
+    background: rgba(245, 158, 11, 0.2);
+    color: #fbbf24;
+    border-color: rgba(245, 158, 11, 0.4);
+}
+
+body.dark-mode .chip-optimal {
+    background: rgba(16, 185, 129, 0.2);
+    color: #34d399;
+}
+
+body.dark-mode .chip-warning {
+    background: rgba(245, 158, 11, 0.2);
+    color: #fbbf24;
+}
+
+body.dark-mode .mini-action-recommendation {
+    background: rgba(37, 99, 235, 0.15);
+    border-left-color: #60a5fa;
+    color: #f8fafc;
+}
+
+body.dark-mode .traditional-report-card {
+    background: #090d16;
+    border-color: #334155;
+    color: #94a3b8;
+}
+
+body.dark-mode .trad-report-header {
+    border-bottom-color: #475569;
+    color: #cbd5e1;
+}
+
+body.dark-mode .trad-row.highlight-warn {
+    background: rgba(239, 68, 68, 0.25);
+    color: #fca5a5;
+}
+
+body.dark-mode .trad-confused-note {
+    border-top-color: #334155;
+    color: #f87171;
+}
+
+body.dark-mode .landing-feature-item {
+    background: #1e293b;
+    border-color: var(--border);
+}
+
+body.dark-mode .landing-feature-item:hover {
+    border-color: #60a5fa;
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.4);
+}
+
+body.dark-mode .landing-stats-ticker {
+    background: linear-gradient(135deg, rgba(37, 99, 235, 0.12), rgba(124, 58, 237, 0.12));
+    border-color: rgba(59, 130, 246, 0.25);
+}
 
